@@ -6,5 +6,7 @@ dist/
 *.log
 .DS_Store
 Thumbs.db
+# Ignore real env files, but keep the committed template.
 .env
 .env.*
+!.env.example
