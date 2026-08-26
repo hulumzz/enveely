@@ -1,0 +1,197 @@
+/* Enveely — Template family scopes.
+   Each .inv--<family> re-composes sections so two families never look alike
+   (Design DNA rule: composition > color). Variants refine via .inv--v-<id>. */
+
+/* ================= AMORA — Romantic Floral ================= */
+
+.inv--amora {
+  --pad-x: clamp(22px, calc(var(--inv-vw) * 6), 48px);
+}
+
+.inv--amora .sec--cover {
+  background:
+    radial-gradient(90% 60% at 50% 0%, rgba(255,255,255,0.16), transparent 70%),
+    linear-gradient(180deg, rgba(61,51,44,0.10), rgba(61,51,44,0.45));
+}
+.inv--amora .cover__names { font-style: italic; letter-spacing: 0.02em; }
+.inv--amora .person__photo { border-radius: 999px 999px 999px 12px; }
+.inv--amora .event-card { border-radius: 26px; border-style: solid; }
+.inv--amora .sec--story { max-width: 640px; margin-inline: auto; }
+
+/* Variant: Moonlit — dark, dramatic */
+.inv--amora.inv--v-amora-moonlit {
+  --inv-bg: #191720;
+  background: #191720;
+}
+.inv--amora.inv--v-amora-moonlit .sec--cover::after {
+  background: linear-gradient(to bottom, rgba(25,23,32,0.2), rgba(25,23,32,0.75));
+}
+.inv--amora.inv--v-amora-moonlit .event-card,
+.inv--amora.inv--v-amora-moonlit .countdown__cell {
+  background: rgba(255,255,255,0.05);
+}
+
+/* Variant: Vintage Rose — layered paper frames */
+.inv--amora.inv--v-amora-vintage-rose .person__photo {
+  border: 6px solid #fff;
+  box-shadow: 0 0 0 1px var(--inv-accent), 0 14px 34px rgba(0,0,0,0.14);
+}
+.inv--amora.inv--v-amora-vintage-rose .gallery__grid { gap: 14px; }
+
+/* ================= ELYSIAN — Luxury Editorial ================= */
+
+.inv--elysian { letter-spacing: 0.01em; }
+
+.inv--elysian .sec { padding-block: clamp(72px, calc(var(--inv-vw) * 12), 140px); }
+
+.inv--elysian .sec--cover {
+  min-height: 88svh;
+  background: none;
+}
+.inv--elysian .sec--cover::after { display: none; } /* typography-first: no dark overlay */
+.inv--elysian .cover__media img { object-fit: cover; opacity: 0.92; }
+.inv--elysian .cover__body {
+  position: absolute; inset: auto 0 12%;
+  padding-inline: var(--pad-x);
+}
+.inv--elysian .cover__names {
+  font-size: clamp(3rem, calc(var(--inv-vw) * 10), 6rem);
+  letter-spacing: 0.04em;
+}
+.inv--elysian .cover__eyebrow { opacity: 0.85; }
+.inv--elysian .btn-inv { border-radius: 0; border-width: 1px; }
+
+.inv--elysian .couple__amp { font-style: normal; opacity: 0.5; }
+.inv--elysian .person__photo { border-radius: 0; aspect-ratio: 3/4; width: clamp(170px, calc(var(--inv-vw) * 30), 240px); }
+.inv--elysian .event-card {
+  border: 0; border-top: 1px solid color-mix(in srgb, var(--inv-text) 25%, transparent);
+  border-radius: 0; background: transparent; text-align: left;
+  align-items: flex-start; flex-direction: row; gap: 20px; max-width: 560px;
+}
+.inv--elysian .event-card__date { min-width: 96px; }
+.inv--elysian .event-card__info { justify-items: start; }
+.inv--elysian .countdown__cell { background: transparent; border-bottom: 1px solid color-mix(in srgb, var(--inv-text) 30%, transparent); border-radius: 0; }
+.inv--elysian .gallery__grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.inv--elysian .gallery__item { aspect-ratio: 4/5; border-radius: 0; }
+.inv--elysian .rsvp__form, .inv--elysian .wishes__form { text-align: center; }
+.inv--elysian .fld input, .inv--elysian .fld textarea { border-radius: 0; background: transparent; }
+
+/* Variant: Noir */
+.inv--elysian.inv--v-elysian-noir .cover__media img { opacity: 0.55; }
+.inv--elysian.inv--v-elysian-noir .cover__names { color: var(--inv-primary); }
+
+/* ================= SERENA — Minimal Romance ================= */
+
+.inv--serena .sec { padding-block: clamp(64px, calc(var(--inv-vw) * 9), 110px); }
+
+.inv--serena .sec--cover { background: none; color: inherit; min-height: 92svh; }
+.inv--serena .sec--cover::after { display: none; }
+.inv--serena .cover__media { position: relative; inset: auto; order: 2; width: min(320px, calc(var(--inv-vw) * 70)); aspect-ratio: 4/5; margin-top: 30px; }
+.inv--serena .cover__names { font-size: clamp(2.8rem, calc(var(--inv-vw) * 9), 5rem); line-height: 1.05; }
+.inv--serena .cover__names br { display: block; }
+.inv--serena .cover__date { letter-spacing: 0.42em; font-size: 0.8rem; margin-top: 10px; }
+.inv--serena .btn-inv { border: 0; padding: 10px 6px; text-decoration: underline; text-underline-offset: 6px; }
+
+.inv--serena .person__photo { border-radius: 50%; width: clamp(130px, calc(var(--inv-vw) * 26), 180px); aspect-ratio: 1; box-shadow: none; }
+.inv--serena .couple__amp { font-size: 1.6rem; opacity: 0.55; }
+.inv--serena .event-card { border: 0; border-left: 1px solid color-mix(in srgb, var(--inv-text) 20%, transparent); border-radius: 0; background: transparent; text-align: left; align-items: flex-start; }
+.inv--serena .event-card__info { justify-items: start; }
+.inv--serena .countdown__num { font-size: 1.7rem; }
+.inv--serena .countdown__cell { background: transparent; }
+.inv--serena .gallery__grid { grid-template-columns: 1fr; max-width: 480px; margin-inline: auto; }
+.inv--serena .gallery__item { aspect-ratio: 3/2; border-radius: 4px; }
+.inv--serena .map__frame { border-radius: 4px; }
+
+/* Variant: Ink */
+.inv--serena.inv--v-serena-ink .btn-inv:hover { color: #1c1c1c; }
+
+/* ================= LUMIÈRE — Modern Gallery (photo-forward) ================= */
+
+.inv--lumiere .sec--cover { padding: 0; min-height: 100svh; display: grid; }
+.inv--lumiere .cover__media { position: absolute; inset: 0; z-index: -2; }
+.inv--lumiere .sec--cover::after {
+  background: linear-gradient(to top, rgba(17,16,19,0.85) 8%, rgba(17,16,19,0.15) 55%);
+}
+.inv--lumiere .cover__body { position: absolute; inset: auto 0 10%; padding-inline: var(--pad-x); }
+.inv--lumiere .cover__names { font-size: clamp(2.8rem, calc(var(--inv-vw) * 9), 5.4rem); }
+.inv--lumiere .btn-inv { background: var(--inv-accent); border-color: var(--inv-accent); color: #111013; }
+.inv--lumiere .btn-inv:hover { filter: brightness(1.06); }
+
+.inv--lumiere .person__photo { border-radius: 10px; aspect-ratio: 3/4; }
+.inv--lumiere .couple__grid { gap: 18px; }
+.inv--lumiere .event-card {
+  background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 16px; backdrop-filter: blur(6px);
+}
+.inv--lumiere .countdown__cell { background: rgba(255,255,255,0.05); border-radius: 12px; }
+.inv--lumiere .countdown__num { color: var(--inv-accent); }
+.inv--lumiere .gallery__grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.inv--lumiere .gallery__item { border-radius: 8px; }
+.inv--lumiere .gallery__grid--1 .gallery__item:first-child { aspect-ratio: 21/9; }
+.inv--lumiere .fld input, .inv--lumiere .fld textarea {
+  background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.16); color: inherit;
+}
+
+/* Variant: Film — cinematic borders */
+.inv--lumiere.inv--v-lumiere-film .sec--cover::after {
+  background:
+    linear-gradient(to top, rgba(12,12,14,0.9) 10%, transparent 60%),
+    repeating-linear-gradient(to bottom, transparent 0 46px, rgba(255,255,255,0.03) 46px 48px);
+}
+
+/* ================= NUSANTARA — Modern Traditional ================= */
+
+.inv--nusantara .sec--cover::after {
+  background: linear-gradient(to bottom, rgba(58,46,36,0.25), rgba(58,46,36,0.6));
+}
+.inv--nusantara .cover__names { letter-spacing: 0.06em; }
+.inv--nusantara .btn-inv { border-radius: 4px; }
+
+.inv--nusantara .person__photo {
+  border-radius: 10px;
+  outline: 1px solid var(--inv-accent); outline-offset: 6px;
+}
+.inv--nusantara .event-card {
+  border: 1px solid color-mix(in srgb, var(--inv-accent) 55%, transparent);
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 4px color-mix(in srgb, var(--inv-bg) 80%, var(--inv-accent));
+}
+.inv--nusantara .gallery__item { border-radius: 6px; outline: 1px solid color-mix(in srgb, var(--inv-accent) 40%, transparent); outline-offset: 3px; }
+.inv--nusantara .gift__card { border-style: double; border-width: 4px; }
+.inv--nusantara .btn-inv { border-radius: 4px; }
+
+/* ================= MEADOW — Rustic Botanical ================= */
+
+.inv--meadow { --pad-x: clamp(20px, calc(var(--inv-vw) * 6), 52px); }
+
+.inv--meadow .sec--cover::after { background: linear-gradient(to bottom, rgba(64,56,46,0.12), rgba(64,56,46,0.5)); }
+.inv--meadow .cover__names { font-family: var(--inv-font-display); }
+.inv--meadow .cover__eyebrow { font-family: var(--inv-font-accent, cursive); letter-spacing: 0.08em; text-transform: none; font-size: 1rem; }
+
+.inv--meadow .person__photo {
+  border-radius: 6px;
+  border: 8px solid #fff;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.16);
+  transform: rotate(-2deg);
+}
+.inv--meadow .person:last-child .person__photo { transform: rotate(2deg); }
+.inv--meadow .couple__amp { font-family: var(--inv-font-accent, cursive); }
+
+.inv--meadow .event-card {
+  border: 0; border-radius: 4px;
+  background: #fffdf7;
+  box-shadow: 0 6px 18px rgba(64,56,46,0.14);
+  transform: rotate(-0.6deg);
+  color: #40382e;
+}
+.inv--meadow .events__list .event-card:nth-child(even) { transform: rotate(0.8deg); }
+
+.inv--meadow .gallery__grid { gap: 14px; }
+.inv--meadow .gallery__item {
+  border-radius: 4px; border: 6px solid #fff;
+  box-shadow: 0 6px 16px rgba(64,56,46,0.16);
+}
+.inv--meadow .gallery__item:nth-child(odd) { transform: rotate(-1deg); }
+.inv--meadow .gallery__item:nth-child(even) { transform: rotate(1deg); }
+
+.inv--meadow .wishes__list li { background: #fffdf7; color: #40382e; box-shadow: 0 4px 12px rgba(64,56,46,0.12); }

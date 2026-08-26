@@ -1,0 +1,55 @@
+/* Enveely — Public invitation page: gate + body. */
+
+.public-invite {
+  min-height: calc(100vh - var(--navbar-h));
+  position: relative;
+}
+
+/* Opening gate */
+.invite-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--sp-3);
+  text-align: center;
+  padding: var(--sp-6);
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.10), transparent 60%),
+    linear-gradient(180deg, #4a3f36, #2b241f);
+  color: #f6f1ea;
+  transition: opacity 600ms ease, transform 600ms ease;
+}
+.invite-gate.is-leaving {
+  opacity: 0;
+  transform: scale(1.04);
+  pointer-events: none;
+}
+.invite-gate__to {
+  font-size: var(--fs-body-s);
+  opacity: 0.85;
+  min-height: 1em;
+}
+.invite-gate__eyebrow {
+  letter-spacing: 0.34em;
+  font-size: var(--fs-caption);
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+.invite-gate__names {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.2rem, 7vw, 3.6rem);
+  line-height: 1.15;
+}
+.invite-gate__date { letter-spacing: 0.18em; font-size: var(--fs-body-s); opacity: 0.9; }
+.invite-gate__btn { margin-top: var(--sp-5); color: #f6f1ea; }
+.invite-gate__btn:hover,
+.invite-gate__btn:not(.btn-inv--ghost):hover { background: #f6f1ea; border-color: #f6f1ea; color: #2b241f; }
+
+.invite-body[aria-hidden="true"] { max-height: calc(100vh - var(--navbar-h)); overflow: hidden; }
+
+/* Public invitation consumes full width (no device frame). */
+.public-invite .inv { min-height: calc(100vh - var(--navbar-h)); }

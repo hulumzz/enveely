@@ -1,0 +1,65 @@
+/* Enveely — Live preview page: device frames + stage. */
+
+.livepreview {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: calc(100vh - var(--navbar-h));
+}
+
+.livepreview__bar {
+  position: sticky;
+  top: var(--navbar-h);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  padding: var(--sp-3) var(--sp-5);
+  background: rgba(248, 247, 245, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+
+.livepreview__bar .back-link { margin-inline-end: auto; }
+
+.livepreview__variants,
+.device-toggle {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.livepreview__stage {
+  padding: var(--sp-8) var(--sp-4);
+  background:
+    radial-gradient(100% 60% at 50% 0%, #efece6, transparent),
+    var(--surface-soft);
+  overflow: auto;
+}
+
+.device-frame {
+  margin-inline: auto;
+  background: #fff;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-floating);
+  overflow: hidden;
+  transition: max-width var(--dur-panel) var(--ease-out);
+}
+
+.device-frame--mobile {
+  width: 100%;
+  max-width: 400px;
+  border-radius: var(--radius-xl);
+  border: 10px solid #17151a;
+}
+
+.device-frame--desktop {
+  width: 100%;
+  max-width: 1100px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.device-frame__inner {
+  min-height: 60vh;
+}

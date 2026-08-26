@@ -1,0 +1,652 @@
+/* Enveely — Landing page (premium redesign).
+   Warm elegant canvas, real invitation frames, editorial composition. */
+
+/* Soft film-grain tile, baked faint into the SVG itself (no runtime cost).
+   Layered under radial glows to give the flat canvas a tactile finish. */
+:root {
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+/* ===================== Invitation Frame ===================== */
+
+.inv-frame {
+  --frame-rotate: 0deg;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--surface-soft);
+  box-shadow: var(--shadow-frame);
+  transform: rotate(var(--frame-rotate));
+  transition: transform 500ms var(--ease-out), box-shadow 500ms var(--ease-out);
+}
+
+/* Fixed 430px design canvas, scaled to COVER the frame box by JS.
+   left/top are set inline so the covered content stays centered. */
+.inv-frame__inner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 430px;
+  height: auto;
+  min-height: calc(430px * var(--frame-ratio, 1.9));
+  transform: scale(var(--inv-scale, 1));
+  transform-origin: top left;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.inv-frame__content .inv {
+  min-height: auto;
+  /* Inside a frame the "viewport" is the 430px design canvas:
+     1 unit = 4.3px, so all vw-based type/space scales with the frame. */
+  --inv-vw: calc(430px / 100);
+}
+.inv-frame__content .sec--cover { min-height: calc(430px * var(--frame-ratio, 1.9)); }
+
+/* Skeleton while lazy-rendering */
+.inv-frame__skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg,
+    color-mix(in srgb, var(--surface-soft) 88%, #fff) 30%,
+    var(--surface-soft) 50%,
+    color-mix(in srgb, var(--surface-soft) 88%, #fff) 70%);
+  background-size: 220% 100%;
+  animation: frame-shimmer 1.6s ease-in-out infinite;
+}
+@keyframes frame-shimmer {
+  from { background-position: 120% 0; }
+  to { background-position: -120% 0; }
+}
+.inv-frame.is-painted .inv-frame__skeleton { display: none; }
+
+/* Manual-scale frames (legacy callers passing an explicit scale). */
+.inv-frame[data-scale]:not([data-scale="0"]) .inv-frame__inner {
+  position: static;
+  width: 430px;
+}
+
+/* Frame variants */
+.inv-frame--arch {
+  border-radius: 999px 999px var(--radius-lg) var(--radius-lg);
+  aspect-ratio: 4 / 5.4;
+}
+.inv-frame--arch .inv-frame__inner { --frame-ratio: 2.05; }
+
+.inv-frame--phone {
+  border-radius: 34px;
+  border: 7px solid #17151a;
+  aspect-ratio: 9 / 18.5;
+  box-shadow: var(--shadow-floating);
+}
+.inv-frame--phone .inv-frame__inner { --frame-ratio: 2.06; }
+
+.inv-frame--editorial {
+  border-radius: var(--radius-xs);
+  outline: 1px solid var(--border);
+  outline-offset: 8px;
+  aspect-ratio: 3 / 4;
+}
+.inv-frame--editorial .inv-frame__inner { --frame-ratio: 1.34; }
+
+.inv-frame--polaroid {
+  background: #fffdf8;
+  padding: 10px 10px 44px;
+  border-radius: 6px;
+  aspect-ratio: auto;
+  box-shadow: 0 12px 32px rgba(39, 35, 33, 0.16);
+}
+.inv-frame--polaroid .inv-frame__inner { --frame-ratio: 1.15; }
+
+/* ===================== Hero ===================== */
+
+.hero {
+  position: relative;
+  padding-block: clamp(48px, 8vw, 96px) clamp(56px, 9vw, 110px);
+  overflow: clip;
+}
+
+/* Layered soft light: warm key glow, cool counter-glow, top light shaft,
+   finished with a faint grain tile. Pure GPU-composited gradients. */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: -22% -12% auto;
+  height: 82%;
+  background:
+    var(--grain),
+    conic-gradient(from 210deg at 78% -10%, rgba(193, 163, 122, 0.10), transparent 120deg),
+    radial-gradient(52% 62% at 74% 28%, rgba(139, 111, 90, 0.17), transparent 70%),
+    radial-gradient(44% 54% at 12% 12%, rgba(193, 163, 122, 0.15), transparent 70%),
+    radial-gradient(30% 40% at 50% 0%, rgba(255, 252, 246, 0.9), transparent 75%);
+  pointer-events: none;
+}
+
+.hero__inner {
+  position: relative;
+  display: grid;
+  gap: clamp(40px, 6vw, 72px);
+  align-items: center;
+}
+
+.hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--fs-caption);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+.hero__eyebrow::before {
+  content: '';
+  width: 36px;
+  height: 1px;
+  background: var(--accent);
+}
+
+.hero__title {
+  font-size: clamp(2.6rem, 6vw, 4.4rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  margin-top: var(--sp-5);
+}
+.hero__title em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.hero__subtitle {
+  margin-top: var(--sp-5);
+  max-width: 46ch;
+  font-size: var(--fs-body-l);
+  color: var(--text-soft);
+}
+
+.hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-top: var(--sp-8);
+}
+
+.hero__trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-5);
+  margin-top: var(--sp-8);
+  color: var(--muted);
+  font-size: var(--fs-body-s);
+}
+.hero__trust span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.hero__trust svg { color: var(--accent); }
+
+/* Collage */
+.hero__collage {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  min-height: 520px;
+}
+.hero__collage .inv-frame--arch {
+  width: min(340px, 74vw);
+  z-index: 2;
+}
+.hero__collage .inv-frame--phone {
+  position: absolute;
+  width: min(190px, 42vw);
+  right: max(-8px, 2vw);
+  bottom: -28px;
+  z-index: 3;
+  rotate: 4deg;
+}
+.hero__collage .hero__chip-photo {
+  position: absolute;
+  left: -6px;
+  bottom: 24px;
+  z-index: 4;
+  rotate: -5deg;
+  width: min(150px, 34vw);
+}
+.hero__badge {
+  position: absolute;
+  top: 26px;
+  left: max(-14px, 0vw);
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 8px 16px;
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  color: var(--text-soft);
+  box-shadow: var(--shadow-soft);
+}
+.hero__badge svg { color: var(--accent); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero__collage .inv-frame--arch { animation: hero-float 7s ease-in-out infinite; }
+  @keyframes hero-float {
+    0%, 100% { translate: 0 0; }
+    50% { translate: 0 -10px; }
+  }
+}
+
+/* ===================== Marquee strip ===================== */
+
+.marquee {
+  border-block: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+  padding-block: 14px;
+}
+.marquee__track {
+  display: flex;
+  gap: 64px;
+  width: max-content;
+  animation: marquee-scroll 36s linear infinite;
+}
+.marquee:hover .marquee__track { animation-play-state: paused; }
+.marquee__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 64px;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.marquee__item::after {
+  content: '✦';
+  font-size: 0.7rem;
+  color: var(--accent);
+}
+@keyframes marquee-scroll {
+  to { transform: translateX(-50%); }
+}
+
+/* ===================== Showcase (same couple, different DNA) ===================== */
+
+.showcase {
+  position: relative;
+  padding-block: var(--sp-20);
+}
+/* Soft halo behind the stage so the framed invitation feels lit from within. */
+.showcase::before {
+  content: '';
+  position: absolute;
+  inset: 8% 0 auto;
+  height: 70%;
+  background:
+    var(--grain),
+    radial-gradient(38% 52% at 50% 42%, rgba(139, 111, 90, 0.10), transparent 72%);
+  pointer-events: none;
+}
+.showcase > .container { position: relative; }
+
+.showcase__head { text-align: center; max-width: 62ch; margin-inline: auto; }
+.showcase__head h2 { font-size: var(--fs-h1); }
+.showcase__head p { margin-top: var(--sp-4); color: var(--text-soft); }
+
+.showcase__switch {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-8);
+}
+
+.showcase__stage {
+  margin-top: var(--sp-10);
+  display: grid;
+  place-items: center;
+}
+.showcase__stage .inv-frame {
+  width: min(330px, 78vw);
+  transition: opacity 300ms ease, transform 400ms var(--ease-out);
+}
+.showcase__stage.is-switching .inv-frame { opacity: 0; transform: translateY(14px) scale(0.98); }
+
+.showcase__caption {
+  text-align: center;
+  margin-top: var(--sp-6);
+  color: var(--text-soft);
+  font-size: var(--fs-body-s);
+  max-width: 52ch;
+  margin-inline: auto;
+}
+.showcase__caption strong { color: var(--text); }
+
+/* ===================== Family gallery ===================== */
+
+.families {
+  position: relative;
+  padding-block: var(--sp-20);
+  background:
+    var(--grain),
+    radial-gradient(60% 46% at 50% 0%, rgba(193, 163, 122, 0.12), transparent 70%),
+    var(--surface-soft);
+}
+
+.families__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--sp-6);
+  margin-top: var(--sp-10);
+}
+
+.family-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+.family-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-floating);
+}
+.family-card:hover .inv-frame { transform: scale(1.03); }
+
+.family-card__media {
+  aspect-ratio: 4 / 4.6;
+  overflow: hidden;
+}
+.family-card__media .inv-frame {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  box-shadow: none;
+  transition: transform 500ms var(--ease-out);
+}
+.family-card__media .inv-frame__inner { --frame-ratio: 1.15; }
+
+.family-card__body { padding: var(--sp-5); display: grid; gap: var(--sp-2); }
+.family-card__name { font-size: var(--fs-h3); }
+.family-card__meta { color: var(--text-soft); font-size: var(--fs-body-s); }
+.family-card__actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-3); }
+
+/* ===================== Features (bento) ===================== */
+
+.features { padding-block: var(--sp-20); }
+
+.features__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--sp-5);
+  margin-top: var(--sp-10);
+}
+
+.feature-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-6);
+  overflow: hidden;
+  transition: transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.feature-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+
+.feature-card__icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.feature-card h3 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: var(--fs-body-l);
+  margin-top: var(--sp-5);
+}
+.feature-card p {
+  color: var(--text-soft);
+  font-size: var(--fs-body-s);
+  margin-top: var(--sp-2);
+  line-height: 1.65;
+}
+
+/* Feature card with photo accent */
+.feature-card--photo {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: var(--sp-5);
+  align-items: center;
+}
+.feature-card--photo .feature-card__img {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+}
+
+/* ===================== How it works ===================== */
+
+.how { padding-block: var(--sp-20); background: var(--surface-soft); }
+
+.how__timeline {
+  list-style: none;
+  padding: 0;
+  margin: var(--sp-12) 0 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-6);
+  counter-reset: step;
+}
+.how__step {
+  position: relative;
+  counter-increment: step;
+  text-align: left;
+}
+.how__step::before {
+  content: '';
+  position: absolute;
+  top: 23px;
+  left: 56px;
+  right: calc(-1 * var(--sp-6));
+  height: 1px;
+  background: linear-gradient(to right, var(--border), transparent);
+}
+.how__step:last-child::before { display: none; }
+
+.how__num {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--accent);
+  box-shadow: var(--shadow-soft);
+}
+.how__step h3 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: var(--fs-body-l);
+  margin-top: var(--sp-4);
+}
+.how__step p {
+  color: var(--text-soft);
+  font-size: var(--fs-body-s);
+  margin-top: var(--sp-2);
+  max-width: 30ch;
+}
+
+@media (max-width: 900px) {
+  .how__timeline { grid-template-columns: 1fr 1fr; row-gap: var(--sp-8); }
+  .how__step:nth-child(2)::before { display: none; }
+}
+@media (max-width: 520px) {
+  .how__timeline { grid-template-columns: 1fr; }
+  .how__step::before { display: none; }
+}
+
+/* ===================== Closing CTA band ===================== */
+
+.cta-band {
+  position: relative;
+  isolation: isolate;
+  padding-block: clamp(80px, 12vw, 140px);
+  text-align: center;
+  overflow: hidden;
+}
+.cta-band__bg {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+}
+.cta-band__bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cta-band::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    var(--grain),
+    radial-gradient(56% 70% at 50% 30%, rgba(255, 236, 210, 0.14), transparent 70%),
+    linear-gradient(
+      180deg,
+      rgba(43, 36, 31, 0.72),
+      rgba(43, 36, 31, 0.55) 55%,
+      rgba(43, 36, 31, 0.78)
+    );
+}
+.cta-band__inner {
+  color: #f6f1ea;
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-5);
+}
+.cta-band__inner h2 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  max-width: 22ch;
+}
+.cta-band__inner p {
+  max-width: 50ch;
+  opacity: 0.85;
+}
+.cta-band .btn--primary {
+  background: #f6f1ea;
+  color: #2b241f;
+}
+.cta-band .btn--ghost {
+  border-color: rgba(246, 241, 234, 0.5);
+  color: #f6f1ea;
+}
+.cta-band__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+}
+
+/* ===================== Footer ===================== */
+
+.footer {
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  padding-block: var(--sp-12) var(--sp-8);
+}
+.footer__brand {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 7vw, 4rem);
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+.footer__tagline {
+  color: var(--text-soft);
+  margin-top: var(--sp-3);
+  font-style: italic;
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+}
+.footer__grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--sp-8);
+  margin-top: var(--sp-8);
+}
+.footer__col h4 {
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: var(--sp-3);
+}
+.footer__col a {
+  display: block;
+  color: var(--text-soft);
+  text-decoration: none;
+  font-size: var(--fs-body-s);
+  padding-block: 4px;
+}
+.footer__col a:hover { color: var(--accent); }
+.footer__base {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  border-top: 1px solid var(--border);
+  margin-top: var(--sp-8);
+  padding-top: var(--sp-5);
+  color: var(--muted);
+  font-size: var(--fs-caption);
+}
+
+/* ===================== Scroll reveal ===================== */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Pop-in: rise + gentle scale, GPU-friendly (opacity/transform only). */
+  .reveal {
+    opacity: 0;
+    transform: translateY(26px) scale(0.965);
+    transition:
+      opacity 620ms var(--ease-out),
+      transform 620ms cubic-bezier(0.22, 1.2, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+
+  /* While a card is still hidden, freeze inner transforms so the fit
+     measurement in invitation-frame.js reads the final geometry. */
+  .reveal:not(.is-visible) .inv-frame { transition: none; }
+}
+
+/* ===================== Responsive hero ===================== */
+
+@media (min-width: 1024px) {
+  .hero__inner {
+    grid-template-columns: 1.05fr 0.95fr;
+  }
+  .hero__collage { min-height: 620px; }
+  .hero__collage .inv-frame--arch { width: min(380px, 38vw); }
+}

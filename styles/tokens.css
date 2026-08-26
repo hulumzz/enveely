@@ -1,0 +1,73 @@
+/* Enveely — Design tokens (Design-1.md §4–8).
+   Product UI palette only; invitation templates define their own palettes. */
+
+:root {
+  /* Base */
+  --canvas: #f8f7f5;
+  --surface: #ffffff;
+  --surface-soft: #f1efeb;
+  --border: #e6e1da;
+  --text: #272321;
+  --text-soft: #746d67;
+  --muted: #a39a92;
+
+  /* Accent */
+  --accent: #8b6f5a;
+  --accent-soft: #ede2d8;
+
+  /* Semantic */
+  --success: #427a63;
+  --warning: #a97435;
+  --error: #b95750;
+  --info: #5a7188;
+
+  /* Typography */
+  --font-display: 'DM Serif Display', 'Cormorant Garamond', serif;
+  --font-serif: 'Cormorant Garamond', serif;
+  --font-sans: 'Inter', 'Manrope', system-ui, sans-serif;
+
+  --fs-display-xl: clamp(2.75rem, 6vw, 4.5rem);
+  --fs-display-l: clamp(2.25rem, 4.5vw, 3.25rem);
+  --fs-h1: clamp(1.9rem, 3.5vw, 2.6rem);
+  --fs-h2: clamp(1.5rem, 2.8vw, 2rem);
+  --fs-h3: 1.35rem;
+  --fs-body-l: 1.125rem;
+  --fs-body: 1rem;
+  --fs-body-s: 0.875rem;
+  --fs-caption: 0.75rem;
+
+  /* Spacing (4px base) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-20: 80px;
+
+  /* Radius */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  /* Shadows — soft only (avoid heavy black) */
+  --shadow-soft: 0 8px 30px rgba(39, 35, 33, 0.06);
+  --shadow-floating: 0 15px 50px rgba(39, 35, 33, 0.10);
+  --shadow-frame: 0 24px 60px rgba(39, 35, 33, 0.16);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur-fast: 160ms;
+  --dur-panel: 320ms;
+
+  /* Layout */
+  --container: 1160px;
+  --navbar-h: 68px;
+}
