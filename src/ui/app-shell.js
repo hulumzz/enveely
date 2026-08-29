@@ -13,7 +13,11 @@ export function mountAppShell(root) {
     <header class="navbar">
       <div class="navbar__inner container">
         <a href="/" data-link class="navbar__logo" aria-label="Enveely home">
-          <img src="/logo.png" alt="Enveely" width="132" height="38" fetchpriority="high" decoding="async"/>
+          <img src="/logo.png" alt="Enveely" width="38" height="38" fetchpriority="high" decoding="async"/>
+          <span class="navbar__logo-text">
+            <span class="navbar__logo-name">ENVEELY</span>
+            <span class="navbar__logo-sub">Invite Your Beloved People</span>
+          </span>
         </a>
 
         <nav class="navbar__links" id="nav-links" aria-label="Primary">
@@ -44,9 +48,13 @@ export function mountAppShell(root) {
     <footer class="footer">
       <div class="container">
         <div class="footer__brand">
-          <img src="/logo.png" alt="Enveely" width="180" height="52" loading="lazy" decoding="async"/>
+          <img src="/logo.png" alt="Enveely" width="64" height="64" loading="lazy" decoding="async"/>
+          <div class="footer__brand-text">
+            <span class="footer__brand-name">ENVEELY</span>
+            <span class="footer__brand-tag">Invite Your Beloved People</span>
+          </div>
         </div>
-        <p class="footer__tagline">Invite Your Beloved People.</p>
+        <p class="footer__tagline">Cerita kalian, diundang dengan indah.</p>
         <div class="footer__grid">
           <div class="footer__col">
             <h4>Produk</h4>

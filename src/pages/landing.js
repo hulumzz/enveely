@@ -36,7 +36,7 @@ export function renderLanding() {
           <h1 class="hero__title">Buat Undangan yang Terasa<br /><em>seperti Kalian.</em></h1>
           <p class="hero__subtitle">
             Pilih desain favorit, isi dengan cerita cinta kalian, lalu bagikan kepada
-            orang-orang tersayang — semuanya selesai dalam hitungan menit,
+            orang-orang tersayang, semuanya selesai dalam hitungan menit,
             tanpa perlu keahlian desain apa pun.
           </p>
           <div class="hero__cta">
@@ -160,11 +160,11 @@ export function renderLanding() {
           <p class="eyebrow">Sesederhana Ini</p>
           <h2 class="section__title" style="text-align:left;margin-top:12px">Dari Cerita ke Undangan,<br/>Hanya Empat Langkah.</h2>
         </header>
-        <ol class="how__timeline">
-          ${step('Pilih desain favorit', 'Telusuri koleksi kami dan temukan gaya yang paling terasa seperti kalian.')}
-          ${step('Isi dengan cerita kalian', 'Nama, tanggal, acara, dan foto — desain akan tetap indah secara otomatis.')}
-          ${step('Pratinjau persis seperti tamu', 'Periksa tampilan di HP sebelum tayang, supaya percaya diri saat dibagikan.')}
-          ${step('Bagikan dengan bangga', 'Publikasikan dan sebarkan tautan elegan ke WhatsApp dalam satu ketukan.')}
+        <ol class="how__timeline" aria-label="Empat langkah membuat undangan">
+          ${step('1', 'palette', 'Pilih desain favorit', 'Telusuri koleksi kami dan temukan gaya yang paling terasa seperti kalian.')}
+          ${step('2', 'rings', 'Isi dengan cerita kalian', 'Nama, tanggal, acara, dan foto — desain akan tetap indah secara otomatis.')}
+          ${step('3', 'eye', 'Pratinjau persis seperti tamu', 'Periksa tampilan di HP sebelum tayang, supaya percaya diri saat dibagikan.')}
+          ${step('4', 'send', 'Bagikan dengan bangga', 'Publikasikan dan sebarkan tautan elegan ke WhatsApp dalam satu ketukan.')}
         </ol>
       </div>
     </section>
@@ -206,10 +206,10 @@ export function renderLanding() {
     </article>`;
   }
 
-  function step(title, desc) {
+  function step(num, iconKey, title, desc) {
     return `
-    <li class="how__step reveal">
-      <span class="how__num"></span>
+    <li class="how__step reveal" style="--reveal-delay:${num * 80}ms">
+      <span class="how__num">${icon(iconKey)}<strong>${num}</strong></span>
       <h3>${title}</h3>
       <p>${desc}</p>
     </li>`;
