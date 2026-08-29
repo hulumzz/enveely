@@ -212,6 +212,42 @@
   z-index: 4;
   rotate: -5deg;
   width: min(150px, 34vw);
+  padding: 8px 8px 26px;
+  background: #fffdf8;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, #fffdf8);
+  border-radius: 4px;
+  box-shadow: 0 14px 32px rgba(39, 35, 33, 0.18);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.06));
+  transition: transform 500ms var(--ease-out), box-shadow 500ms var(--ease-out);
+}
+.hero__collage .hero__chip-photo img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 2px;
+}
+.hero__collage .hero__chip-photo::after {
+  content: '';
+  position: absolute;
+  inset: auto 50% -8px 50%;
+  transform: translateX(-50%);
+  width: 42%;
+  height: 14px;
+  background:
+    linear-gradient(135deg, transparent 45%, rgba(39, 35, 33, 0.08) 50%, transparent 55%),
+    linear-gradient(45deg, transparent 45%, rgba(39, 35, 33, 0.08) 50%, transparent 55%);
+  background-size: 14px 14px;
+  background-position: 0 0, 7px 0;
+  opacity: 0.6;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero__collage .hero__chip-photo {
+    animation: hero-chip-float 8s ease-in-out infinite;
+  }
+  @keyframes hero-chip-float {
+    0%, 100% { translate: 0 0; }
+    50% { translate: 0 -6px; }
+  }
 }
 .hero__badge {
   position: absolute;
