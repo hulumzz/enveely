@@ -12,7 +12,9 @@ export function mountAppShell(root) {
   root.innerHTML = `
     <header class="navbar">
       <div class="navbar__inner container">
-        <a href="/" data-link class="navbar__logo" aria-label="Enveely home">EN<span>VEELY</span></a>
+        <a href="/" data-link class="navbar__logo" aria-label="Enveely home">
+          <img src="/logo.png" alt="Enveely" width="132" height="38" fetchpriority="high" decoding="async"/>
+        </a>
 
         <nav class="navbar__links" id="nav-links" aria-label="Primary">
           <a href="/" data-link data-nav>Home</a>
@@ -41,7 +43,9 @@ export function mountAppShell(root) {
 
     <footer class="footer">
       <div class="container">
-        <div class="footer__brand">Enveely</div>
+        <div class="footer__brand">
+          <img src="/logo.png" alt="Enveely" width="180" height="52" loading="lazy" decoding="async"/>
+        </div>
         <p class="footer__tagline">Invite Your Beloved People.</p>
         <div class="footer__grid">
           <div class="footer__col">

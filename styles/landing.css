@@ -569,12 +569,6 @@
   background: var(--surface);
   padding-block: var(--sp-12) var(--sp-8);
 }
-.footer__brand {
-  font-family: var(--font-display);
-  font-size: clamp(2.4rem, 7vw, 4rem);
-  letter-spacing: 0.08em;
-  line-height: 1;
-}
 .footer__tagline {
   color: var(--text-soft);
   margin-top: var(--sp-3);

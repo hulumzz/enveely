@@ -147,11 +147,15 @@ h1, h2, h3 {
 }
 
 .navbar__logo {
-  font-family: var(--font-display);
-  font-size: 1.35rem;
-  letter-spacing: 0.14em;
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
-  color: var(--text);
+  line-height: 0;
+}
+.navbar__logo img {
+  height: 36px;
+  width: auto;
+  display: block;
 }
 .navbar__logo span { color: var(--accent); }
 
@@ -587,10 +591,13 @@ h1, h2, h3 {
 }
 
 .footer__brand {
-  font-family: var(--font-display);
-  font-size: clamp(2.4rem, 7vw, 4rem);
-  letter-spacing: 0.08em;
-  line-height: 1;
+  display: inline-block;
+  line-height: 0;
+}
+.footer__brand img {
+  height: 56px;
+  width: auto;
+  display: block;
 }
 .footer__tagline {
   color: var(--text-soft);
