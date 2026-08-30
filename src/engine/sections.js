@@ -327,7 +327,7 @@ function defaultEyebrow(locale) {
 function defaultWelcome(locale) {
   return locale === 'en'
     ? 'Together with joyful hearts, we invite you to celebrate our wedding day.'
-    : 'Dengan penuh sukacita, kami mengundang Anda untuk merayakan hari bahagia kami.';
+    : 'Dengan penuh sukacita, kami mengundang kalian hadir di hari bahagia kami.';
 }
 
 function defaultClosing(locale) {

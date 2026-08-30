@@ -15,7 +15,7 @@ export function invitationUrl(invitationId, opts = {}) {
 /** Prefilled WhatsApp message (ID default). */
 export function whatsappMessage({ groomName, brideName, url }) {
   const couple = [groomName, brideName].filter(Boolean).join(' & ');
-  return `Assalamu'alaikum.\n\nDengan penuh kebahagiaan, kami mengundang Anda untuk hadir di acara pernikahan ${couple || 'kami'}.\n\nLihat undangan:\n${url}`;
+  return `Halo! ${couple || 'Kami'} mengundang kamu ke hari pernikahan kami.\n\nBuka undangannya di sini:\n${url}`;
 }
 
 export function whatsappUrl(message) {

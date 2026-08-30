@@ -71,14 +71,17 @@ export function renderBuilder(invitationId) {
 
       // ---- rendering ----
       function paintNav() {
-        nav.innerHTML = state.draft.sections.map((s) => {
-          const def = getSectionDef(s.id);
-          return `
-          <button type="button" class="bnav__item ${s.id === state.selectedSection ? 'is-active' : ''} ${s.enabled === false ? 'is-off' : ''}" data-nav-item="${s.id}">
-            <span>${def?.labelID || s.id}</span>
-            <span class="bnav__eye" title="${s.enabled === false ? 'Tampilkan' : 'Sembunyikan'}">${s.enabled === false ? '◌' : '◉'}</span>
-          </button>`;
-        }).join('');
+        nav.innerHTML = `
+          <div class="builder__nav-head">Bagian Undangan</div>
+          ${state.draft.sections.map((s) => {
+            const def = getSectionDef(s.id);
+            return `
+            <button type="button" class="bnav__item ${s.id === state.selectedSection ? 'is-active' : ''} ${s.enabled === false ? 'is-off' : ''}" data-nav-item="${s.id}">
+              <span>${def?.labelID || s.id}</span>
+              <span class="bnav__eye" title="${s.enabled === false ? 'Tampilkan' : 'Sembunyikan'}">${s.enabled === false ? '◌' : '◉'}</span>
+            </button>`;
+          }).join('')}
+        `;
       }
 
       function paintCanvas() {
@@ -91,7 +94,13 @@ export function renderBuilder(invitationId) {
       }
 
       function paintProps() {
-        props.innerHTML = propsFor(state);
+        const def = getSectionDef(state.selectedSection);
+        const header = propsHeader(
+          def?.labelID?.charAt(0) || '✦',
+          def?.labelID || state.selectedSection,
+          'Atur konten bagian ini',
+        );
+        props.innerHTML = header + propsFor(state);
         wireProps(props, state, { persist, paintCanvas, repaintProps: paintProps });
       }
 
@@ -160,6 +169,17 @@ function panel(title, body, hint = '') {
   </div>`;
 }
 
+function propsHeader(iconChar, title, subtitle) {
+  return `
+  <header class="builder__props-head">
+    <span class="builder__props-head-icon">${iconChar || '✦'}</span>
+    <span class="builder__props-head-text">
+      <strong>${title}</strong>
+      <small>${subtitle}</small>
+    </span>
+  </header>`;
+}
+
 function field(label, name, value, attrs = '') {
   return `
   <label class="fld-ui fld-ui--sm">
@@ -212,10 +232,10 @@ function eventsProps(draft) {
           ${field('Venue', `events.${i}.venue`, ev.venue || '')}
           ${field('Alamat', `events.${i}.address`, ev.address || '')}
         </div>`).join('')}
-      <button type="button" class="btn btn--ghost btn--sm" data-add-event>+ Tambah Acara</button>
+      <button type="button" class="bevent-add" data-add-event>+ Tambah Acara Baru</button>
     </div>
     `,
-    'Akad dan resepsi biasanya cukup; tambah after party bila perlu.',
+    'Akad dan resepsi biasanya cukup. Tambah acara lagi jika ada after party atau syukuran.',
   );
 }
 
@@ -230,12 +250,13 @@ function galleryProps(draft, state) {
           <img src="${escapeAttr(p.url)}" alt="" loading="lazy"/>
           <button type="button" class="icon-btn icon-btn--danger" data-del-photo="${i}" title="Hapus">✕</button>
         </figure>`).join('')}
+      <label class="upload-drop ${state.uploading ? 'is-busy' : ''}">
+        <input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden data-gallery-upload/>
+        <strong>${state.uploading ? 'Mengunggah…' : '+ Tambah Foto'}</strong>
+        <small>${state.uploading ? 'Mohon tunggu sebentar' : 'JPG, PNG, atau WebP · bisa banyak sekaligus'}</small>
+      </label>
     </div>
-    <label class="upload-drop ${state.uploading ? 'is-busy' : ''}">
-      <input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden data-gallery-upload/>
-      <span>${state.uploading ? 'Mengunggah & mengompresi...' : '+ Tambah Foto'}</span>
-    </label>
-    <p class="bprops__hint">Foto dikompresi otomatis (maks 1400px, tetap jernih) sebelum diunggah.</p>
+    <p class="bprops__hint">Foto otomatis dikompresi ke maks 1400px agar hemat kuota tamu saat membuka undangan.</p>
     `,
   );
 }
@@ -290,11 +311,13 @@ function photoControl(path, url) {
   return `
   <div class="photo-slot" data-photo-path="${path}">
     <span class="photo-slot__thumb">${url ? `<img src="${escapeAttr(url)}" alt=""/>` : '<em>Kosong</em>'}</span>
-    <label class="upload-btn ${url ? '' : 'upload-btn--primary'}">
-      <input type="file" accept="image/jpeg,image/png,image/webp" hidden data-photo-upload/>
-      ${url ? 'Ganti' : 'Unggah'}
-    </label>
-    ${url ? `<button type="button" class="text-link" data-photo-remove>Hapus</button>` : ''}
+    <span class="photo-slot__actions">
+      <label class="upload-btn ${url ? '' : 'upload-btn--primary'}">
+        <input type="file" accept="image/jpeg,image/png,image/webp" hidden data-photo-upload/>
+        ${url ? 'Ganti Foto' : 'Pilih Foto'}
+      </label>
+      ${url ? `<button type="button" class="text-link" data-photo-remove>Hapus foto</button>` : ''}
+    </span>
   </div>`;
 }
 
@@ -423,23 +446,23 @@ async function publishFlow(state, { persist, saveStatus }) {
   const blocking = checks.filter((c) => !c.ok && !c.warnOnly);
 
   openModal({
-    title: 'Siap publikasikan?',
+    title: 'Siap Tayang?',
     body: `
       <ul class="publish-checks">
         ${checks.map((c) => `<li class="${c.ok ? 'ok' : c.warnOnly ? 'warn' : 'bad'}">${c.ok ? '✓' : c.warnOnly ? '△' : '✕'} ${c.label}</li>`).join('')}
-        ${blocking.length ? '<p class="bprops__hint">Lengkapi item bertanda ✕ sebelum publikasi.</p>' : ''}
-        <p class="bprops__hint">Undangan yang dipublikasikan dapat dilihat siapa pun yang memiliki tautan.</p>
+        ${blocking.length ? '<p class="bprops__hint">Lengkapi dulu yang bertanda ✕ sebelum tayang.</p>' : ''}
+        <p class="bprops__hint">Siapapun yang punya tautan bisa buka undangan ini.</p>
       </ul>`,
     actions: [
       { label: 'Kembali Edit' },
       {
-        label: blocking.length ? 'Tidak Lengkap' : 'Publikasikan',
+        label: blocking.length ? 'Belum Lengkap' : 'Tayangkan Sekarang',
         kind: 'primary',
         closeOnClick: false,
         onClick: async (close) => {
           if (blocking.length) return;
           const btns = document.querySelectorAll('.env-modal__actions .btn');
-          btns[btns.length - 1].textContent = 'Mempublikasikan...';
+          btns[btns.length - 1].textContent = 'Menyiapkan...';
           draft.status = 'published';
           persist();
           saveStatus.textContent = 'Menyimpan ke cloud...';
@@ -469,15 +492,15 @@ function showShareModal(state, { cloud }) {
   });
 
   openModal({
-    title: 'Undangan Anda tayang ✨',
+    title: 'Undangan Sudah Tayang ✨',
     body: `
-      ${cloud ? '' : '<p class="bprops__hint">Mode lokal: Firebase belum dikonfigurasi. Tautan hanya berfungsi di perangkat ini sampai deploy + config selesai.</p>'}
+      ${cloud ? '' : '<p class="bprops__hint">Belum pakai Firebase? Tautan hanya jalan di perangkat ini. Aktifkan Firebase biar bisa dishare ke tamu.</p>'}
       <div class="share-link-box">
         <input readonly value="${url}" data-share-url/>
         <button type="button" class="btn btn--ghost btn--sm" data-copy-link>Salin</button>
       </div>
       <div class="share-actions">
-        <a class="btn btn--primary btn--sm" target="_blank" rel="noopener" href="${whatsappUrl(msg)}" data-share-wa>Bagikan via WhatsApp</a>
+        <a class="btn btn--primary btn--sm" target="_blank" rel="noopener" href="${whatsappUrl(msg)}" data-share-wa>Kirim via WhatsApp</a>
         <button type="button" class="btn btn--ghost btn--sm" data-share-native>Bagikan Lainnya</button>
       </div>
       <a href="/invite/${draft.id}" data-link class="text-link">Buka undangan →</a>`,
@@ -486,13 +509,13 @@ function showShareModal(state, { cloud }) {
 
   document.querySelector('[data-copy-link]')?.addEventListener('click', async () => {
     const ok = await copyToClipboard(url);
-    toast(ok ? 'Link tersalin' : 'Gagal menyalin', { type: ok ? 'success' : 'error' });
+    toast(ok ? 'Tautan tersalin' : 'Gagal menyalin', { type: ok ? 'success' : 'error' });
     if (ok) analyticsEvents.shareUrl();
   });
   document.querySelector('[data-share-wa]')?.addEventListener('click', () => analyticsEvents.shareWhatsapp());
   document.querySelector('[data-share-native]')?.addEventListener('click', async () => {
     const res = await nativeShare({ title: `${draft.content.groom?.name || ''} & ${draft.content.bride?.name || ''}`, text: msg, url });
-    if (res === 'unsupported') toast('Share sheet tidak tersedia — gunakan tombol Salin.');
+    if (res === 'unsupported') toast('Share sheet tidak tersedia — pakai tombol Salin saja.');
   });
 }
 

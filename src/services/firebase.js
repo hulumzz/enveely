@@ -28,7 +28,7 @@ export function isFirebaseConfigured() {
 export function getFirebaseApp() {
   if (app) return app;
   if (!isFirebaseConfigured()) {
-    console.warn('[Enveely] Firebase config missing (.env.local). Running in local-only mode.');
+    console.warn('[ULWED] Firebase config missing (.env.local). Running in local-only mode.');
     return null;
   }
   configValid = true;

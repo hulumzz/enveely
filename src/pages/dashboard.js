@@ -18,7 +18,7 @@ export function renderDashboard() {
         <header class="dash-head">
           <div>
             <h1>Undangan Saya</h1>
-            <p class="muted">${isFirebaseConfigured() ? 'Tersinkron dengan cloud.' : 'Mode lokal — draft tersimpan di perangkat ini.'}</p>
+            <p class="muted">${isFirebaseConfigured() ? 'Tersinkron ke cloud.' : 'Mode lokal &mdash; draft tersimpan di perangkat ini.'}</p>
           </div>
           <a href="/create" data-link class="btn btn--primary">+ Buat Undangan</a>
         </header>
@@ -66,9 +66,9 @@ function draftCard(d) {
 function emptyState() {
   return `
   <div class="dash-empty">
-    <h2>Undangan pertama kalian dimulai di sini.</h2>
-    <p class="muted">Pilih desain, tambahkan cerita, dan jadikan milik kalian.</p>
-    <a href="/create" data-link class="btn btn--primary">Buat Undangan</a>
+    <h2>Belum ada undangan. Yuk mulai.</h2>
+    <p class="muted">Pilih desain, tambahkan cerita kalian, dan bagikan ke orang-orang tercinta.</p>
+    <a href="/create" data-link class="btn btn--primary">Buat Undangan Pertama</a>
   </div>`;
 }
 

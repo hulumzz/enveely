@@ -5,10 +5,12 @@
 @import './reset.css';
 @import './invitation.css';
 @import './templates.css';
+@import './templates-preview.css';
 @import './live-preview.css';
 @import './public-invite.css';
 @import './landing.css';
 @import './auth.css';
+@import './create.css';
 
 body {
   font-family: var(--font-sans);
@@ -147,43 +149,13 @@ h1, h2, h3 {
 }
 
 .navbar__logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  line-height: 1;
-}
-.navbar__logo img {
-  height: 36px;
-  width: 36px;
-  display: block;
-}
-.navbar__logo-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.1;
-}
-.navbar__logo-name {
   font-family: var(--font-display);
-  font-size: 1.05rem;
-  letter-spacing: 0.18em;
+  font-size: 1.35rem;
+  letter-spacing: 0.14em;
+  text-decoration: none;
   color: var(--text);
 }
-.navbar__logo-name::after {
-  content: '';
-}
-.navbar__logo-sub {
-  font-size: 0.62rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-top: 2px;
-}
 .navbar__logo span { color: var(--accent); }
-
-@media (max-width: 560px) {
-  .navbar__logo-sub { display: none; }
-}
 
 .navbar__links {
   display: flex;
@@ -617,34 +589,10 @@ h1, h2, h3 {
 }
 
 .footer__brand {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-4);
-  line-height: 0;
-}
-.footer__brand img {
-  height: 64px;
-  width: 64px;
-  display: block;
-}
-.footer__brand-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  line-height: 1.15;
-}
-.footer__brand-name {
   font-family: var(--font-display);
-  font-size: 1.6rem;
-  letter-spacing: 0.18em;
-  color: var(--text);
-}
-.footer__brand-tag {
-  font-size: 0.75rem;
-  letter-spacing: 0.12em;
-  color: var(--muted);
-  font-style: italic;
-  font-family: var(--font-serif);
+  font-size: clamp(2.4rem, 7vw, 4rem);
+  letter-spacing: 0.08em;
+  line-height: 1;
 }
 .footer__tagline {
   color: var(--text-soft);
@@ -820,34 +768,44 @@ h1, h2, h3 {
     top: var(--navbar-h);
     left: 0;
     right: 0;
-    bottom: 0;
+    /* Tinggi otomatis sesuai konten: tidak mengisi seluruh layar,
+       sehingga menu langsung terlihat tanpa harus di-scroll.
+       Beri batas max-height sebagai pengaman untuk layar sangat pendek. */
     z-index: 49;
     flex-direction: column;
     align-items: stretch;
-    gap: var(--sp-2);
+    gap: 0;
     background: var(--canvas);
-    border-top: 1px solid var(--border);
-    padding: var(--sp-6);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-floating);
+    padding: var(--sp-3) var(--sp-5) var(--sp-5);
     display: none;
+    max-height: calc(100vh - var(--navbar-h));
     overflow-y: auto;
+    animation: nav-drop 220ms var(--ease-out);
+  }
+  @keyframes nav-drop {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: none; }
   }
 
   body.nav-open .navbar__links { display: flex; }
 
   .navbar__links > a:not(.btn) {
-    font-size: var(--fs-h3);
+    font-size: 1.05rem;
     font-family: var(--font-display);
-    padding-block: var(--sp-3);
+    padding: var(--sp-3) 0;
     border-bottom: 1px solid var(--border);
+    color: var(--text);
   }
 
   .navbar__links-actions {
     flex-direction: column;
     align-items: stretch;
-    gap: var(--sp-3);
-    margin-top: var(--sp-5);
+    gap: var(--sp-2);
+    margin-top: var(--sp-4);
   }
-  .navbar__links-actions .btn { justify-content: center; padding-block: var(--sp-4); }
+  .navbar__links-actions .btn { justify-content: center; padding-block: var(--sp-3); }
 
   .navbar__toggle { display: inline-flex; margin-inline-start: auto; order: 3; }
   .navbar__actions { margin-inline-start: auto; }
