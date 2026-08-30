@@ -31,6 +31,9 @@ const DICT = {
     wishMessage: 'Tulis ucapan & doa terbaik...',
     wishSend: 'Kirim Ucapan',
     passed: 'Hari bahagia telah tiba',
+    infoTitle: 'Info Penting',
+    infoAccess: 'Akses & Parkir',
+    infoNotes: 'Catatan Tamu',
   },
   en: {
     open: 'Open Invitation',
@@ -61,6 +64,9 @@ const DICT = {
     wishMessage: 'Write your best wishes...',
     wishSend: 'Send Wishes',
     passed: 'The big day has arrived',
+    infoTitle: 'Good to Know',
+    infoAccess: 'Access & Parking',
+    infoNotes: 'Notes for Guests',
   },
 };
 

@@ -71,6 +71,51 @@ const FAMILY_INTRO = {
   meadow: 'Hari yang kami nantikan &mdash; datang, makan bersama, lepas tawa.',
 };
 
+const QUOTES = {
+  amora: {
+    text: 'Cinta bukan menemukan orang yang sempurna, tapi belajar melihat kesempurnaan di mata orang yang tidak sempurna.',
+    source: 'Alya & Raka',
+  },
+  elysian: {
+    text: 'The best thing to hold onto in life is each other.',
+    source: 'Audrey Hepburn',
+  },
+  serena: {
+    text: 'Pernikahan adalah dua orang yang memutuskan untuk berjalan bersama melewati suka dan duka.',
+    source: 'Anonim',
+  },
+  lumiere: {
+    text: 'Here’s to love, laughter, and happily ever after.',
+    source: '— R & A',
+  },
+  nusantara: {
+    text: 'Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu istri-istri dari jenismu sendiri, supaya kamu cenderung dan merasa tenteram kepadanya.',
+    source: 'QS. Ar-Rum: 21',
+  },
+  meadow: {
+    text: 'Kalau bukan kita yang memilih untuk bersama, siapa lagi? Cinta sederhana adalah yang paling awet.',
+    source: '— Kami',
+  },
+};
+
+const DRESS_CODE = {
+  amora: 'Nuansa pastel & earth tone sangat diapresiasi. Hindari putih kecuali pengantin.',
+  elysian: 'Black-tie optional. Warna monokromatik dan metalik sangatelcome.',
+  serena: 'Kasual rapi, warna netral atau earth tone. Hindari busana terlalu mencolok.',
+  lumiere: 'Tuxedo / formal dress. Aksen emas dan gelap sangatelcome.',
+  nusantara: 'Batik & kebaya casual untuk keluarga dekat, formal attire untuk undangan VIP.',
+  meadow: 'Garden casual — floral pattern, warna earthy, sepatu flat atau wedges.',
+};
+
+const ACCESS = {
+  amora: 'Parkir tersedia di basement masjid. Akses dari pintu samping untuk tamu keluarga.',
+  elysian: 'Valet parking di lobi utama. Taksi online bisa drop-off di pintu ballroom.',
+  serena: 'Parkir gratis di halaman gedung. Shuttle dari parkiran ke pintu utama setiap 10 menit.',
+  lumiere: 'Parkir bawah tanah hotel, tunjukkan QR undangan di gerbang. Lift langsung ke ballroom.',
+  nusantara: 'Area parkir pendopo kapasitas 80 mobil. Disarankan naik kendaraan bersama.',
+  meadow: 'Parkir rumput di samping venue, roda dua dan empat. Akses jalan kaki 50m dari gate.',
+};
+
 export function sampleInvitation(templateId, variantId) {
   const tplId = (templateId || 'amora').toLowerCase();
   return {
@@ -113,12 +158,21 @@ export function sampleInvitation(templateId, variantId) {
         accounts: [{ bank: 'BCA', number: '1234567890', holder: 'Alya Paramita' }],
       },
       wishesEnabled: true,
+      closingMessage: 'Terima kasih sudah menjadi bagian dari cerita kami. Sampai jumpa di hari H!',
+      closingImage: '',
+      quoteSettings: QUOTES[tplId] || QUOTES.amora,
+      infoSettings: {
+        dressCode: DRESS_CODE[tplId] || DRESS_CODE.amora,
+        access: ACCESS[tplId] || ACCESS.amora,
+        notes: '',
+      },
     },
     sections: [
       { id: 'cover', enabled: true }, { id: 'welcome', enabled: true }, { id: 'couple', enabled: true },
-      { id: 'event', enabled: true }, { id: 'countdown', enabled: true }, { id: 'story', enabled: true },
-      { id: 'gallery', enabled: true }, { id: 'map', enabled: true }, { id: 'rsvp', enabled: true },
-      { id: 'gift', enabled: true }, { id: 'wishes', enabled: true }, { id: 'closing', enabled: true },
+      { id: 'quote', enabled: true }, { id: 'event', enabled: true }, { id: 'countdown', enabled: true },
+      { id: 'story', enabled: true }, { id: 'gallery', enabled: true }, { id: 'map', enabled: true },
+      { id: 'info', enabled: true }, { id: 'rsvp', enabled: true }, { id: 'gift', enabled: true },
+      { id: 'wishes', enabled: true }, { id: 'closing', enabled: true },
     ],
   };
 }

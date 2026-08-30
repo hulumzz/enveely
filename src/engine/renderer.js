@@ -11,11 +11,13 @@ const SECTION_RENDERERS = {
   welcome: S.renderWelcome,
   couple: S.renderCouple,
   parents: S.renderParents,
+  quote: S.renderQuote,
   event: S.renderEvents,
   countdown: S.renderCountdown,
   story: S.renderStory,
   gallery: S.renderGallery,
   map: S.renderMap,
+  info: S.renderInfo,
   rsvp: S.renderRsvp,
   gift: S.renderGift,
   wishes: S.renderWishes,
@@ -23,8 +25,8 @@ const SECTION_RENDERERS = {
 };
 /** Default section order for a fresh invitation. */
 export const DEFAULT_SECTIONS = [
-  'cover', 'welcome', 'couple', 'event', 'countdown', 'story',
-  'gallery', 'map', 'rsvp', 'gift', 'wishes', 'closing',
+  'cover', 'welcome', 'couple', 'quote', 'event', 'countdown', 'story',
+  'gallery', 'map', 'info', 'rsvp', 'gift', 'wishes', 'closing',
 ];
 
 /**

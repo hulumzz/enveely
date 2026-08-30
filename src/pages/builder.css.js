@@ -492,6 +492,85 @@ export const builderCss = `
   pointer-events: none;
 }
 
+/* Story items (list editor) */
+.bstory { display: grid; gap: var(--sp-3); }
+.bstory__item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  display: grid;
+  gap: var(--sp-3);
+  background: var(--surface);
+}
+.bstory__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px dashed var(--border);
+}
+.bstory__head strong {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+}
+
+/* Gift accounts (list editor) */
+.bgift-accounts { display: grid; gap: var(--sp-3); }
+.bgift-account {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  display: grid;
+  gap: var(--sp-2);
+  background: var(--surface);
+}
+.bgift-account__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px dashed var(--border);
+}
+.bgift-account__head strong {
+  font-family: var(--font-display);
+  font-size: 1rem;
+}
+
+/* Textarea inputs (welcome/closing/story) */
+.fld-ui textarea {
+  resize: vertical;
+  min-height: 76px;
+  line-height: 1.5;
+}
+
+/* Local-preview badge in builder (status panel / canvas) */
+.bgallery__item { position: relative; }
+.bgallery__item .bgallery__uploading {
+  position: absolute;
+  inset: auto 4px 4px auto;
+  background: rgba(39, 35, 33, 0.78);
+  color: #fff;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.bgallery__item .bgallery__uploading::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--warning, #f0a500);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
 /* Toggle row for checkboxes */
 .fld-ui--check {
   grid-template-columns: auto 1fr;

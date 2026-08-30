@@ -195,3 +195,57 @@
 .inv--meadow .gallery__item:nth-child(even) { transform: rotate(1deg); }
 
 .inv--meadow .wishes__list li { background: #fffdf7; color: #40382e; box-shadow: 0 4px 12px rgba(64,56,46,0.12); }
+
+/* ================= QUOTE — per family flavor ================= */
+
+.inv--amora .sec--quote { background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--inv-accent) 6%, transparent)); }
+.inv--amora .quote__text { font-family: var(--inv-font-display, serif); }
+
+.inv--elysian .sec--quote { padding-block: clamp(80px, calc(var(--inv-vw) * 14), 160px); }
+.inv--elysian .quote__mark { display: none; }
+.inv--elysian .quote__text {
+  font-style: normal;
+  letter-spacing: 0.04em;
+  border-top: 1px solid color-mix(in srgb, var(--inv-text) 30%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--inv-text) 30%, transparent);
+  padding-block: clamp(20px, calc(var(--inv-vw) * 5), 36px);
+  max-width: 56ch;
+}
+
+.inv--serena .sec--quote { padding-block: clamp(72px, calc(var(--inv-vw) * 10), 120px); }
+.inv--serena .quote__text { font-weight: 400; letter-spacing: 0.01em; }
+.inv--serena .quote__source { letter-spacing: 0.32em; }
+
+.inv--lumiere .sec--quote {
+  background:
+    radial-gradient(60% 50% at 50% 50%, color-mix(in srgb, var(--inv-accent) 14%, transparent), transparent 70%),
+    transparent;
+}
+.inv--lumiere .quote__mark {
+  color: var(--inv-accent);
+  opacity: 1;
+  text-shadow: 0 0 24px color-mix(in srgb, var(--inv-accent) 40%, transparent);
+}
+.inv--lumiere .quote__text { color: var(--inv-primary); }
+
+.inv--nusantara .sec--quote {
+  border-top: 1px solid color-mix(in srgb, var(--inv-accent) 30%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--inv-accent) 30%, transparent);
+}
+.inv--nusantara .quote__mark { font-family: var(--inv-font-display); }
+.inv--nusantara .quote__source { font-family: var(--inv-font-display); letter-spacing: 0.1em; }
+
+.inv--meadow .sec--quote { padding-block: clamp(64px, calc(var(--inv-vw) * 9), 110px); }
+.inv--meadow .quote__mark { font-family: var(--inv-font-accent, cursive); font-style: italic; }
+.inv--meadow .quote__text { font-family: var(--inv-font-display); }
+.inv--meadow .quote__source { font-family: var(--inv-font-accent, cursive); text-transform: none; letter-spacing: 0.02em; font-style: italic; }
+
+/* ================= INFO — per family card style ================= */
+
+.inv--amora .info__card { border-radius: 26px; border-style: solid; }
+.inv--elysian .info__card { border-radius: 0; border: 0; border-top: 1px solid color-mix(in srgb, var(--inv-text) 25%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--inv-text) 25%, transparent); background: transparent; padding-block: 26px; }
+.inv--serena .info__card { border-radius: 6px; background: transparent; }
+.inv--lumiere .info__card { background: rgba(255,255,255,0.045); border-color: rgba(255,255,255,0.12); }
+.inv--nusantara .info__card { border-radius: 4px; box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--inv-bg) 80%, var(--inv-accent)); }
+.inv--meadow .info__card { background: #fffdf7; color: #40382e; box-shadow: 0 6px 18px rgba(64,56,46,0.14); transform: rotate(-0.4deg); }
+.inv--meadow .info__card:nth-of-type(2) { transform: rotate(0.6deg); }

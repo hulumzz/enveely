@@ -149,11 +149,20 @@ function escTitle(draft) {
 function propsFor(state) {
   const { draft, selectedSection } = state;
   switch (selectedSection) {
+    case 'cover': return coverProps(draft);
+    case 'welcome': return welcomeProps(draft);
     case 'couple': return coupleProps(draft);
+    case 'parents': return parentsProps(draft);
     case 'event': return eventsProps(draft);
-    case 'gallery': return galleryProps(draft, state);
     case 'countdown': return infoProps(draft);
+    case 'story': return storyProps(draft);
+    case 'gallery': return galleryProps(draft, state);
+    case 'rsvp': return rsvpProps(draft);
+    case 'gift': return giftProps(draft);
+    case 'closing': return closingProps(draft);
     case 'music': return musicProps(draft);
+    case 'quote': return quoteProps(draft);
+    case 'info': return infoSectionProps(draft);
     default: return genericProps(draft, selectedSection);
   }
 }
@@ -185,6 +194,14 @@ function field(label, name, value, attrs = '') {
   <label class="fld-ui fld-ui--sm">
     <span>${label}</span>
     <input name="${name}" value="${escapeAttr(value)}" ${attrs} data-prop-input/>
+  </label>`;
+}
+
+function textarea(label, name, value, placeholder = '') {
+  return `
+  <label class="fld-ui fld-ui--sm">
+    <span>${label}</span>
+    <textarea name="${name}" rows="3" placeholder="${escapeAttr(placeholder)}" data-prop-input>${escapeHtml(value)}</textarea>
   </label>`;
 }
 
@@ -241,6 +258,7 @@ function eventsProps(draft) {
 
 function galleryProps(draft, state) {
   const photos = draft.content.gallery;
+  const pending = draft.content._pendingUploads || {};
   return panel(
     'Galeri Foto',
     `
@@ -248,6 +266,7 @@ function galleryProps(draft, state) {
       ${photos.map((p, i) => `
         <figure class="bgallery__item">
           <img src="${escapeAttr(p.url)}" alt="" loading="lazy"/>
+          ${p._local ? '<span class="bgallery__uploading">Mengunggah</span>' : ''}
           <button type="button" class="icon-btn icon-btn--danger" data-del-photo="${i}" title="Hapus">✕</button>
         </figure>`).join('')}
       <label class="upload-drop ${state.uploading ? 'is-busy' : ''}">
@@ -256,7 +275,7 @@ function galleryProps(draft, state) {
         <small>${state.uploading ? 'Mohon tunggu sebentar' : 'JPG, PNG, atau WebP · bisa banyak sekaligus'}</small>
       </label>
     </div>
-    <p class="bprops__hint">Foto otomatis dikompresi ke maks 1400px agar hemat kuota tamu saat membuka undangan.</p>
+    <p class="bprops__hint">Foto otomatis dikompresi ke maks 1400px. Saat diunggah, foto tampil instan dari perangkat lalu otomatis pindah ke server.</p>
     `,
   );
 }
@@ -297,13 +316,182 @@ function musicProps(draft) {
 
 function genericProps(draft, sectionId) {
   const def = getSectionDef(sectionId);
-  const extras = sectionId === 'welcome'
-    ? field('Teks pembuka', 'welcomeMessage', draft.content.welcomeMessage || '')
-    : '';
   return panel(
     def?.labelID || sectionId,
-    `${extras}
-     <p class="bprops__hint">Bagian ini mengikuti desain template. Konten lain dapat diedit dari bagian terkait.</p>`,
+    `<p class="bprops__hint">Bagian ini mengikuti desain template. Aktifkan/nonaktifkan dari daftar bagian di sebelah kiri.</p>`,
+  );
+}
+
+/* ---------- Panel: Cover ---------- */
+function coverProps(draft) {
+  const c = draft.content;
+  return panel(
+    'Sampul',
+    `
+    ${field('Teks kecil di atas nama', 'coverEyebrow', c.coverEyebrow || 'THE WEDDING OF', 'maxlength="60"')}
+    <div class="fld-ui fld-ui--sm">
+      <span>Foto sampul</span>
+      ${photoControl('coverImage', c.coverImage)}
+    </div>
+    `,
+    'Foto sampul jadi latar belakang pertama yang dilihat tamu. Pakai foto portrait dengan pencahayaan lembut.',
+  );
+}
+
+/* ---------- Panel: Welcome ---------- */
+function welcomeProps(draft) {
+  const c = draft.content;
+  return panel(
+    'Pembuka',
+    `
+    ${textarea('Teks pembuka', 'welcomeMessage', c.welcomeMessage || '', 'Kalimat sambutan untuk tamu...')}
+    ${field('Nama yang mengundang (opsional)', 'hostName', c.hostName || '', 'placeholder="cth. Keluarga Bapak Hartono"')}
+    `,
+    'Bagian ini tampil tepat setelah tamu membuka sampul. Buat kalimat singkat yang hangat.',
+  );
+}
+
+/* ---------- Panel: Parents ---------- */
+function parentsProps(draft) {
+  const p = draft.content.parents || {};
+  return panel(
+    'Orang Tua',
+    `
+    ${textarea('Orang tua mempelai pria', 'parents.groom', p.groom || '', 'cth. Bapak Hartono & Ibu Dewi Lestari')}
+    ${textarea('Orang tua mempelai wanita', 'parents.bride', p.bride || '', 'cth. Bapak Bambang & Ibu Sri Handayani')}
+    `,
+    'Format penulisan bebas, pisahkan orang tua pria & wanita agar penempatannya simetris.',
+  );
+}
+
+/* ---------- Panel: Story ---------- */
+function storyProps(draft, state) {
+  const items = draft.content.story || [];
+  return panel(
+    'Cerita',
+    `
+    <div class="bstory">
+      ${items.map((s, i) => `
+        <div class="bstory__item" data-story-index="${i}">
+          <div class="bstory__head">
+            <strong>${escapeHtml(s.title || `Momen ${i + 1}`)}</strong>
+            <button type="button" class="icon-btn" data-del-story="${i}" title="Hapus">✕</button>
+          </div>
+          ${field('Waktu / Tahun', `story.${i}.date`, s.date || '', 'placeholder="cth. 2022"')}
+          ${field('Judul', `story.${i}.title`, s.title || '')}
+          ${textarea('Cerita singkat', `story.${i}.text`, s.text || '', 'Beberapa kalimat tentang momen ini...')}
+          <div class="fld-ui fld-ui--sm">
+            <span>Foto (opsional)</span>
+            ${photoControl(`story.${i}.image`, s.image || '')}
+          </div>
+        </div>`).join('')}
+      <button type="button" class="bevent-add" data-add-story>+ Tambah Momen</button>
+    </div>
+    `,
+    'Ceritakan 2–4 momen penting. Foto opsional, boleh ditambahkan nanti.',
+  );
+}
+
+/* ---------- Panel: RSVP ---------- */
+function rsvpProps(draft) {
+  const s = draft.content.rsvpSettings || {};
+  return panel(
+    'Konfirmasi Kehadiran',
+    `
+    <label class="fld-ui fld-ui--sm fld-ui--check">
+      <input type="checkbox" name="rsvpSettings.enabled" ${s.enabled !== false ? 'checked' : ''} data-prop-check/>
+      <span>Aktifkan RSVP</span>
+    </label>
+    <label class="fld-ui fld-ui--sm fld-ui--check">
+      <input type="checkbox" name="rsvpSettings.askAttendance" ${s.askAttendance !== false ? 'checked' : ''} data-prop-check/>
+      <span>Tanya kehadiran / berhalangan</span>
+    </label>
+    <label class="fld-ui fld-ui--sm fld-ui--check">
+      <input type="checkbox" name="rsvpSettings.askGuestCount" ${s.askGuestCount !== false ? 'checked' : ''} data-prop-check/>
+      <span>Tanya jumlah tamu</span>
+    </label>
+    ${field('Maksimal tamu per undangan', 'rsvpSettings.maxGuestCount', s.maxGuestCount || 5, 'type="number" min="1" max="20"')}
+    <label class="fld-ui fld-ui--sm fld-ui--check">
+      <input type="checkbox" name="rsvpSettings.allowMessage" ${s.allowMessage !== false ? 'checked' : ''} data-prop-check/>
+      <span>Izinkan tamu tulis ucapan</span>
+    </label>
+    `,
+    'Pengaturan ini berlaku untuk semua tamu yang mengisi RSVP.',
+  );
+}
+
+/* ---------- Panel: Gift ---------- */
+function giftProps(draft, state) {
+  const g = draft.content.giftSettings || {};
+  const accounts = g.accounts || [];
+  return panel(
+    'Hadiah',
+    `
+    <label class="fld-ui fld-ui--sm fld-ui--check">
+      <input type="checkbox" name="giftSettings.enabled" ${g.enabled ? 'checked' : ''} data-prop-check/>
+      <span>Tampilkan info hadiah</span>
+    </label>
+    ${textarea('Alamat kirim kado (opsional)', 'giftSettings.address', g.address || '', 'cth. Jl. Mawar No. 12, Jakarta')}
+    <div class="bgift-accounts">
+      <label class="bprops__hint">Rekening</label>
+      ${accounts.map((a, i) => `
+        <div class="bgift-account" data-gift-index="${i}">
+          <div class="bgift-account__head">
+            <strong>${escapeHtml((a.bank || 'Bank') + ' · ' + (a.holder || ''))}</strong>
+            <button type="button" class="icon-btn" data-del-gift="${i}" title="Hapus">✕</button>
+          </div>
+          ${field('Bank', `giftSettings.accounts.${i}.bank`, a.bank || '')}
+          ${field('Nomor rekening', `giftSettings.accounts.${i}.number`, a.number || '')}
+          ${field('Atas nama', `giftSettings.accounts.${i}.holder`, a.holder || '')}
+        </div>
+      `).join('')}
+      <button type="button" class="bevent-add" data-add-gift>+ Tambah Rekening</button>
+    </div>
+    `,
+    'Bisa lebih dari satu rekening. Tamu tinggal ketuk untuk menyalin nomor.',
+  );
+}
+
+/* ---------- Panel: Closing ---------- */
+function closingProps(draft) {
+  const c = draft.content;
+  return panel(
+    'Penutup',
+    `
+    ${textarea('Kalimat penutup', 'closingMessage', c.closingMessage || '', 'Ucapan terima kasih untuk tamu...')}
+    <div class="fld-ui fld-ui--sm">
+      <span>Foto penutup (opsional)</span>
+      ${photoControl('closingImage', c.closingImage || '')}
+    </div>
+    `,
+    'Bagian ini jadi penutup setelah tamu memberi ucapan atau konfirmasi.',
+  );
+}
+
+/* ---------- Panel: Quote (section baru) ---------- */
+function quoteProps(draft) {
+  const q = draft.content.quoteSettings || {};
+  return panel(
+    'Kutipan',
+    `
+    ${textarea('Teks kutipan', 'quoteSettings.text', q.text || '', 'Kutipan, ayat, atau kalimat favorit...')}
+    ${field('Sumber / Attribution (opsional)', 'quoteSettings.source', q.source || '', 'placeholder="cth. QS. Ar-Rum: 21"')}
+    `,
+    'Tampil dengan layout centered italic di antara section utama.',
+  );
+}
+
+/* ---------- Panel: Info Penting (section baru) ---------- */
+function infoSectionProps(draft) {
+  const i = draft.content.infoSettings || {};
+  return panel(
+    'Info Penting',
+    `
+    ${field('Dress code (warna yang dihindari)', 'infoSettings.dressCode', i.dressCode || '', 'placeholder="cth. Hindari putih dan merah"')}
+    ${textarea('Info akses / parkir / transport', 'infoSettings.access', i.access || '', 'Parkir tersedia di basement, akses dari pintu samping...')}
+    ${textarea('Catatan tambahan', 'infoSettings.notes', i.notes || '', 'Info lain yang perlu tamu tahu...')}
+    `,
+    'Tamu tidak perlu scroll-balik ke info praktis — semua tampil di satu kartu.',
   );
 }
 
@@ -323,18 +511,38 @@ function photoControl(path, url) {
 
 /* ---------- Property wiring ---------- */
 
+const REPAINT_ON_INPUT = new RegExp(
+  [
+    '^(groom|bride)\\.(name|nickname|photoUrl)$',
+    '^weddingDate$',
+    '^coverImage$',
+    '^coverEyebrow$',
+    '^welcomeMessage$',
+    '^hostName$',
+    '^closingMessage$',
+    '^closingImage$',
+    '^events\\.\\d+\\.(title|date|startTime|venue|address)$',
+    '^musicSettings\\.',
+    '^parents\\.(groom|bride)$',
+    '^story\\.\\d+\\.',
+    '^quoteSettings\\.',
+    '^infoSettings\\.',
+    '^giftSettings\\.address$',
+  ].join('|')
+);
+
 function wireProps(root, state, { persist, paintCanvas, repaintProps }) {
   const draft = state.draft;
 
-  // text/date inputs — path based binding e.g. "groom.name", "events.0.title"
+  // text/date inputs + textareas — path based binding e.g. "groom.name", "events.0.title"
   root.querySelectorAll('[data-prop-input]').forEach((input) => {
     input.addEventListener('input', () => {
       let value = input.value;
       if (input.type === 'number') value = Number(value);
       setByPath(draft.content, input.name, value);
       persist();
-      // Repaint only for structural fields; names/date affect canvas directly.
-      if (/^(groom|bride)\.(name|nickname)$|^weddingDate$|^events\.\d+\.|^musicSettings\./.test(input.name)) {
+      // Repaint canvas for any field that affects the rendered invitation.
+      if (REPAINT_ON_INPUT.test(input.name)) {
         paintCanvas();
       }
     });
@@ -345,7 +553,9 @@ function wireProps(root, state, { persist, paintCanvas, repaintProps }) {
     input.addEventListener('change', () => {
       setByPath(draft.content, input.name, input.checked);
       persist();
-      if (input.name.startsWith('musicSettings.')) paintCanvas();
+      if (input.name.startsWith('musicSettings.') || input.name.startsWith('rsvpSettings.') || input.name.startsWith('giftSettings.')) {
+        paintCanvas();
+      }
     });
   });
 
@@ -361,20 +571,42 @@ function wireProps(root, state, { persist, paintCanvas, repaintProps }) {
     });
   });
 
-  // gallery upload (multi)
+  // story items: add/remove
+  root.querySelector('[data-add-story]')?.addEventListener('click', () => {
+    if (!Array.isArray(draft.content.story)) draft.content.story = [];
+    draft.content.story.push({ date: '', title: '', text: '', image: '' });
+    persist(); paintCanvas(); repaintProps();
+  });
+  root.querySelectorAll('[data-del-story]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      draft.content.story.splice(Number(btn.dataset.delStory), 1);
+      persist(); paintCanvas(); repaintProps();
+    });
+  });
+
+  // gift accounts: add/remove
+  root.querySelector('[data-add-gift]')?.addEventListener('click', () => {
+    if (!draft.content.giftSettings) draft.content.giftSettings = { enabled: false, accounts: [], address: '' };
+    if (!Array.isArray(draft.content.giftSettings.accounts)) draft.content.giftSettings.accounts = [];
+    draft.content.giftSettings.accounts.push({ bank: '', number: '', holder: '' });
+    persist(); paintCanvas(); repaintProps();
+  });
+  root.querySelectorAll('[data-del-gift]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      draft.content.giftSettings.accounts.splice(Number(btn.dataset.delGift), 1);
+      persist(); paintCanvas(); repaintProps();
+    });
+  });
+
+  // gallery upload (multi, optimistic local preview)
   root.querySelector('[data-gallery-upload]')?.addEventListener('change', async (e) => {
     const files = [...e.target.files || []];
     if (!files.length) return;
+    e.target.value = '';
     state.uploading = true;
     repaintProps();
-    for (const file of files) {
-      try {
-        const hosted = await uploadImage(file, { preset: 'gallery', name: `${draft.id}-gallery` });
-        draft.content.gallery.push({ url: hosted.url, thumbUrl: hosted.thumbUrl, provider: hosted.provider, width: hosted.width, height: hosted.height });
-      } catch (err) {
-        alert(`Gagal unggah: ${err.message}`);
-      }
-    }
+    const tasks = files.map((file) => uploadWithLocalPreview(file, draft, 'gallery'));
+    await Promise.allSettled(tasks);
     state.uploading = false;
     persist(); paintCanvas(); repaintProps();
   });
@@ -382,39 +614,102 @@ function wireProps(root, state, { persist, paintCanvas, repaintProps }) {
   // remove gallery photo
   root.querySelectorAll('[data-del-photo]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      draft.content.gallery.splice(Number(btn.dataset.delPhoto), 1);
+      const idx = Number(btn.dataset.delPhoto);
+      const photo = draft.content.gallery[idx];
+      if (photo?._local) URL.revokeObjectURL(photo.url);
+      draft.content.gallery.splice(idx, 1);
       persist(); paintCanvas(); repaintProps();
     });
   });
 
-  // couple photo slots
+  // couple / generic photo slots — optimistic local preview
   root.querySelectorAll('[data-photo-upload]').forEach((input) => {
     input.addEventListener('change', async () => {
       const file = input.files?.[0];
       if (!file) return;
+      input.value = '';
       const slot = input.closest('[data-photo-path]');
       const path = slot.dataset.photoPath;
       const label = slot.querySelector('.upload-btn');
       const original = label.textContent;
       label.textContent = 'Mengunggah...';
-      try {
-        const hosted = await uploadImage(file, { preset: 'hero', name: `${draft.id}-${path.replace('.', '-')}` });
-        setByPath(draft.content, path, hosted.url);
-        persist(); paintCanvas(); repaintProps();
-      } catch (err) {
-        alert(`Gagal unggah: ${err.message}`);
-        label.textContent = original;
-      }
+      await uploadWithLocalPreview(file, draft, 'hero', { path, setPath: true });
+      label.textContent = original;
+      persist(); paintCanvas(); repaintProps();
     });
   });
   root.querySelectorAll('[data-photo-remove]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const path = btn.closest('[data-photo-path]')?.dataset.photoPath;
       if (!path) return;
+      const current = getByPath(draft.content, path);
+      if (current && /^blob:/.test(current)) URL.revokeObjectURL(current);
       setByPath(draft.content, path, '');
       persist(); paintCanvas(); repaintProps();
     });
   });
+}
+
+/**
+ * Optimistic image upload: show local blob URL immediately, then swap to the
+ * hosted URL once ImgBB responds. If the upload fails, keep the local URL
+ * (with a `_local: true` marker) so the user still sees the photo.
+ *
+ * @param {File} file
+ * @param {object} draft
+ * @param {'hero'|'gallery'} preset
+ * @param {{path?: string, setPath?: boolean}} [opts] when setPath=true, treat as a single-path slot
+ */
+async function uploadWithLocalPreview(file, draft, preset, opts = {}) {
+  const localUrl = URL.createObjectURL(file);
+  const placeholder = {
+    url: localUrl,
+    _local: true,
+    _file: file, // keep handle for potential retry
+    thumbUrl: localUrl,
+    provider: 'local',
+    width: null,
+    height: null,
+  };
+
+  if (opts.setPath && opts.path) {
+    setByPath(draft.content, opts.path, localUrl);
+    if (!draft.content._pendingUploads) draft.content._pendingUploads = {};
+    draft.content._pendingUploads[opts.path] = true;
+  } else {
+    const idx = draft.content.gallery.length;
+    draft.content.gallery.push({ ...placeholder });
+    if (!draft.content._pendingUploads) draft.content._pendingUploads = {};
+    draft.content._pendingUploads[`gallery.${idx}`] = true;
+  }
+
+  // trigger a repaint via the caller; here we just record the optimistic state.
+
+  try {
+    const hosted = await uploadImage(file, { preset, name: `${draft.id}-${preset}-${Date.now()}` });
+    if (opts.setPath && opts.path) {
+      setByPath(draft.content, opts.path, hosted.url);
+      delete draft.content._pendingUploads?.[opts.path];
+    } else {
+      // find by local URL and replace
+      const i = draft.content.gallery.findIndex((p) => p.url === localUrl);
+      if (i >= 0) {
+        draft.content.gallery[i] = { ...hosted, _local: false };
+        delete draft.content._pendingUploads?.[`gallery.${i}`];
+      }
+    }
+    URL.revokeObjectURL(localUrl);
+  } catch (err) {
+    console.warn('[upload] gagal, foto tetap tersimpan lokal', err);
+    // keep local URL; user sees a toast via caller if desired
+    if (opts.setPath && opts.path) {
+      delete draft.content._pendingUploads?.[opts.path];
+    }
+  }
+}
+
+function getByPath(obj, path) {
+  return path.split('.').reduce((cur, k) => (cur == null ? cur : cur[k]), obj);
 }
 
 function setByPath(obj, path, value) {

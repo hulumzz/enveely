@@ -98,6 +98,52 @@ export function renderCountdown(ctx) {
   </section>`;
 }
 
+export function renderQuote(ctx) {
+  const { c, design } = ctx;
+  const q = c.quoteSettings || {};
+  if (!q.text && !ctx.draftMode) return '';
+  const div = dividerOrnament(design.ornamentSet);
+  const text = q.text || defaultQuote(ctx.locale);
+  return `
+  <section class="sec sec--quote" data-section="quote" data-layout="${esc(design.layouts.quote || 'centerQuote')}">
+    <div class="quote__mark">“</div>
+    <blockquote class="quote__text">${esc(text)}</blockquote>
+    ${q.source ? `<p class="quote__source">— ${esc(q.source)}</p>` : ''}
+    ${div ? `<div class="sec-divider">${ornamentSvg(div)}</div>` : ''}
+  </section>`;
+}
+
+export function renderInfo(ctx) {
+  const { c } = ctx;
+  const i = c.infoSettings || {};
+  const hasContent = i.dressCode || i.access || i.notes;
+  if (!hasContent && !ctx.draftMode) return '';
+  return `
+  <section class="sec sec--info" data-section="info">
+    <header class="sec-head"><h2>${esc(invT(ctx.locale, 'infoTitle'))}</h2></header>
+    <div class="info__cards">
+      ${i.dressCode ? `
+        <article class="info__card">
+          <span class="info__icon">${infoIconSvg('dress')}</span>
+          <h3>Dress Code</h3>
+          <p>${esc(i.dressCode)}</p>
+        </article>` : ''}
+      ${i.access ? `
+        <article class="info__card">
+          <span class="info__icon">${infoIconSvg('car')}</span>
+          <h3>${esc(invT(ctx.locale, 'infoAccess'))}</h3>
+          <p>${esc(i.access).replace(/\n/g, '<br/>')}</p>
+        </article>` : ''}
+      ${i.notes ? `
+        <article class="info__card info__card--wide">
+          <span class="info__icon">${infoIconSvg('note')}</span>
+          <h3>${esc(invT(ctx.locale, 'infoNotes'))}</h3>
+          <p>${esc(i.notes).replace(/\n/g, '<br/>')}</p>
+        </article>` : ''}
+    </div>
+  </section>`;
+}
+
 export function renderStory(ctx) {
   const { c, design } = ctx;
   const items = c.story || [];
@@ -334,4 +380,20 @@ function defaultClosing(locale) {
   return locale === 'en'
     ? 'Your presence and prayers mean everything to us. Thank you.'
     : 'Kehadiran dan doa restu Anda adalah kebahagiaan terbesar bagi kami. Terima kasih.';
+}
+
+function defaultQuote(locale) {
+  return locale === 'en'
+    ? 'And over all these virtues put on love, which binds them all together in perfect unity.'
+    : 'Dan di atas semuanya itu, kenakanlah kasih, yang adalah pengikat yang sempurna.';
+}
+
+function infoIconSvg(kind) {
+  const stroke = 'currentColor';
+  const inner = {
+    dress: `<path d="M8 4l-3 6 4 1v9h6v-9l4-1-3-6-2 2-2-2-2 2-2-2z" stroke="${stroke}" stroke-width="1.4" fill="none" stroke-linejoin="round"/>`,
+    car: `<path d="M3 13l2-5h10l2 5v4h-2v-2H5v2H3v-4zm2.5-1a1 1 0 100-2 1 1 0 000 2zm9 0a1 1 0 100-2 1 1 0 000 2z" stroke="${stroke}" stroke-width="1.4" fill="none" stroke-linejoin="round"/>`,
+    note: `<path d="M5 4h10v12l-3 3H5V4zm0 0v12m0 0v3h7" stroke="${stroke}" stroke-width="1.4" fill="none" stroke-linejoin="round"/>`,
+  }[kind] || '';
+  return `<svg viewBox="0 0 20 20" fill="none" aria-hidden="true">${inner}</svg>`;
 }

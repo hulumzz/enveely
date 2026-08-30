@@ -254,6 +254,82 @@
 .closing__thanks { max-width: 46ch; margin: 26px auto 0; font-size: 0.95rem; opacity: 0.85; }
 .closing__names { font-size: clamp(1.9rem, calc(var(--inv-vw) * 5.5), 3rem); margin-top: 14px; }
 
+/* ---------- Quote ---------- */
+
+.sec--quote { padding-block: clamp(64px, calc(var(--inv-vw) * 12), 120px); }
+.quote__mark {
+  font-family: var(--inv-font-display, serif);
+  font-size: clamp(3.6rem, calc(var(--inv-vw) * 9), 5.4rem);
+  line-height: 0.6;
+  color: var(--inv-accent);
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+.quote__text {
+  max-width: 42ch;
+  margin: 0 auto;
+  font-family: var(--inv-font-display, serif);
+  font-style: italic;
+  font-size: clamp(1.1rem, calc(var(--inv-vw) * 2.6), 1.4rem);
+  line-height: 1.55;
+}
+.quote__source {
+  margin-top: var(--sp-4);
+  font-size: 0.85rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+/* ---------- Info ---------- */
+
+.sec--info .info__cards {
+  display: grid;
+  gap: 14px;
+  margin-top: 30px;
+  grid-template-columns: 1fr;
+  max-width: 720px;
+  margin-inline: auto;
+  text-align: left;
+}
+@media (min-width: 720px) {
+  .sec--info .info__cards { grid-template-columns: 1fr 1fr; }
+}
+.info__card {
+  padding: 22px 22px;
+  border: 1px solid color-mix(in srgb, var(--inv-text) 14%, transparent);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--inv-bg) 90%, var(--inv-text));
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+.info__card--wide { grid-column: 1 / -1; }
+.info__icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--inv-accent) 22%, transparent);
+  color: var(--inv-accent);
+}
+.info__icon svg { width: 22px; height: 22px; }
+.info__card h3 {
+  font-family: var(--inv-font-body, sans-serif);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+.info__card p {
+  margin-top: 4px;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  opacity: 0.85;
+}
+
 /* ---------- Music floating control ---------- */
 
 .music-float {
