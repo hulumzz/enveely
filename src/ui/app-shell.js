@@ -12,22 +12,22 @@ export function mountAppShell(root) {
   root.innerHTML = `
     <header class="navbar">
       <div class="navbar__inner container">
-        <a href="/" data-link class="navbar__logo" aria-label="Enveely home">EN<span>VEELY</span></a>
+        <a href="/" data-link class="navbar__logo" aria-label="Beranda Enveely">EN<span>VEELY</span></a>
 
-        <nav class="navbar__links" id="nav-links" aria-label="Primary">
-          <a href="/" data-link data-nav>Home</a>
-          <a href="/templates" data-link data-nav>Template</a>
-          <a href="/#why-us" data-link data-nav>Why Us</a>
-          <a href="/#product" data-link data-nav>Product</a>
+        <nav class="navbar__links" id="nav-links" aria-label="Navigasi utama">
+          <a href="/" data-link data-nav>Beranda</a>
+          <a href="/templates" data-link data-nav>Pilih Desain</a>
+          <a href="/#why-us" data-link data-nav>Kenapa Enveely</a>
+          <a href="/#product" data-link data-nav>Koleksi Desain</a>
           <div class="navbar__links-actions">
             <a href="/dashboard" data-link data-nav class="nav-secondary" data-auth="in">Undangan Saya</a>
             <a href="/login" data-link data-nav class="btn btn--ghost btn--sm" data-auth="out">Masuk</a>
-            <a href="/login?mode=register" data-link data-nav class="btn btn--primary btn--sm" data-auth="out">Daftar Gratis</a>
+            <a href="/login?mode=register" data-link data-nav class="btn btn--primary btn--sm" data-auth="out">Mulai Gratis</a>
           </div>
         </nav>
 
         <div class="navbar__actions">
-          <div class="lang-switch" role="group" aria-label="Language">
+          <div class="lang-switch" role="group" aria-label="Bahasa">
             <button type="button" data-locale="id" class="lang-switch__btn">ID</button>
             <button type="button" data-locale="en" class="lang-switch__btn">EN</button>
           </div>
@@ -42,29 +42,29 @@ export function mountAppShell(root) {
     <footer class="footer">
       <div class="container">
         <div class="footer__brand">Enveely</div>
-        <p class="footer__tagline">Invite Your Beloved People.</p>
+        <p class="footer__tagline">Undangan yang terasa seperti kalian.</p>
         <div class="footer__grid">
           <div class="footer__col">
             <h4>Produk</h4>
-            <a href="/templates" data-link>Galeri Template</a>
+            <a href="/templates" data-link>Jelajahi Desain</a>
             <a href="/create" data-link>Buat Undangan</a>
-            <a href="/dashboard" data-link>Undangan Saya</a>
+            <a href="/dashboard" data-link>Kelola Undangan</a>
           </div>
           <div class="footer__col">
             <h4>Jelajahi</h4>
-            <a href="/#why-us" data-link>Why Us</a>
-            <a href="/#product" data-link>Product</a>
-            <a href="/#how-it-works" data-link>Cara Kerja</a>
+            <a href="/#why-us" data-link>Kenapa Enveely</a>
+            <a href="/#product" data-link>Koleksi Desain</a>
+            <a href="/#how-it-works" data-link>Cara Membuatnya</a>
           </div>
           <div class="footer__col">
             <h4>Akun</h4>
-            <a href="/login" data-link>Masuk</a>
-            <a href="/login?mode=register" data-link>Daftar</a>
+            <a href="/login" data-link>Masuk ke Akun</a>
+            <a href="/login?mode=register" data-link>Buat Akun Gratis</a>
           </div>
         </div>
         <div class="footer__base">
-          <span>© ${new Date().getFullYear()} Enveely. Dibuat dengan penuh perhatian.</span>
-          <span>Cerita kalian, diundang dengan indah.</span>
+          <span>&copy; ${new Date().getFullYear()} Enveely. Dibuat dengan penuh perhatian.</span>
+          <span>Setiap cerita layak diundang dengan indah.</span>
         </div>
       </div>
     </footer>

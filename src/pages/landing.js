@@ -1,10 +1,9 @@
 ﻿// Enveely — Landing page (premium redesign).
 // Real invitation frames (render engine), editorial hero collage with local
 // demo photography, interactive DNA showcase, bento features, timeline,
-// photo CTA band. All copy via i18n; no emoji icons.
+// photo CTA band. Landing copy stays close to this view; no emoji icons.
 
 import { renderPage } from '../ui/app-shell.js';
-import { t } from '../i18n.js';
 import { analyticsEvents } from '../services/analytics.js';
 import { templateFamilies } from '../data/templates.js';
 import { invitationFrame, hydrateInvitationFrames } from '../ui/invitation-frame.js';
@@ -33,24 +32,24 @@ export function renderLanding() {
       <div class="container hero__inner">
         <div class="hero__copy">
           <p class="hero__eyebrow">Undangan Pernikahan Digital</p>
-          <h1 class="hero__title">Buat Undangan yang Terasa<br /><em>seperti Kalian.</em></h1>
+          <h1 class="hero__title">Undangan yang Terasa<br /><em>Seistimewa Hari Kalian.</em></h1>
           <p class="hero__subtitle">
-            Pilih desain yang kalian suka, isi dengan cerita kalian, lalu bagikan ke
-            orang-orang tercinta. Beres dalam beberapa menit &mdash; tanpa perlu jago desain.
+            Pilih desain favorit, lengkapi cerita kalian, lalu bagikan ke orang-orang tercinta.
+            Semua siap dalam hitungan menit, tanpa perlu jago desain.
           </p>
           <div class="hero__cta">
-            <a href="/create" data-link class="btn btn--primary btn--lg">Mulai Sekarang ${icon('arrowRight', { size: 18 })}</a>
-            <a href="/templates" data-link class="btn btn--ghost btn--lg">Lihat 18 Desain</a>
+            <a href="/create" data-link class="btn btn--primary btn--lg">Buat Undangan Gratis ${icon('arrowRight', { size: 18 })}</a>
+            <a href="/templates" data-link class="btn btn--ghost btn--lg">Jelajahi Desain</a>
           </div>
           <div class="hero__trust">
-            <span>${icon('check', { size: 16 })} Gratis, tanpa kartu kredit</span>
-            <span>${icon('check', { size: 16 })} Coba dulu, login belakangan</span>
-            <span>${icon('check', { size: 16 })} Tinggal kirim lewat WhatsApp</span>
+            <span>${icon('check', { size: 16 })} Mulai gratis, tanpa kartu kredit</span>
+            <span>${icon('check', { size: 16 })} Coba desain dulu, daftar saat siap</span>
+            <span>${icon('check', { size: 16 })} Siap dibagikan lewat WhatsApp</span>
           </div>
         </div>
 
         <div class="hero__collage" aria-hidden="true">
-          <span class="hero__badge">${icon('sparkle', { size: 15 })} Desain eksklusif Enveely</span>
+          <span class="hero__badge">${icon('sparkle', { size: 15 })} Koleksi desain Enveely</span>
           <div data-hero-main>${invitationFrame({ templateId: 'amora', variantId: 'amora-garden', frame: 'arch' })}</div>
           <div data-hero-phone>${invitationFrame({ templateId: 'lumiere', variantId: 'lumiere-gallery', frame: 'phone' })}</div>
           <img class="hero__chip-photo" src="${DEMO.ring}" alt="" loading="lazy" width="150" height="150"/>
@@ -71,20 +70,20 @@ export function renderLanding() {
     <section id="why-us" class="showcase">
       <div class="container">
         <header class="showcase__head reveal">
-          <p class="eyebrow">Bukan Sekadar Ganti Warna</p>
-          <h2>Satu Cerita, Tiga Karakter Berbeda.</h2>
-          <p>Tiap keluarga template punya tata letak, tipografi, ornament, dan cara menampilkan foto yang berbeda. Ketuk untuk ganti gaya &mdash; data pasangan tetap sama.</p>
+          <p class="eyebrow">Lebih dari Sekadar Ganti Warna</p>
+          <h2>Satu Cerita, Banyak Cara untuk Terasa Spesial.</h2>
+          <p>Setiap keluarga desain punya komposisi, tipografi, ornamen, dan cara menampilkan foto yang berbeda. Pilih gaya yang paling dekat dengan cerita kalian.</p>
         </header>
 
         <div class="showcase__switch reveal" role="tablist" aria-label="Pilih gaya desain">
           <button type="button" class="chip is-active" data-showcase="amora" role="tab" aria-selected="true">
-            <span class="chip__dot" style="--dot:#8b6f5a"></span> Amora — Romantis
+            <span class="chip__dot" style="--dot:#8b6f5a"></span> Amora · Romantis
           </button>
           <button type="button" class="chip" data-showcase="serena" role="tab" aria-selected="false">
-            <span class="chip__dot" style="--dot:#55504a"></span> Serena — Minimalis
+            <span class="chip__dot" style="--dot:#55504a"></span> Serena · Minimalis
           </button>
           <button type="button" class="chip" data-showcase="lumiere" role="tab" aria-selected="false">
-            <span class="chip__dot" style="--dot:#c8b48c"></span> Lumière — Sinematik
+            <span class="chip__dot" style="--dot:#c8b48c"></span> Lumière · Sinematik
           </button>
         </div>
 
@@ -94,8 +93,8 @@ export function renderLanding() {
 
         <div class="showcase__dna reveal">
           <div class="showcase__dna-item">
-            <span class="showcase__dna-label">Layout</span>
-            <strong data-dna="layout">Arch Portrait</strong>
+            <span class="showcase__dna-label">Komposisi</span>
+            <strong data-dna="layout">Potret Lengkung</strong>
           </div>
           <div class="showcase__dna-item">
             <span class="showcase__dna-label">Tipografi</span>
@@ -106,7 +105,7 @@ export function renderLanding() {
             <strong data-dna="ornament">Floral Halus</strong>
           </div>
           <div class="showcase__dna-item">
-            <span class="showcase__dna-label">Foto</span>
+            <span class="showcase__dna-label">Porsi Foto</span>
             <strong data-dna="density">Sedang</strong>
           </div>
         </div>
@@ -117,9 +116,9 @@ export function renderLanding() {
     <section id="product" class="families">
       <div class="container">
         <header class="reveal">
-          <p class="eyebrow">Koleksi Desain</p>
-          <h2 class="section__title" style="text-align:left;margin-top:12px">Temukan Desain yang Terasa Seperti Kalian.</h2>
-          <p class="muted" style="text-align:left;margin-top:12px;max-width:56ch">Enam keluarga desain dengan karakter yang berbeda &mdash; dari floral yang hangat hingga gelap yang sinematik. Tiap keluarga punya tiga variasi warna.</p>
+          <p class="eyebrow">Pilihan Desain</p>
+          <h2 class="section__title" style="text-align:left;margin-top:12px">Temukan Desain yang Mewakili Cerita Kalian.</h2>
+          <p class="muted" style="text-align:left;margin-top:12px;max-width:56ch">Enam keluarga desain untuk berbagai nuansa, dari floral yang hangat hingga tampilan sinematik. Masing-masing tersedia dalam tiga variasi warna.</p>
         </header>
         <div class="families__grid">
           ${templateFamilies.map((f, i) => `
@@ -130,7 +129,7 @@ export function renderLanding() {
                   <span class="family-card__frame family-card__frame--mid"></span>
                   <span class="family-card__frame family-card__frame--front">${invitationFrame({ templateId: f.id, frame: familyFrame(f.id) })}</span>
                 </div>
-                <span class="family-card__badge" style="--badge-bg:${familyBadgeBg(f.id)};--badge-fg:${familyBadgeFg(f.id)}">${f.moodLabel}</span>
+                <span class="family-card__badge" style="--badge-bg:${familyBadgeBg(f.id)};--badge-fg:${familyBadgeFg(f.id)}">${familyMoodLabel(f.id)}</span>
               </a>
               <div class="family-card__body">
                 <h3 class="family-card__name">${f.name}</h3>
@@ -139,8 +138,8 @@ export function renderLanding() {
                   ${familyChips(f.id).map((c) => `<li>${c}</li>`).join('')}
                 </ul>
                 <div class="family-card__actions">
-                  <a href="/templates/${f.id}" data-link class="btn btn--ghost btn--sm">Lihat Detail</a>
-                  <a href="/templates/${f.id}/preview" data-link class="btn btn--primary btn--sm">Coba Live</a>
+                  <a href="/templates/${f.id}" data-link class="btn btn--ghost btn--sm">Kenali Desain</a>
+                  <a href="/templates/${f.id}/preview" data-link class="btn btn--primary btn--sm">Lihat Pratinjau</a>
                 </div>
               </div>
             </article>`).join('')}
@@ -152,34 +151,34 @@ export function renderLanding() {
     <section class="features">
       <div class="container">
         <header class="reveal">
-          <p class="eyebrow">Fitur Utama</p>
-          <h2 class="section__title" style="text-align:left;margin-top:12px">Semua yang Kalian Butuhkan,<br/>Sudah Disiapkan.</h2>
+          <p class="eyebrow">Yang Sudah Kami Siapkan</p>
+          <h2 class="section__title" style="text-align:left;margin-top:12px">Semua Detail Penting,<br/>Ada dalam Satu Undangan.</h2>
         </header>
         <div class="features__grid">
           ${feature({
-            icon: 'layers', title: 'Banyak Acara, Satu Undangan',
-            desc: 'Akad, resepsi, sampai after party. Setiap acara punya waktu, lokasi, dan tombol arah ke peta.',
+            icon: 'layers', title: 'Semua Rangkaian Acara, Tetap Rapi',
+            desc: 'Atur akad, resepsi, hingga after party dalam satu undangan, lengkap dengan waktu, lokasi, dan tombol petunjuk arah.',
           })}
           ${feature({
-            icon: 'clock', title: 'Hitung Mundur yang Bikin Penasaran',
-            desc: 'Tamu bisa ikut menghitung detik menuju hari H. Tampilannya mengikuti gaya desain kalian.',
+            icon: 'clock', title: 'Hitung Mundur Menuju Hari H',
+            desc: 'Ajak tamu ikut menantikan hari spesial kalian dengan hitung mundur yang menyatu dengan gaya undangan.',
           })}
           ${feature({
-            icon: 'image', title: 'Galeri Ringan, Foto Tetap Jernih',
-            desc: 'Unggah sebanyak yang kalian mau. Foto otomatis dikompresi agar tajam tapi hemat kuota tamu.',
+            icon: 'image', title: 'Galeri Foto yang Ringan Dibuka',
+            desc: 'Unggah foto favorit kalian. Kami mengoptimalkannya agar tetap tajam dan nyaman dibuka tamu.',
             img: DEMO.candid,
           })}
           ${feature({
-            icon: 'pin', title: 'Lokasi Gampang Ditemukan',
-            desc: 'Peta tampil langsung di undangan, lengkap tombol navigasi ke aplikasi peta favorit tamu.',
+            icon: 'pin', title: 'Lokasi yang Mudah Dituju',
+            desc: 'Peta tampil langsung di undangan, lengkap dengan tombol navigasi ke aplikasi peta pilihan tamu.',
           })}
           ${feature({
-            icon: 'mail', title: 'RSVP & Ucapan Tertampung Rapi',
-            desc: 'Tamu tinggal konfirmasi hadir dan titip doa. Kalian baca semuanya di dashboard.',
+            icon: 'mail', title: 'RSVP dan Doa Tamu, Terkumpul Rapi',
+            desc: 'Tamu bisa konfirmasi kehadiran dan meninggalkan ucapan. Semuanya dapat kalian lihat dari dashboard.',
           })}
           ${feature({
-            icon: 'link', title: 'Satu Tautan untuk Semua Tamu',
-            desc: 'Kirim lewat WhatsApp atau Instagram Story. Pratinjaunya tetap cantik saat dishare.',
+            icon: 'link', title: 'Satu Tautan, Siap Dibagikan',
+            desc: 'Bagikan lewat WhatsApp atau Instagram Story dengan pratinjau yang tetap enak dilihat.',
             img: DEMO.batik,
           })}
         </div>
@@ -190,14 +189,14 @@ export function renderLanding() {
     <section id="how-it-works" class="how">
       <div class="container">
         <header class="reveal">
-          <p class="eyebrow">Sesimpel Ini</p>
-          <h2 class="section__title" style="text-align:left;margin-top:12px">Dari Cerita ke Undangan,<br/>Cuma Empat Langkah.</h2>
+          <p class="eyebrow">Mulai dengan Mudah</p>
+          <h2 class="section__title" style="text-align:left;margin-top:12px">Dari Cerita Kalian Menjadi Undangan,<br/>Hanya Empat Langkah.</h2>
         </header>
         <ol class="how__timeline">
-          ${step('Pilih desain favorit', 'Telusuri koleksi kami dan temukan yang paling terasa seperti kalian.')}
-          ${step('Isi cerita kalian', 'Nama, tanggal, acara, dan foto. Tata letaknya otomatis mengikuti.')}
-          ${step('Cek di HP', 'Lihat persis seperti yang tamu lihat, biar yakin sebelum di-share.')}
-          ${step('Sebarkan tautannya', 'Publikasikan, kirim lewat WhatsApp. Tinggal tunggu tamu balas RSVP.')}
+          ${step('Pilih desain favorit', 'Jelajahi koleksi kami dan temukan gaya yang paling mencerminkan kalian.')}
+          ${step('Lengkapi cerita kalian', 'Masukkan nama, tanggal, rangkaian acara, dan foto. Tata letaknya akan menyesuaikan.')}
+          ${step('Cek sebelum dibagikan', 'Lihat tampilannya di ponsel, persis seperti yang akan diterima tamu.')}
+          ${step('Bagikan ke orang terdekat', 'Saat sudah siap, publikasikan dan kirim tautannya lewat WhatsApp. RSVP pun mulai masuk.')}
         </ol>
       </div>
     </section>
@@ -208,11 +207,11 @@ export function renderLanding() {
         <img src="${DEMO.pendopo}" alt="" loading="lazy"/>
       </div>
       <div class="container cta-band__inner">
-        <h2>Siap Mengundang Orang-orang Tercinta?</h2>
-        <p>Pilih desain, isi cerita kalian, dan biarkan kami yang merapikan tampilannya.</p>
+        <h2>Saatnya Mengundang dengan Cara yang Lebih Berkesan.</h2>
+        <p>Pilih desain yang kalian suka, isi cerita kalian, lalu biarkan Enveely merapikan tampilannya.</p>
         <div class="cta-band__actions">
-          <a href="/create" data-link class="btn btn--primary btn--lg">Buat Undangan Sekarang ${icon('arrowRight', { size: 18 })}</a>
-          <a href="/templates" data-link class="btn btn--ghost btn--lg">Lihat Contoh Desain</a>
+          <a href="/create" data-link class="btn btn--primary btn--lg">Mulai Buat Undangan Gratis ${icon('arrowRight', { size: 18 })}</a>
+          <a href="/templates" data-link class="btn btn--ghost btn--lg">Lihat Semua Desain</a>
         </div>
       </div>
     </section>
@@ -284,8 +283,8 @@ function setupShowcase(root) {
       frame: 'arch',
       title: 'Amora',
       tagline: 'Romantis · Floral',
-      text: 'Amora menyambut tamu dengan huruf serif yang hangat, lengkungan arch yang lembut, dan ornamen floral halus. Setiap detail terasa dekat dan tulus — pas untuk kisah yang ingin terasa personal.',
-      layout: 'Arch Portrait',
+      text: 'Lengkungan arch yang lembut, huruf serif yang hangat, dan ornamen floral halus membuat Amora terasa dekat dan tulus. Cocok untuk kisah yang ingin terasa personal sejak undangan pertama dibuka.',
+      layout: 'Potret Lengkung',
       fonts: 'Cormorant + Manrope',
       ornament: 'Floral Halus',
       density: 'Sedang',
@@ -294,9 +293,9 @@ function setupShowcase(root) {
       variant: 'serena-paper',
       frame: 'phone',
       title: 'Serena',
-      tagline: 'Minimal · Modern',
-      text: 'Serena percaya pada kesederhanaan: garis tipis, ruang yang lapang, dan tipografi yang tenang. Nama kalian tampil sebagai pusat — untuk pasangan yang elegan tanpa banyak kata.',
-      layout: 'Stacked Centered',
+      tagline: 'Minimalis · Modern',
+      text: 'Garis tipis, ruang yang lega, dan tipografi yang tenang membuat Serena tampil bersih tanpa kehilangan kehangatan. Nama kalian menjadi pusat perhatian, pas untuk gaya yang elegan dan tidak berlebihan.',
+      layout: 'Tengah Minimalis',
       fonts: 'Cormorant + Inter',
       ornament: 'Tanpa Ornamen',
       density: 'Sedikit',
@@ -305,9 +304,9 @@ function setupShowcase(root) {
       variant: 'lumiere-gallery',
       frame: 'phone',
       title: 'Lumière',
-      tagline: 'Sinematik · Gallery',
-      text: 'Lumière tampil sinematik dengan latar gelap megah, foto besar penuh, dan aksen emas yang hangat. Setiap jeda terasa seperti frame film — untuk malam yang ingin terasa megah.',
-      layout: 'Full Bleed',
+      tagline: 'Sinematik · Galeri',
+      text: 'Latar gelap yang dramatis, foto besar, dan aksen emas hangat memberi Lumière nuansa sinematik. Pilihan tepat untuk perayaan malam yang ingin tampil berkelas dan penuh suasana.',
+      layout: 'Foto Penuh',
       fonts: 'DM Serif + Manrope',
       ornament: 'Geometris Tipis',
       density: 'Banyak',
@@ -323,12 +322,12 @@ function setupShowcase(root) {
           ${invitationFrame({ templateId: key, variantId: cfg.variant, frame: cfg.frame })}
         </div>
         <div class="showcase__meta">
-          <p class="showcase__meta-eyebrow">Karakter Desain</p>
+          <p class="showcase__meta-eyebrow">Gaya Desain</p>
           <h3>${cfg.title}</h3>
           <p class="showcase__meta-tag">${cfg.tagline}</p>
         </div>`;
       caption.innerHTML = `
-        <span class="showcase__caption-kicker">Tentang ${cfg.title}</span>
+        <span class="showcase__caption-kicker">Mengenal ${cfg.title}</span>
         <p>${cfg.text}</p>`;
       const dna = root.querySelectorAll('[data-dna]');
       dna.forEach((el) => {
@@ -385,23 +384,34 @@ function familyBadgeFg(id) {
 
 function familyShortDesc(id) {
   return ({
-    amora: 'Lengkung floral, aksen hangat, dan tipografi yang tulus.',
-    elysian: 'Tata letak editorial, spasi mewah, tipografi besar.',
-    serena: 'Garis tipis, ruang lapang, fokus pada nama kalian.',
-    lumiere: 'Foto sinematik, latar gelap, aksen emas hangat.',
-    nusantara: 'Nuansa tradisional modern, aksen batik, frame hangat.',
-    meadow: 'Botanikal rustic, sentakan polaroid, aksen tulisan tangan.',
+    amora: 'Lengkungan floral yang lembut dengan tipografi hangat.',
+    elysian: 'Tata letak editorial yang lega dan berkelas.',
+    serena: 'Garis tipis dan ruang lega yang fokus pada nama kalian.',
+    lumiere: 'Foto besar, latar gelap, dan aksen emas yang hangat.',
+    nusantara: 'Sentuhan tradisi, motif batik, dan bingkai yang hangat.',
+    meadow: 'Nuansa botanikal dengan polaroid dan tulisan tangan.',
+  })[id] || '';
+}
+
+function familyMoodLabel(id) {
+  return ({
+    amora: 'Romantis · Floral',
+    elysian: 'Mewah · Editorial',
+    serena: 'Minimalis · Modern',
+    lumiere: 'Sinematik · Modern',
+    nusantara: 'Tradisional · Modern',
+    meadow: 'Rustik · Botanikal',
   })[id] || '';
 }
 
 function familyChips(id) {
   return ({
-    amora: ['Floral', 'Arch', 'Hangat'],
-    elysian: ['Editorial', 'Typografi', 'Luxury'],
-    serena: ['Minimal', 'Tanpa Frame', 'Modern'],
-    lumiere: ['Gallery', 'Cinematic', 'Gold'],
-    nusantara: ['Tradisional', 'Batik', 'Akademik'],
-    meadow: ['Rustic', 'Polaroid', 'Botanikal'],
+    amora: ['Floral', 'Lengkung Arch', 'Hangat'],
+    elysian: ['Editorial', 'Tipografi', 'Mewah'],
+    serena: ['Minimalis', 'Bersih', 'Modern'],
+    lumiere: ['Galeri', 'Sinematik', 'Aksen Emas'],
+    nusantara: ['Tradisi', 'Batik', 'Berbingkai'],
+    meadow: ['Rustik', 'Polaroid', 'Botanikal'],
   })[id] || [];
 }
 
