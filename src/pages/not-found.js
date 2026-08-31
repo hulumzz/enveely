@@ -1,5 +1,3 @@
-// Enveely — Not found page.
-
 import { renderPage } from '../ui/app-shell.js';
 
 export function renderNotFound() {

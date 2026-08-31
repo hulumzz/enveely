@@ -1,9 +1,4 @@
-﻿// Enveely — Landing page (premium redesign).
-// Real invitation frames (render engine), editorial hero collage with local
-// demo photography, interactive DNA showcase, bento features, timeline,
-// photo CTA band. Landing copy stays close to this view; no emoji icons.
-
-import { renderPage } from '../ui/app-shell.js';
+﻿import { renderPage } from '../ui/app-shell.js';
 import { analyticsEvents } from '../services/analytics.js';
 import { templateFamilies } from '../data/templates.js';
 import { invitationFrame, hydrateInvitationFrames } from '../ui/invitation-frame.js';

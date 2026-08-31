@@ -1,7 +1,3 @@
-// Enveely — Login / Register page.
-// Email+password and Google sign-in via Firebase Auth. When Firebase is not
-// configured, explains gracefully instead of failing silently.
-
 import { renderPage } from '../ui/app-shell.js';
 import { loginWithEmail, registerWithEmail, loginWithGoogle } from '../services/auth.js';
 import { isFirebaseConfigured } from '../services/firebase.js';

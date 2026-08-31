@@ -1,5 +1,3 @@
-// Enveely — Dashboard: local drafts overview (Design-1.md §48).
-// Cloud sync listing activates automatically once Firebase is configured.
 
 import { renderPage } from '../ui/app-shell.js';
 import { listDrafts, deleteDraft } from '../services/draft-store.js';
