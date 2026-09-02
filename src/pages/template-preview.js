@@ -10,6 +10,7 @@ import { getVariantsFor } from '../data/variants.js';
 import { navigate } from '../router.js';
 import { analyticsEvents } from '../services/analytics.js';
 import { invitationFrame, hydrateInvitationFrames } from '../ui/invitation-frame.js';
+import { getTemplatePlan, formatRupiah, planDurationLabel } from '../data/plans.js';
 
 const DEMO_PHOTOS = [
   '/demo/jawa.webp',
@@ -34,6 +35,7 @@ export function renderTemplatePreview(templateId) {
 
   const variants = getVariantsFor(tpl.id);
   const defaultVariant = variants[0]?.id;
+  const defaultPlan = getTemplatePlan(defaultVariant);
 
   renderPage(
     `
@@ -44,6 +46,7 @@ export function renderTemplatePreview(templateId) {
           <p class="eyebrow">Keluarga Desain</p>
           <h1>${tpl.name}</h1>
           <p class="preview-head__sub">${tpl.moodLabel} &middot; ${tpl.densityLabel} &middot; ${variants.length} variasi</p>
+          <p class="preview-head__price">${defaultPlan?.price ? `Mulai ${formatRupiah(defaultPlan.price)}` : 'Mulai gratis'} <span>${planDurationLabel(defaultPlan)}</span></p>
         </header>
 
         <div class="preview-toolbar reveal">
@@ -99,6 +102,7 @@ export function renderTemplatePreview(templateId) {
                   <span class="variant-card__pill" style="background:${v.colorOverrides?.accent || tpl.colors.accent};color:${v.colorOverrides?.bg || tpl.colors.bg}">${v.name}</span>
                 </div>
                 <div class="variant-card__body">
+                  ${(() => { const plan = getTemplatePlan(v.id); return `<div class="variant-card__price"><strong>${plan?.price ? formatRupiah(plan.price) : 'Gratis'}</strong><span>${planDurationLabel(plan)}</span></div>`; })()}
                   <h3>${tpl.name} &mdash; ${v.name}</h3>
                   <p class="muted">${variantDescription(v.id)}</p>
                   <ul class="variant-card__chips">

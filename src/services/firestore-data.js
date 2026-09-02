@@ -3,7 +3,7 @@
 // the app keeps working in local-only mode via draft-store.
 
 import { getDb, isFirebaseConfigured } from './firebase.js';
-import { getDeviceId } from '../core/device.js';
+import { getCurrentUser } from './auth.js';
 
 async function dbOrNull() {
   if (!isFirebaseConfigured()) return null;
@@ -30,29 +30,41 @@ export async function saveInvitation(invitation) {
   const id = invitation.id || `inv_${crypto.randomUUID().slice(0, 12)}`;
   const db = await dbOrNull();
   if (!db) return { id, cloud: false };
+  const user = await getCurrentUser();
+  if (!user) throw new Error('authentication-required');
 
-  const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
+  const { doc, getDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
+  const invitationRef = doc(db, 'invitations', id);
+  const existing = await getDoc(invitationRef);
   const payload = {
     ...stripPrivate(invitation),
     id,
-    deviceId: getDeviceId(),
+    ownerUid: user.uid,
     updatedAt: serverTimestamp(),
   };
+  if (!existing.exists()) payload.cloudCreatedAt = serverTimestamp();
+  if (
+    invitation.status === 'published'
+    && invitation.design?.variantId === 'serena-paper'
+    && !existing.data()?.freeActivatedAt
+  ) {
+    payload.freeActivatedAt = serverTimestamp();
+  }
   if (invitation.status === 'published' && !invitation.publishedAt) {
     payload.publishedAt = serverTimestamp();
   }
-  await setDoc(doc(db, 'invitations', id), payload, { merge: true });
+  await setDoc(invitationRef, payload, { merge: true });
 
   // Mirror control doc (ownership metadata; Blueprint-1.md §41).
   await setDoc(
     doc(db, 'invitationControl', id),
-    { deviceId: getDeviceId(), updatedAt: serverTimestamp() },
+    { ownerUid: user.uid, updatedAt: serverTimestamp() },
     { merge: true },
   );
   return { id, cloud: true };
 }
 
-/** Fetch an invitation for editing — requires deviceId match when configured. */
+/** Fetch an invitation for editing — requires account ownership when configured. */
 export async function getInvitationForEdit(id) {
   const db = await dbOrNull();
   if (!db) return null;
@@ -60,7 +72,8 @@ export async function getInvitationForEdit(id) {
   const snap = await getDoc(doc(db, 'invitations', id));
   if (!snap.exists()) return null;
   const data = snap.data();
-  if (data.deviceId && data.deviceId !== getDeviceId()) return null;
+  const user = await getCurrentUser();
+  if (!user || data.ownerUid !== user.uid) return null;
   return { id: snap.id, ...data };
 }
 
@@ -80,10 +93,12 @@ export async function getPublishedInvitation(id) {
 export async function listCloudDrafts() {
   const db = await dbOrNull();
   if (!db) return [];
+  const user = await getCurrentUser();
+  if (!user) return [];
   const { collection, query, where, orderBy, limit, getDocs } = await import('firebase/firestore');
   const q = query(
     collection(db, 'invitations'),
-    where('deviceId', '==', getDeviceId()),
+    where('ownerUid', '==', user.uid),
     orderBy('updatedAt', 'desc'),
     limit(30),
   );

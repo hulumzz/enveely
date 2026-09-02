@@ -9,6 +9,7 @@ import { getVariantsFor } from '../data/variants.js';
 import { navigate } from '../router.js';
 import { analyticsEvents } from '../services/analytics.js';
 import { invitationFrame, hydrateInvitationFrames } from '../ui/invitation-frame.js';
+import { getFamilyPriceRange, formatRupiah } from '../data/plans.js';
 
 const FILTERS = [
   { id: 'all', label: 'Semua' },
@@ -74,6 +75,7 @@ export function renderTemplateGallery() {
         grid.innerHTML = items
           .map((tpl, i) => {
             const variants = getVariantsFor(tpl.id);
+            const price = getFamilyPriceRange(tpl.id);
             const hero = FAMILY_HERO[tpl.id] || ['/demo/jawa.webp', '/demo/modern.webp', '/demo/luxury.webp'];
             return `
             <article class="tpl-card tpl-card--${tpl.id}" data-template="${tpl.id}" style="--i:${i}">
@@ -105,6 +107,7 @@ export function renderTemplateGallery() {
               <div class="tpl-card__body">
                 <h3 class="tpl-card__name">${tpl.name}</h3>
                 <p class="tpl-card__meta">${familyShortDesc(tpl.id)}</p>
+                <p class="tpl-card__price">${price?.min === 0 ? 'Mulai gratis' : `Mulai ${formatRupiah(price?.min)}`} <small>· ${price?.min === 0 ? '7 hari' : '3 bulan'}</small></p>
                 <ul class="tpl-card__chips">
                   <li class="tpl-card__chip">${tpl.densityLabel}</li>
                   <li class="tpl-card__chip">${variants.length} Variasi</li>

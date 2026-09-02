@@ -33,12 +33,16 @@ function humanize(error) {
 }
 
 /** Create account with email+password. */
-export async function registerWithEmail(email, password) {
+export async function registerWithEmail(email, password, displayName = '') {
   const auth = await authOrNull();
   if (!auth) return { ok: false, reason: 'unconfigured' };
   try {
     const { createUserWithEmailAndPassword } = await import('firebase/auth');
     const cred = await createUserWithEmailAndPassword(auth, email, password);
+    if (String(displayName).trim()) {
+      const { updateProfile } = await import('firebase/auth');
+      await updateProfile(cred.user, { displayName: String(displayName).trim().slice(0, 80) });
+    }
     await linkDeviceOwnership(cred.user);
     return { ok: true, user: publicUser(cred.user) };
   } catch (err) {
@@ -97,6 +101,39 @@ export async function onAuthChange(callback) {
   }
   const { onAuthStateChanged } = await import('firebase/auth');
   return onAuthStateChanged(auth, (user) => callback(user ? publicUser(user) : null));
+}
+
+/** Resolve the current Firebase user once, after the initial auth check. */
+export async function getCurrentUser() {
+  const auth = await authOrNull();
+  if (!auth) return null;
+  if (auth.currentUser) return publicUser(auth.currentUser);
+  const { onAuthStateChanged } = await import('firebase/auth');
+  return new Promise((resolve) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      unsubscribe();
+      resolve(user ? publicUser(user) : null);
+    });
+  });
+}
+
+/** Fresh ID token for authenticated server endpoints. */
+export async function getAuthToken() {
+  const auth = await authOrNull();
+  if (!auth?.currentUser) return '';
+  return auth.currentUser.getIdToken();
+}
+
+export async function sendPasswordReset(email) {
+  const auth = await authOrNull();
+  if (!auth) return { ok: false, reason: 'unconfigured' };
+  try {
+    const { sendPasswordResetEmail } = await import('firebase/auth');
+    await sendPasswordResetEmail(auth, email);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, message: humanize(err) };
+  }
 }
 
 /** Sign out. */

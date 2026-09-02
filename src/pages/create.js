@@ -9,8 +9,18 @@ import { createDraft, saveDraft } from '../services/draft-store.js';
 import { navigate } from '../router.js';
 import { analyticsEvents } from '../services/analytics.js';
 import { invitationFrame, hydrateInvitationFrames } from '../ui/invitation-frame.js';
+import { requireAuthenticated } from '../services/access.js';
+import { getTemplatePlan, formatRupiah, planDurationLabel } from '../data/plans.js';
 
 export function renderCreate(query = new URLSearchParams()) {
+  const suffix = query.toString();
+  return requireAuthenticated(
+    () => renderCreateWorkspace(query),
+    `/create${suffix ? `?${suffix}` : ''}`,
+  );
+}
+
+function renderCreateWorkspace(query = new URLSearchParams()) {
   const templateId = query.get('template') || '';
   const variantId = query.get('variant') || '';
   const tpl = templateId ? templateFamilies.find((t) => t.id === templateId) : null;
@@ -30,6 +40,7 @@ export function renderCreate(query = new URLSearchParams()) {
           <p class="eyebrow">Langkah ${tpl ? '2' : '1'} dari 2 — ${tpl ? 'Hampir selesai' : 'Mulai dari sini'}</p>
           <h1>${tpl ? 'Isi Data Mempelai' : 'Pilih Desain Favorit'}</h1>
           <p class="muted">${tpl ? 'Ceritakan sedikit tentang kalian. Semuanya bisa diubah lagi di editor nanti.' : 'Setiap keluarga punya karakter visual sendiri — pilih yang paling terasa seperti kalian.'}</p>
+          <p class="create-head__save-note">Draft tersimpan otomatis di akun dan perangkat ini.</p>
         </header>
 
         ${tpl ? basicsForm(tpl, activeVariant) : designPicker()}
@@ -111,6 +122,7 @@ function designPicker() {
   <div class="design-picker">
     ${templateFamilies.map((tpl, i) => {
       const variants = getVariantsFor(tpl.id);
+      const startingPrice = Math.min(...variants.map((variant) => getTemplatePlan(variant.id)?.price ?? Infinity));
       return `
       <article class="pick-card" data-pick-template="${tpl.id}" role="button" tabindex="0"
                aria-label="Pilih ${tpl.name}" style="--i:${i}">
@@ -129,6 +141,7 @@ function designPicker() {
             ${variants.map((v) => `<span class="pick-card__variant-dot" style="--dot:${pickVariantDot(tpl.id, v.id)}" title="${v.name}"></span>`).join('')}
             <span class="pick-card__variants-count">${variants.length} variasi</span>
           </div>
+          <p class="pick-card__price">${startingPrice === 0 ? 'Mulai gratis' : `Mulai ${formatRupiah(startingPrice)}`}</p>
           <span class="pick-card__cta">Pilih Desain Ini →</span>
         </div>
       </article>`;
@@ -138,6 +151,7 @@ function designPicker() {
 
 function basicsForm(tpl, variantId) {
   const variants = getVariantsFor(tpl.id);
+  const selectedPlan = getTemplatePlan(variantId);
   return `
   <div class="basics-layout">
     <form id="create-basics" class="basics-form" novalidate>
@@ -193,7 +207,7 @@ function basicsForm(tpl, variantId) {
 
       <div class="basics-form__footer">
         <p class="basics-form__assurance">
-          <span class="basics-form__check">✓</span> Belum siap sekalian? Simpan dulu, lanjutkan kapan saja &mdash; tanpa login.
+          <span class="basics-form__check">✓</span> Belum siap sekalian? Simpan dulu dan lanjutkan kapan saja dari dashboard.
         </p>
         <button type="submit" class="btn btn--primary btn--lg basics-form__submit">
           Lanjut ke Editor
@@ -226,14 +240,17 @@ function basicsForm(tpl, variantId) {
       </div>
 
       <div class="basics-preview__meta">
-        <p class="muted">${tpl.moodLabel} &middot; ${tpl.densityLabel}</p>
+        <div>
+          <p class="basics-preview__price">${selectedPlan?.price ? formatRupiah(selectedPlan.price) : 'Gratis'}</p>
+          <p class="muted">${planDurationLabel(selectedPlan)} &middot; ${tpl.moodLabel}</p>
+        </div>
         <a href="/create" data-link class="text-link">Ganti desain</a>
       </div>
 
       <ul class="basics-preview__tips">
         <li><span>●</span> Foto, acara, dan galeri bisa dilengkapin di editor setelah ini.</li>
         <li><span>●</span> Tidak ada deadline &mdash; simpan draft kapan saja.</li>
-        <li><span>●</span> Data tersimpan lokal sampai kalian daftar/login.</li>
+        <li><span>●</span> Paket berbayar aktif 3 bulan, atau 6 bulan dengan tambahan Rp15.000.</li>
       </ul>
     </aside>
   </div>`;

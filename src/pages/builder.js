@@ -14,8 +14,14 @@ import { builderCss } from './builder.css.js';
 import { openModal, toast } from '../ui/overlays.js';
 import { invitationUrl, whatsappMessage, whatsappUrl, copyToClipboard, nativeShare } from '../services/share.js';
 import { analyticsEvents } from '../services/analytics.js';
+import { requireAuthenticated } from '../services/access.js';
+import { getOrderForInvitation } from '../services/payment-store.js';
 
 export function renderBuilder(invitationId) {
+  return requireAuthenticated(() => renderBuilderWorkspace(invitationId), `/builder/${invitationId}`);
+}
+
+function renderBuilderWorkspace(invitationId) {
   const draft = loadDraft(invitationId);
   if (!draft) {
     navigate('/templates', { replace: true });
@@ -60,13 +66,18 @@ export function renderBuilder(invitationId) {
 
       // ---- persistence ----
       let saveTimer = null;
+      let cloudTimer = null;
       function persist() {
         clearTimeout(saveTimer);
+        clearTimeout(cloudTimer);
         saveStatus.textContent = 'Menyimpan...';
         saveTimer = setTimeout(() => {
           const ok = saveDraft(state.draft);
           saveStatus.textContent = ok ? `Tersimpan ${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}` : 'Gagal menyimpan';
         }, 500);
+        cloudTimer = setTimeout(async () => {
+          try { await saveInvitation(state.draft); } catch { /* local draft remains authoritative while offline */ }
+        }, 2200);
       }
 
       // ---- rendering ----
@@ -737,6 +748,20 @@ function publishChecklist(draft) {
 
 async function publishFlow(state, { persist, saveStatus }) {
   const draft = state.draft;
+  const payment = getOrderForInvitation(draft.id);
+  if (!payment || payment.status !== 'active' || (payment.expiresAt && payment.expiresAt <= Date.now())) {
+    openModal({
+      title: 'Aktifkan sebelum tayang',
+      body: `
+        <p>Desain dan isi undangan kalian sudah aman. Aktifkan paketnya agar tautan publik bisa dibuka oleh tamu.</p>
+        <p class="bprops__hint">Draft editor tidak akan hilang saat kalian melanjutkan ke pembayaran.</p>`,
+      actions: [
+        { label: 'Nanti Dulu' },
+        { label: 'Lanjut Pembayaran', kind: 'primary', onClick: () => navigate(`/checkout/${draft.id}`) },
+      ],
+    });
+    return;
+  }
   const checks = publishChecklist(draft);
   const blocking = checks.filter((c) => !c.ok && !c.warnOnly);
 
@@ -758,6 +783,8 @@ async function publishFlow(state, { persist, saveStatus }) {
           if (blocking.length) return;
           const btns = document.querySelectorAll('.env-modal__actions .btn');
           btns[btns.length - 1].textContent = 'Menyiapkan...';
+          // Ensure a server-timestamped draft exists before the publish update.
+          try { await saveInvitation({ ...draft, status: 'draft' }); } catch { /* handled by the publish result below */ }
           draft.status = 'published';
           persist();
           saveStatus.textContent = 'Menyimpan ke cloud...';

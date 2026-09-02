@@ -11,6 +11,10 @@
 @import './landing.css';
 @import './auth.css';
 @import './create.css';
+@import './checkout.css';
+@import './dashboard.css';
+@import './info.css';
+@import './admin-payments.css';
 
 body {
   font-family: var(--font-sans);

@@ -3,6 +3,7 @@ import { analyticsEvents } from '../services/analytics.js';
 import { templateFamilies } from '../data/templates.js';
 import { invitationFrame, hydrateInvitationFrames } from '../ui/invitation-frame.js';
 import { icon } from '../core/icons.js';
+import { getFamilyPriceRange, formatRupiah } from '../data/plans.js';
 
 const DEMO = {
   jawa: '/demo/jawa.webp',
@@ -38,7 +39,7 @@ export function renderLanding() {
           </div>
           <div class="hero__trust">
             <span>${icon('check', { size: 16 })} Mulai gratis, tanpa kartu kredit</span>
-            <span>${icon('check', { size: 16 })} Coba desain dulu, daftar saat siap</span>
+            <span>${icon('check', { size: 16 })} Lihat semua desain tanpa login</span>
             <span>${icon('check', { size: 16 })} Siap dibagikan lewat WhatsApp</span>
           </div>
         </div>
@@ -129,6 +130,7 @@ export function renderLanding() {
               <div class="family-card__body">
                 <h3 class="family-card__name">${f.name}</h3>
                 <p class="family-card__meta">${familyShortDesc(f.id)}</p>
+                <p class="family-card__price">${familyPriceLabel(f.id)}</p>
                 <ul class="family-card__chips" aria-label="Ciri desain">
                   ${familyChips(f.id).map((c) => `<li>${c}</li>`).join('')}
                 </ul>
@@ -138,6 +140,22 @@ export function renderLanding() {
                 </div>
               </div>
             </article>`).join('')}
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PRICING ============ -->
+    <section class="pricing-story">
+      <div class="container pricing-story__inner">
+        <header class="pricing-story__head reveal">
+          <p class="eyebrow">Harga Jelas, Tanpa Tebak-tebakan</p>
+          <h2>Pilih desainnya. Atur masa tayangnya.</h2>
+          <p>Mulai gratis selama 7 hari, atau aktifkan koleksi premium selama 3 bulan. Butuh lebih lama? Tambah Rp15.000 untuk masa tayang 6 bulan.</p>
+        </header>
+        <div class="pricing-story__cards">
+          <article class="price-card reveal"><span class="price-card__num">01</span><p class="eyebrow">Untuk Mencoba</p><h3>Polos Gratis</h3><strong>Rp0</strong><small>Aktif 7 hari</small><ul><li>Semua section penting</li><li>Editor & pratinjau penuh</li><li>1 tautan undangan</li></ul><a href="/create?template=serena&variant=serena-paper" data-link class="btn btn--ghost">Mulai Gratis</a></article>
+          <article class="price-card price-card--featured reveal"><span class="price-card__badge">Paling Fleksibel</span><span class="price-card__num">02</span><p class="eyebrow">Koleksi Berbayar</p><h3>Signature & Premium</h3><strong>Rp55.000–Rp220.000</strong><small>Aktif 3 bulan</small><ul><li>18 pilihan desain & variasi</li><li>QRIS dan kode unik otomatis</li><li>Perpanjang 6 bulan +Rp15.000</li></ul><a href="/templates" data-link class="btn btn--primary">Pilih Desain</a></article>
+          <article class="price-card reveal"><span class="price-card__num">03</span><p class="eyebrow">Selalu Aman</p><h3>Draft Tersimpan</h3><strong>Otomatis</strong><small>Editor & checkout</small><ul><li>Lanjutkan setelah tab tertutup</li><li>Riwayat pembayaran rapi</li><li>Bukti diperiksa dengan bantuan AI</li></ul><a href="/login?mode=register" data-link class="btn btn--ghost">Buat Akun</a></article>
         </div>
       </div>
     </section>
@@ -240,6 +258,11 @@ export function renderLanding() {
       <h3>${title}</h3>
       <p>${desc}</p>
     </li>`;
+  }
+
+  function familyPriceLabel(id) {
+    const range = getFamilyPriceRange(id);
+    return range?.min === 0 ? 'Mulai gratis · 7 hari' : `Mulai ${formatRupiah(range?.min)} · 3 bulan`;
   }
 }
 

@@ -61,6 +61,12 @@ export function mountAppShell(root) {
             <a href="/login" data-link>Masuk ke Akun</a>
             <a href="/login?mode=register" data-link>Buat Akun Gratis</a>
           </div>
+          <div class="footer__col">
+            <h4>Bantuan</h4>
+            <a href="/help" data-link>Pusat Bantuan</a>
+            <a href="/privacy" data-link>Privasi</a>
+            <a href="/terms" data-link>Ketentuan</a>
+          </div>
         </div>
         <div class="footer__base">
           <span>&copy; ${new Date().getFullYear()} Enveely. Dibuat dengan penuh perhatian.</span>

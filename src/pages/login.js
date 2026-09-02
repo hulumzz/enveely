@@ -1,11 +1,13 @@
 import { renderPage } from '../ui/app-shell.js';
-import { loginWithEmail, registerWithEmail, loginWithGoogle } from '../services/auth.js';
+import { loginWithEmail, registerWithEmail, loginWithGoogle, sendPasswordReset } from '../services/auth.js';
 import { isFirebaseConfigured } from '../services/firebase.js';
 import { icon } from '../core/icons.js';
 import { navigate } from '../router.js';
+import { resolveSafeNext } from '../services/access.js';
 
 export function renderLogin(_params, query = new URLSearchParams()) {
   const mode = query.get('mode') === 'register' ? 'register' : 'login';
+  const next = resolveSafeNext(query);
 
   renderPage(
     `
@@ -26,9 +28,8 @@ export function renderLogin(_params, query = new URLSearchParams()) {
 
           ${isFirebaseConfigured() ? '' : `
           <div class="auth-notice">
-            <strong>Mode lokal aktif.</strong>
-            <p>Firebase Auth belum dikonfigurasi (`.env.local` kosong). Kamu tetap bisa membuat undangan tanpa akun — draft tersimpan di perangkat ini.</p>
-            <a href="/create" data-link class="btn btn--ghost btn--sm">Buat tanpa akun</a>
+            <strong>Konfigurasi akun dibutuhkan.</strong>
+            <p>Firebase Auth belum dikonfigurasi. Isi konfigurasi Firebase untuk mengaktifkan pendaftaran, editor, dashboard, dan pembayaran.</p>
           </div>`}
 
           <button type="button" class="btn btn--google" data-google>
@@ -52,6 +53,7 @@ export function renderLogin(_params, query = new URLSearchParams()) {
               <span>Password</span>
               <input type="password" name="password" required minlength="6" autocomplete="${mode === 'register' ? 'new-password' : 'current-password'}" placeholder="Minimal 6 karakter"/>
             </label>
+            ${mode === 'login' ? '<button type="button" class="auth-forgot" data-forgot>Lupa password?</button>' : ''}
 
             <p class="form-error" data-error role="alert"></p>
 
@@ -62,7 +64,7 @@ export function renderLogin(_params, query = new URLSearchParams()) {
 
           <p class="auth-switch">
             <span data-switch-label>${mode === 'register' ? 'Sudah punya akun?' : 'Belum punya akun?'}</span>
-            <a href="/login${mode === 'register' ? '' : '?mode=register'}" data-link data-switch-link>
+            <a href="/login${mode === 'register' ? `?next=${encodeURIComponent(next)}` : `?mode=register&next=${encodeURIComponent(next)}`}" data-link data-switch-link>
               ${mode === 'register' ? 'Masuk' : 'Daftar gratis'}
             </a>
           </p>
@@ -86,7 +88,7 @@ export function renderLogin(_params, query = new URLSearchParams()) {
 
       const handleResult = (res) => {
         if (res.ok) {
-          navigate('/dashboard');
+          navigate(next);
           return;
         }
         if (res.reason === 'unconfigured') {
@@ -107,7 +109,7 @@ export function renderLogin(_params, query = new URLSearchParams()) {
         }
         setLoading(true, 'Memproses...');
         const res = mode === 'register'
-          ? await registerWithEmail(data.email, data.password)
+          ? await registerWithEmail(data.email, data.password, data.name)
           : await loginWithEmail(data.email, data.password);
         handleResult(res);
       });
@@ -118,6 +120,20 @@ export function renderLogin(_params, query = new URLSearchParams()) {
         const res = await loginWithGoogle();
         handleResult(res);
         setLoading(false, mode === 'register' ? 'Buat Akun' : 'Masuk');
+      });
+
+      root.querySelector('[data-forgot]')?.addEventListener('click', async () => {
+        const email = form.elements.email.value.trim();
+        if (!email) {
+          errorEl.textContent = 'Isi email terlebih dahulu agar kami bisa mengirim tautan reset.';
+          form.elements.email.focus();
+          return;
+        }
+        const result = await sendPasswordReset(email);
+        errorEl.classList.toggle('is-success', result.ok);
+        errorEl.textContent = result.ok
+          ? 'Tautan reset password sudah dikirim. Silakan cek inbox atau folder spam.'
+          : (result.message || 'Reset password belum dapat dikirim.');
       });
     },
   );

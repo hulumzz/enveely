@@ -540,3 +540,4 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+.preview-head__price{display:inline-flex;align-items:center;gap:10px;margin-top:12px;padding:8px 13px;border-radius:20px;background:var(--accent-soft);color:var(--accent);font-weight:700}.preview-head__price span{color:var(--text-soft);font-size:.72rem;font-weight:500}.variant-card__price{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:7px}.variant-card__price strong{color:var(--accent);font-size:1rem}.variant-card__price span{color:var(--muted);font-size:.7rem}

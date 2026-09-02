@@ -1,82 +1,106 @@
 rules_version = '2';
 
-// Enveely — Firestore Security Rules (least privilege, no-login MVP).
-//
-// Model:
-//   /invitations/{invId}            -> invitation content + design + status
-//   /invitations/{invId}/rsvps/{id} -> guest RSVP submissions
-//   /invitations/{invId}/wishes/{id}-> guest wishes (approval flow later)
-//   /invitationControl/{invId}      -> private control doc (deviceId ownership)
-//
-// Ownership: the browser-generated deviceId is NOT strong identity; it only
-// scopes draft access per installation (Blueprint-1.md §8). Public reads are
-// limited to status == 'published'. Never use global allow read/write: true.
-
+// Account-owned invitation data. Public guests can only read invitations that
+// have been published and can only submit tightly validated RSVP/wish fields.
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // ---------- Invitations ----------
     match /invitations/{invitationId} {
-      // Public: only published invitations are readable.
-      allow get: if resource != null && resource.data.status == 'published';
-      // Drafts: readable/updated by the owning device via explicit query filter.
-      allow read: if isOwner();
-      allow create: if isOwner()
-        && request.resource.data.status == 'draft'
-        && request.resource.data.deviceId == request.auth.token.deviceId;
-      allow update: if isOwner()
-        && resource.data.deviceId == request.auth.token.deviceId;
-      allow delete: if isOwner();
+      allow get: if publiclyAccessible(invitationId) || ownsExisting();
+      allow list: if signedIn() && resource.data.ownerUid == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.status == 'draft';
+      allow update: if ownsExisting()
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && publishAllowed(invitationId);
+      allow delete: if ownsExisting();
 
-      // ---------- RSVPs (public create with field validation) ----------
       match /rsvps/{rsvpId} {
-        allow read: if isOwner();
-        allow create: if validRsvp();
-        allow update, delete: if false; // immutable guest submissions
+        allow read: if ownsInvitation(invitationId);
+        allow create: if invitationPublished(invitationId) && validRsvp();
+        allow update, delete: if false;
       }
 
-      // ---------- Wishes (public create, owner moderation) ----------
       match /wishes/{wishId} {
-        allow read: if isOwner() || wishesPublic(invitationId);
-        allow create: if validWish();
-        allow update, delete: if isOwner();
+        allow read: if ownsInvitation(invitationId)
+          || (invitationPublished(invitationId) && resource.data.approved == true);
+        allow create: if invitationPublished(invitationId) && validWish();
+        allow update, delete: if ownsInvitation(invitationId);
       }
     }
 
-    // ---------- Invitation control docs (private) ----------
     match /invitationControl/{invitationId} {
-      allow read, write: if isOwner();
+      allow read, create, update, delete: if signedIn()
+        && (resource == null || resource.data.ownerUid == request.auth.uid)
+        && (request.resource == null || request.resource.data.ownerUid == request.auth.uid);
     }
 
-    // ---------- Templates (read-only public catalog when moved to DB) ----------
+    // Written only by trusted payment administration/backend. The client may
+    // read its own entitlement to show activation/expiry state.
+    match /entitlements/{invitationId} {
+      allow get: if signedIn() && resource.data.ownerUid == request.auth.uid;
+      allow list, create, update, delete: if false;
+    }
+
     match /templates/{templateId} {
       allow read: if true;
       allow write: if false;
     }
 
-    // ---------- Helpers ----------
-
-    // deviceId matching on the REQUEST payload. In this no-login MVP the
-    // client includes its deviceId in writes and in queries for drafts.
-    function isOwner() {
-      return request.resource != null
-        && request.resource.data.keys().hasAny(['deviceId'])
-        ? true
-        : existingDataOwnedByCaller();
+    function signedIn() {
+      return request.auth != null;
     }
 
-    function existingDataOwnedByCaller() {
-      return resource != null && resource.data.deviceId == deviceToken();
+    function ownsExisting() {
+      return signedIn() && resource.data.ownerUid == request.auth.uid;
     }
 
-    function deviceToken() {
-      // Client passes deviceId as a query constraint; rules compare against
-      // request.query values where available.
-      return request.query.deviceId;
+    function ownsInvitation(invitationId) {
+      return signedIn()
+        && get(/databases/$(database)/documents/invitations/$(invitationId)).data.ownerUid == request.auth.uid;
     }
 
-    function wishesPublic(invitationId) {
-      return get(/databases/$(database)/documents/invitations/$(invitationId)).data.wishesEnabled == true;
+    function invitationPublished(invitationId) {
+      return get(/databases/$(database)/documents/invitations/$(invitationId)).data.status == 'published';
+    }
+
+    function publishAllowed(invitationId) {
+      return request.resource.data.status != 'published'
+        || freePlanWindow()
+        || paidEntitlement(invitationId);
+    }
+
+    function freePlanWindow() {
+      return request.resource.data.design.variantId == 'serena-paper'
+        && (
+          (resource.data.freeActivatedAt is timestamp
+            && request.resource.data.freeActivatedAt == resource.data.freeActivatedAt
+            && request.time < resource.data.freeActivatedAt + duration.value(7, 'd'))
+          || (!resource.data.keys().hasAny(['freeActivatedAt'])
+            && request.resource.data.freeActivatedAt == request.time)
+        );
+    }
+
+    function paidEntitlement(invitationId) {
+      return validEntitlement(invitationId, request.auth.uid);
+    }
+
+    function publiclyAccessible(invitationId) {
+      return resource.data.status == 'published'
+        && (
+          (resource.data.design.variantId == 'serena-paper'
+            && resource.data.freeActivatedAt is timestamp
+            && request.time < resource.data.freeActivatedAt + duration.value(7, 'd'))
+          || validEntitlement(invitationId, resource.data.ownerUid)
+        );
+    }
+
+    function validEntitlement(invitationId, ownerUid) {
+      return exists(/databases/$(database)/documents/entitlements/$(invitationId))
+        && get(/databases/$(database)/documents/entitlements/$(invitationId)).data.ownerUid == ownerUid
+        && get(/databases/$(database)/documents/entitlements/$(invitationId)).data.active == true
+        && get(/databases/$(database)/documents/entitlements/$(invitationId)).data.expiresAt is timestamp
+        && get(/databases/$(database)/documents/entitlements/$(invitationId)).data.expiresAt > request.time;
     }
 
     function validRsvp() {
@@ -93,7 +117,7 @@ service cloud.firestore {
       return d.keys().hasOnly(['name', 'message', 'approved', 'createdAt'])
         && d.name is string && d.name.size() > 0 && d.name.size() <= 80
         && d.message is string && d.message.size() > 0 && d.message.size() <= 500
-        && ('approved' not in d || d.approved == false);
+        && (!('approved' in d) || d.approved == false);
     }
   }
 }

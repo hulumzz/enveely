@@ -31,6 +31,18 @@ const LIB = {
       <path d="M62 36 q 4 -13 17 -15 q -2 13 -17 15 z" fill="currentColor" opacity=".7"/>
       <path d="M86 25 q 6 -11 18 -12 q -3 12 -18 12 z" fill="currentColor" opacity=".75"/>`,
   },
+  'rose-corner': {
+    vb: '0 0 130 130',
+    body: `<path d="M8 124C17 78 47 41 92 18" stroke="currentColor" stroke-width="1.4"/><path d="M31 83c-15-3-22-13-21-27 15 1 23 10 21 27ZM57 52c-12-7-15-18-10-31 13 5 18 15 10 31Z" fill="currentColor" opacity=".55"/><g transform="translate(88 18)"><path d="M0 18C-7 9-2 1 7 5c2-10 13-10 15 0 9-4 14 4 7 13 7 8 1 16-8 12-3 10-14 9-15-1-10 3-15-5-6-11Z" fill="currentColor" opacity=".72"/><circle cx="14" cy="16" r="4" fill="none" stroke="currentColor"/></g>`
+  },
+  'batik-corner': {
+    vb: '0 0 120 120',
+    body: `<path d="M5 115V40C5 17 17 5 40 5h75" stroke="currentColor" stroke-width="1.5"/><path d="M18 102V47c0-18 11-29 29-29h55" stroke="currentColor" opacity=".45"/><path d="m33 33 10-10 10 10-10 10-10-10Zm24 24 12-12 12 12-12 12-12-12Z" fill="none" stroke="currentColor"/><circle cx="91" cy="29" r="5" fill="currentColor" opacity=".65"/>`
+  },
+  'olive-corner': {
+    vb: '0 0 130 100',
+    body: `<path d="M5 94C35 81 61 55 91 12" stroke="currentColor" stroke-width="1.5"/><path d="M25 82c-4-13 2-23 14-28 3 13-2 23-14 28Zm18-13c1-14 9-22 22-22-1 13-8 21-22 22Zm18-17c-2-13 5-23 17-26 2 13-4 22-17 26Zm17-21c2-12 10-18 22-17-2 11-9 17-22 17Z" fill="currentColor" opacity=".64"/>`
+  },
   'leaf-divider': {
     vb: '0 0 220 24',
     body: `
@@ -52,6 +64,14 @@ const LIB = {
       <circle cx="110" cy="6" r="2" fill="currentColor"/>
       <line x1="121" y1="6" x2="220" y2="6" stroke="currentColor" stroke-width="1"/>`,
   },
+  'batik-divider': {
+    vb: '0 0 240 32',
+    body: `<path d="M0 16h82m76 0h82" stroke="currentColor"/><path d="m99 16 10-10 10 10-10 10-10-10Zm22 0 10-10 10 10-10 10-10-10Z" fill="none" stroke="currentColor"/><circle cx="120" cy="16" r="3" fill="currentColor"/>`
+  },
+  'rose-divider': {
+    vb: '0 0 240 32',
+    body: `<path d="M0 16h88m64 0h88" stroke="currentColor"/><path d="M120 5c6-7 15 0 9 8 9-2 12 9 3 12-4 8-13 3-12-5-1 8-10 13-14 5-9-3-6-14 3-12-6-8 3-15 9-8l2 6 2-6Z" fill="currentColor" opacity=".7"/>`
+  },
 };
 
 /** Render an ornament as inline SVG string. */
@@ -65,8 +85,11 @@ export function ornamentSvg(id, cls = '') {
 export function cornerOrnament(ornamentSet) {
   const set = String(ornamentSet || '');
   if (!set || set === 'none') return null;
-  if (/geometric|nusantara|terra|sagara/.test(set)) return 'geo-corner';
-  if (/doodle|leafy|grain|picnic|analog/.test(set)) return 'doodle-leaf';
+  if (/nusantara|terra|sagara/.test(set)) return 'batik-corner';
+  if (/rose/.test(set)) return 'rose-corner';
+  if (/leafy|botanical/.test(set)) return 'olive-corner';
+  if (/geometric/.test(set)) return 'geo-corner';
+  if (/doodle|grain|picnic|analog/.test(set)) return 'doodle-leaf';
   if (/minimal|line|single|film|cue/.test(set)) return null; // editorial families: no corners
   return 'floral-corner';
 }
@@ -74,9 +97,9 @@ export function cornerOrnament(ornamentSet) {
 /** Pick the section divider matching a template's ornament set. */
 export function dividerOrnament(ornamentSet) {
   const set = String(ornamentSet || '');
-  if (/geometric|nusantara|terra|puspa|sagara/.test(set)) return 'star-divider';
+  if (/nusantara|terra|puspa|sagara/.test(set)) return 'batik-divider';
   if (/minimal|none|ink|white|paper|modern/.test(set)) return 'line-divider';
   if (/doodle|leafy|grain|picnic|analog|botanical/.test(set)) return 'leaf-divider';
-  if (/rose|flower/.test(set)) return 'leaf-divider';
+  if (/rose|flower/.test(set)) return 'rose-divider';
   return 'line-divider';
 }

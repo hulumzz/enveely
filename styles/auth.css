@@ -140,3 +140,4 @@
   .auth__panel { grid-template-columns: 1fr; }
   .auth__visual { order: -1; min-height: 220px; }
 }
+.auth-forgot{justify-self:end;border:0;background:transparent;color:var(--accent);font-size:.76rem;cursor:pointer;margin-top:-7px}.form-error.is-success{color:var(--success)}

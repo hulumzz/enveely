@@ -10,4 +10,11 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+.dev.vars*
+service-account*.json
+*-firebase-adminsdk-*.json
 Update_Task.md
+QRIS Decoder.md
+.worker-check.js
+.pages-config-scratch/
+.wrangler/

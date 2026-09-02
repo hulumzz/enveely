@@ -196,6 +196,22 @@
 
 .inv--meadow .wishes__list li { background: #fffdf7; color: #40382e; box-shadow: 0 4px 12px rgba(64,56,46,0.12); }
 
+/* ================= VARIANT COMPOSITIONS — more than palette swaps ================= */
+
+.inv--v-amora-garden .sec:nth-of-type(even){background:color-mix(in srgb,var(--inv-accent) 5%,var(--inv-bg))}.inv--v-amora-garden .cover__media{clip-path:ellipse(74% 70% at 50% 36%)}
+.inv--v-amora-moonlit .sec--cover{min-height:96svh}.inv--v-amora-moonlit .cover__media{inset:5%;border-radius:50% 50% 6px 6px;overflow:hidden;box-shadow:0 0 0 1px #cbb8d466,0 0 80px #a887bd29}.inv--v-amora-moonlit .sec-divider{filter:drop-shadow(0 0 8px var(--inv-accent))}
+.inv--v-amora-vintage-rose{background-image:radial-gradient(#b76e7914 1px,transparent 1px);background-size:16px 16px}.inv--v-amora-vintage-rose .sec--cover{margin:16px;min-height:calc(100svh - 32px);border:1px solid #b76e795c;border-radius:190px 190px 8px 8px;overflow:hidden}.inv--v-amora-vintage-rose .gallery__item:nth-child(3n+1){transform:rotate(-1.5deg)}
+
+.inv--v-elysian-ivory .sec-head{text-align:left;max-width:900px;margin:auto}.inv--v-elysian-ivory .sec-head h2{text-transform:uppercase;letter-spacing:.08em}.inv--v-elysian-noir .sec{border-bottom:1px solid #ffffff12}.inv--v-elysian-noir .cover__body{text-align:left;left:7%;right:auto}.inv--v-elysian-noir .cover__names{font-size:clamp(3.8rem,calc(var(--inv-vw)*12),7rem);line-height:.86}.inv--v-elysian-champagne .sec--cover{margin:20px;border:4px double color-mix(in srgb,var(--inv-accent) 60%,transparent);min-height:calc(100svh - 40px)}.inv--v-elysian-champagne .event-card{display:grid;grid-template-columns:110px 1fr;border:1px solid #a98f5f52;padding:30px}
+
+.inv--v-serena-paper{background-image:linear-gradient(#8b81750d 1px,transparent 1px);background-size:100% 28px}.inv--v-serena-paper .cover__media{transform:rotate(-2deg);box-shadow:12px 14px 0 #ded3c2}.inv--v-serena-modern-white .sec{max-width:920px;margin:auto;border-bottom:1px solid #2b292617}.inv--v-serena-modern-white .cover__media{width:min(390px,calc(var(--inv-vw)*82));aspect-ratio:16/10}.inv--v-serena-ink .sec--cover{align-content:end;text-align:left;padding-bottom:12svh}.inv--v-serena-ink .cover__media{width:48%;height:72%;left:auto;right:5%;top:10%;filter:grayscale(1)}.inv--v-serena-ink .cover__body{width:54%;margin-right:auto;z-index:1}
+
+.inv--v-lumiere-gallery .gallery__grid{grid-template-columns:2fr 1fr 1fr}.inv--v-lumiere-gallery .gallery__item:first-child{grid-row:span 2;aspect-ratio:auto}.inv--v-lumiere-film{background-image:repeating-linear-gradient(90deg,transparent 0 26px,#ffffff08 26px 28px)}.inv--v-lumiere-film .gallery__grid{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding:10px 6vw}.inv--v-lumiere-film .gallery__item{min-width:72%;scroll-snap-align:center;border:10px solid #080808;outline:1px solid #ffffff1c}.inv--v-lumiere-clean .sec--cover{min-height:88svh;margin:5%;border-radius:24px;overflow:hidden}.inv--v-lumiere-clean .sec--cover::after{background:linear-gradient(to top,#f4f2ef 2%,transparent 65%)}.inv--v-lumiere-clean .cover__body{color:#22201e;text-align:left}.inv--v-lumiere-clean .gallery__grid{gap:22px}
+
+.inv--v-nusantara-sagara .sec{background-image:linear-gradient(135deg,transparent 96%,#4f6f8f1a 96%)}.inv--v-nusantara-sagara .sec--cover{clip-path:polygon(0 0,100% 0,100% 94%,50% 100%,0 94%)}.inv--v-nusantara-puspa .sec:nth-of-type(odd){background:linear-gradient(90deg,#c2703f0d,transparent 35%,#c2703f0d)}.inv--v-nusantara-puspa .person__photo{border-radius:50% 50% 8px 8px;outline-offset:10px}.inv--v-nusantara-terra .sec--cover{margin:14px;border:7px solid #96502e30;box-shadow:inset 0 0 0 1px #96502e80;min-height:calc(100svh - 28px)}.inv--v-nusantara-terra .event-card{border-radius:110px 110px 10px 10px;padding-top:42px}
+
+.inv--v-meadow-picnic .sec--cover{margin:18px;transform:rotate(-.5deg);min-height:calc(100svh - 36px);box-shadow:0 8px 30px #40382e24}.inv--v-meadow-picnic .gallery__item:nth-child(3n){transform:rotate(3deg) translateY(10px)}.inv--v-meadow-garden .sec:nth-of-type(even){background:#7d8f630b}.inv--v-meadow-garden .person__photo{border-radius:48% 52% 45% 55%;border-width:4px}.inv--v-meadow-film{background-image:linear-gradient(#3c342b0b 1px,transparent 1px),linear-gradient(90deg,#3c342b08 1px,transparent 1px);background-size:24px 24px}.inv--v-meadow-film .gallery__item{filter:saturate(.76) sepia(.12)}.inv--v-meadow-film .sec--cover:before{content:'ENVEELY FILM · 001';position:absolute;z-index:2;top:20px;left:20px;font-size:.62rem;letter-spacing:.18em;color:#fff}
+
 /* ================= QUOTE — per family flavor ================= */
 
 .inv--amora .sec--quote { background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--inv-accent) 6%, transparent)); }
@@ -249,3 +265,4 @@
 .inv--nusantara .info__card { border-radius: 4px; box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--inv-bg) 80%, var(--inv-accent)); }
 .inv--meadow .info__card { background: #fffdf7; color: #40382e; box-shadow: 0 6px 18px rgba(64,56,46,0.14); transform: rotate(-0.4deg); }
 .inv--meadow .info__card:nth-of-type(2) { transform: rotate(0.6deg); }
+.tpl-card__price{color:var(--accent);font-weight:700;font-size:.84rem;margin-top:4px}.tpl-card__price small{color:var(--muted);font-weight:500}

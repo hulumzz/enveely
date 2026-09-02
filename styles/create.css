@@ -499,3 +499,4 @@
   font-weight: 700;
   line-height: 1.4;
 }
+.create-head__save-note{display:inline-block;margin-top:12px;padding:7px 11px;border-radius:20px;background:#edf3ed;color:#55705d;font-size:.72rem}.pick-card__price,.basics-preview__price{color:var(--accent);font-weight:700}.pick-card__price{font-size:.8rem;margin-top:7px}.basics-preview__price{font-size:1rem}
