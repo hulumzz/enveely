@@ -178,6 +178,9 @@ function variantDescription(variantId) {
     'meadow-picnic': 'Polaroid dan doodle — playful dan santai.',
     'meadow-garden': 'Botanical hijau — segar dan natural.',
     'meadow-film': 'Grain analog — hangat dan nostalgia.',
+    'botanica-dusty-rose': 'Botanical watercolor, ranting lembut, nuansa dusty rose dan kanvas gading.',
+    'botanica-mauve-intimate': 'Aksen mauve dan burgundy dalam — intim, hangat, dan editorial.',
+    'botanica-blush-cream': 'Blush lembut di atas krem hangat — romantis, tenang, dan bersahaja.',
   };
   return map[variantId] || 'Variasi karakter dalam keluarga yang sama.';
 }

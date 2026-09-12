@@ -12,8 +12,64 @@ const AMP = '&amp;'; // renders as "&" between couple names
 export function renderCover(ctx) {
   const { c, design } = ctx;
   const corner = cornerOrnament(design.ornamentSet);
+  const guestGreeting = c.guestGreeting || 'Kepada Yth. Bapak/Ibu/Saudara/i';
+  const guestName = c.guestName || (ctx.guestName ? ctx.guestName : '');
+  const layout = design.layouts.cover;
+  
+  // Tempwed arch frame layout
+  if (layout === 'archFrame') {
+    return `
+  <section class="sec sec--cover" data-section="cover" data-layout="${esc(design.layouts.cover)}" id="cover">
+    ${corner ? `<span class="corner corner--tl">${ornamentSvg(corner)}</span>` : ''}
+    ${corner ? `<span class="corner corner--br">${ornamentSvg(corner)}</span>` : ''}
+    <div class="cover__media">
+      <img src="${esc(c.coverImage || placeholder(c))}" alt="" loading="eager" />
+    </div>
+    <div class="cover__body arch-frame-container">
+      <div class="arch-frame-border">
+        <div class="arch-photo-wrapper">
+          <img src="${esc(c.coverImage || placeholder(c))}" alt="" loading="eager" />
+        </div>
+        <!-- Decorative floral bouquet over frame bottom -->
+        <div class="frame-floral-bottom floating-gentle">
+          <svg viewBox="0 0 200 60" width="220" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M100 35C80 20 40 25 10 35C40 45 70 40 100 35Z" fill="#C39379" opacity="0.3"/>
+            <path d="M100 35C120 20 160 25 190 35C160 45 130 40 100 35Z" fill="#C39379" opacity="0.3"/>
+            <circle cx="100" cy="35" r="8" fill="#B47B5D"/>
+            <circle cx="85" cy="34" r="5" fill="#C99882"/>
+            <circle cx="115" cy="34" r="5" fill="#C99882"/>
+          </svg>
+        </div>
+      </div>
+      <!-- Arch top decoration -->
+      <div class="arch-top-decoration">
+        <svg viewBox="0 0 200 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 30 Q 50 10 100 30 Q 150 10 200 30" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="50" cy="30" r="6" fill="currentColor"/>
+          <circle cx="150" cy="30" r="6" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="cover__body-inner">
+        <p class="cover__eyebrow">${esc(c.coverEyebrow ?? defaultEyebrow(ctx.locale))}</p>
+        <h1 class="cover__names">${namesLine(ctx)}</h1>
+        ${guestName ? `
+        <div class="cover__guest">
+          <p class="cover__guest-greet">${esc(guestGreeting)}</p>
+          <p class="cover__guest-name"><strong>${esc(guestName)}</strong></p>
+        </div>` : ''}
+        <p class="cover__date">${esc(formatDateLong(c.weddingDate, ctx.locale))}</p>
+        <a class="btn-inv btn-inv--open" href="#welcome" data-scroll data-open-cover>
+          <svg class="btn-inv__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
+          <span>${esc(invT(ctx.locale, 'open'))}</span>
+        </a>
+      </div>
+    </div>
+  </section>`;
+  }
+  
+  // Default cover layout (existing)
   return `
-  <section class="sec sec--cover" data-section="cover" data-layout="${esc(design.layouts.cover)}">
+  <section class="sec sec--cover" data-section="cover" data-layout="${esc(design.layouts.cover)}" id="cover">
     ${corner ? `<span class="corner corner--tl">${ornamentSvg(corner)}</span>` : ''}
     ${corner ? `<span class="corner corner--br">${ornamentSvg(corner)}</span>` : ''}
     <div class="cover__media">
@@ -22,8 +78,16 @@ export function renderCover(ctx) {
     <div class="cover__body">
       <p class="cover__eyebrow">${esc(c.coverEyebrow ?? defaultEyebrow(ctx.locale))}</p>
       <h1 class="cover__names">${namesLine(ctx)}</h1>
+      ${guestName ? `
+      <div class="cover__guest">
+        <p class="cover__guest-greet">${esc(guestGreeting)}</p>
+        <p class="cover__guest-name"><strong>${esc(guestName)}</strong></p>
+      </div>` : ''}
       <p class="cover__date">${esc(formatDateLong(c.weddingDate, ctx.locale))}</p>
-      <a class="btn-inv" href="#welcome" data-scroll>${esc(invT(ctx.locale, 'open'))}</a>
+      <a class="btn-inv btn-inv--open" href="#welcome" data-scroll data-open-cover>
+        <svg class="btn-inv__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
+        <span>${esc(invT(ctx.locale, 'open'))}</span>
+      </a>
     </div>
   </section>`;
 }
@@ -42,7 +106,7 @@ export function renderCouple(ctx) {
   const { c, design } = ctx;
   const div = dividerOrnament(design.ornamentSet);
   return `
-  <section class="sec sec--couple" data-section="couple" data-layout="${esc(design.layouts.couple)}">
+  <section class="sec sec--couple" data-section="couple" data-layout="${esc(design.layouts.couple)}" id="couple">
     <header class="sec-head">
       <h2>${esc(invT(ctx.locale, 'coupleTitle'))}</h2>
       <p class="sec-sub">${esc(invT(ctx.locale, 'coupleSub'))}</p>
@@ -72,7 +136,7 @@ export function renderEvents(ctx) {
   if (!events.length) return '';
   const div = dividerOrnament(design.ornamentSet);
   return `
-  <section class="sec sec--events" data-section="event" data-layout="${esc(design.layouts.events)}">
+  <section class="sec sec--events" data-section="event" data-layout="${esc(design.layouts.events)}" id="event">
     <header class="sec-head">
       <h2>${esc(invT(ctx.locale, 'eventsTitle'))}</h2>
       <p class="sec-sub">${esc(events.map((e) => e.title).join(' · '))}</p>
@@ -172,10 +236,10 @@ export function renderGallery(ctx) {
   const photos = (c.gallery || []).map((g) => g.url || g).filter(Boolean);
   if (!photos.length) return '';
   return `
-  <section class="sec sec--gallery" data-section="gallery" data-layout="${esc(design.layouts.gallery)}">
+  <section class="sec sec--gallery" data-section="gallery" data-layout="${esc(design.layouts.gallery)}" id="gallery">
     <header class="sec-head"><h2>${esc(invT(ctx.locale, 'galleryTitle'))}</h2></header>
     <div class="gallery__grid gallery__grid--${Math.min(photos.length, 9)}">
-      ${photos.map((url, i) => `<figure class="gallery__item" style="--i:${i}"><img src="${esc(url)}" alt="" loading="lazy"/></figure>`).join('')}
+      ${photos.map((url, i) => `<figure class="gallery__item" style="--i:${i}" data-lightbox-src="${esc(url)}" role="button" tabindex="0" aria-label="Lihat foto penuh"><img src="${esc(url)}" alt="" loading="lazy"/></figure>`).join('')}
     </div>
   </section>`;
 }
@@ -267,7 +331,7 @@ export function renderWishes(ctx) {
   const { c } = ctx;
   if (c.wishesEnabled === false) return '';
   return `
-  <section class="sec sec--wishes" data-section="wishes">
+  <section class="sec sec--wishes" data-section="wishes" id="wishes">
     <header class="sec-head"><h2>${esc(invT(ctx.locale, 'wishesTitle'))}</h2></header>
     <form class="wishes__form" data-wishes-form invitation-id="${esc(ctx.invitationId || '')}">
       <label class="fld"><span>${esc(invT(ctx.locale, 'wishName'))}</span>
@@ -307,6 +371,46 @@ export function renderClosing(ctx) {
     <h2 class="closing__names">${namesLine(ctx)}</h2>
     ${div ? `<div class="sec-divider">${ornamentSvg(div)}</div>` : ''}
   </section>`;
+}
+
+export function renderBottomNav(ctx) {
+  if (ctx.liteMode) return '';
+  return `
+  <nav class="inv-nav" data-inv-nav aria-label="Navigasi Undangan">
+    <div class="inv-nav__pill">
+      <a href="#cover" class="inv-nav__item is-active" data-nav-target="cover" aria-label="Sampul">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <span>Sampul</span>
+      </a>
+      <a href="#couple" class="inv-nav__item" data-nav-target="couple" aria-label="Mempelai">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <span>Mempelai</span>
+      </a>
+      <a href="#event" class="inv-nav__item" data-nav-target="event" aria-label="Acara">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Acara</span>
+      </a>
+      <a href="#gallery" class="inv-nav__item" data-nav-target="gallery" aria-label="Galeri">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span>Galeri</span>
+      </a>
+      <a href="#wishes" class="inv-nav__item" data-nav-target="wishes" aria-label="Ucapan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        <span>Ucapan</span>
+      </a>
+    </div>
+  </nav>`;
+}
+
+export function renderLightbox() {
+  return `
+  <div class="inv-lightbox" data-lightbox aria-hidden="true" role="dialog" aria-label="Pratinjau Foto">
+    <div class="inv-lightbox__backdrop" data-lightbox-close></div>
+    <div class="inv-lightbox__dialog">
+      <img src="" alt="" data-lightbox-img class="inv-lightbox__img" />
+      <button type="button" class="inv-lightbox__close" data-lightbox-close aria-label="Tutup foto">&times;</button>
+    </div>
+  </div>`;
 }
 
 // ---- helpers ----

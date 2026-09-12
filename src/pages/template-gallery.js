@@ -14,6 +14,7 @@ import { getFamilyPriceRange, formatRupiah } from '../data/plans.js';
 const FILTERS = [
   { id: 'all', label: 'Semua' },
   { id: 'romantic', label: 'Romantis' },
+  { id: 'botanical', label: 'Botanical' },
   { id: 'luxury', label: 'Luxury' },
   { id: 'modern', label: 'Modern' },
   { id: 'minimal', label: 'Minimal' },
@@ -30,6 +31,7 @@ const FAMILY_HERO = {
   lumiere: ['/demo/luxury.webp', '/demo/pendopo.webp', '/demo/modern.webp'],
   nusantara: ['/demo/nusantara.webp', '/demo/batik-texture.webp', '/demo/pendopo.webp'],
   meadow: ['/demo/candid-laughing.webp', '/demo/batik-texture.webp', '/demo/ring-hand.webp'],
+  botanica: ['/demo/jawa.webp', '/demo/melati-pengantin.webp', '/demo/candid-laughing.webp'],
 };
 
 function familyShortDesc(id) {
@@ -40,11 +42,20 @@ function familyShortDesc(id) {
     lumiere: 'Sinematik, gelap megah, penuh foto.',
     nusantara: 'Tradisional modern dengan aksen batik.',
     meadow: 'Rustic, polaroid, dan botanical.',
+    botanica: 'Romantis, botanical watercolor, dan nuansa dusty rose.',
   })[id] || '';
 }
 
 function familyFrame(id) {
-  return ({ amora: 'arch', elysian: 'editorial', serena: 'phone', lumiere: 'phone', nusantara: 'arch', meadow: 'polaroid' })[id] || 'editorial';
+  return ({
+    amora: 'arch',
+    elysian: 'editorial',
+    serena: 'phone',
+    lumiere: 'phone',
+    nusantara: 'arch',
+    meadow: 'polaroid',
+    botanica: 'arch',
+  })[id] || 'editorial';
 }
 
 export function renderTemplateGallery() {
@@ -53,7 +64,7 @@ export function renderTemplateGallery() {
     <section class="section gallery-page">
       <div class="container">
         <header class="gallery-head reveal">
-          <p class="eyebrow">Koleksi 6 Keluarga Desain</p>
+          <p class="eyebrow">Koleksi Desain Pilihan</p>
           <h1 class="section__title">Pilih Desain yang Paling Terasa Seperti Kalian.</h1>
           <p class="section__subtitle">Tiap keluarga punya tata letak, tipografi, dan cara menampilkan foto yang berbeda. Geser preview di tiap kartu untuk melihat detailnya.</p>
         </header>
@@ -159,8 +170,25 @@ export function renderTemplateGallery() {
 }
 
 function familyBadgeBg(id) {
-  return ({ amora: '#faf6f1', elysian: '#f7f4ee', serena: '#fbfaf8', lumiere: '#111013', nusantara: '#f6efe4', meadow: '#f7f3ea' })[id] || '#faf6f1';
+  return ({
+    amora: '#faf6f1',
+    elysian: '#f7f4ee',
+    serena: '#fbfaf8',
+    lumiere: '#111013',
+    nusantara: '#f6efe4',
+    meadow: '#f7f3ea',
+    botanica: '#F7F2ED',
+  })[id] || '#faf6f1';
 }
+
 function familyBadgeFg(id) {
-  return ({ amora: '#8b6f5a', elysian: '#2f2a25', serena: '#55504a', lumiere: '#c8b48c', nusantara: '#7c3f2c', meadow: '#6b7a54' })[id] || '#8b6f5a';
+  return ({
+    amora: '#8b6f5a',
+    elysian: '#2f2a25',
+    serena: '#55504a',
+    lumiere: '#c8b48c',
+    nusantara: '#7c3f2c',
+    meadow: '#6b7a54',
+    botanica: '#B97882',
+  })[id] || '#8b6f5a';
 }

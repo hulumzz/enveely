@@ -23,9 +23,42 @@ const catalog = {
   'lumiere-gallery': { price: 190_000, tier: 'Editorial', featured: true },
   'lumiere-film': { price: 210_000, tier: 'Editorial', featured: false },
   'lumiere-clean': { price: 220_000, tier: 'Editorial', featured: false },
+  'botanica-dusty-rose': { price: 145_000, tier: 'Signature', featured: true },
+  'botanica-mauve-intimate': { price: 160_000, tier: 'Premium', featured: false },
+  'botanica-blush-cream': { price: 140_000, tier: 'Signature', featured: false },
 };
 
 export const templatePlans = Object.freeze(catalog);
+
+// Photo allowance scales with the chosen design and package price. Keeping it
+// here makes the editor, checkout, and future entitlement checks share one rule.
+const GALLERY_LIMITS = Object.freeze({
+  'serena-paper': 6,
+  'serena-modern-white': 8,
+  'serena-ink': 8,
+  'meadow-picnic': 14,
+  'meadow-garden': 18,
+  'meadow-film': 18,
+  'amora-garden': 14,
+  'amora-moonlit': 14,
+  'amora-vintage-rose': 16,
+  'nusantara-sagara': 16,
+  'nusantara-puspa': 20,
+  'nusantara-terra': 18,
+  'elysian-ivory': 10,
+  'elysian-noir': 12,
+  'elysian-champagne': 14,
+  'lumiere-gallery': 24,
+  'lumiere-film': 24,
+  'lumiere-clean': 16,
+  'botanica-dusty-rose': 20,
+  'botanica-mauve-intimate': 18,
+  'botanica-blush-cream': 18,
+});
+
+export function getGalleryLimit(variantId) {
+  return GALLERY_LIMITS[variantId] || 10;
+}
 
 export function getTemplatePlan(variantId) {
   const plan = templatePlans[variantId];

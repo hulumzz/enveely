@@ -69,6 +69,7 @@ export function newInvitationId() {
 
 /** Create a fresh invitation skeleton for a template+variant. */
 export function createDraft(templateId, variantId) {
+  const enabledSections = sectionPresetFor(templateId);
   return {
     id: newInvitationId(),
     status: 'draft',
@@ -96,15 +97,27 @@ export function createDraft(templateId, variantId) {
       infoSettings: { dressCode: '', access: '', notes: '' },
     },
     sections: [
-      { id: 'cover', enabled: true }, { id: 'welcome', enabled: true }, { id: 'couple', enabled: true },
-      { id: 'parents', enabled: false }, { id: 'event', enabled: true }, { id: 'countdown', enabled: true },
-      { id: 'story', enabled: false }, { id: 'gallery', enabled: true }, { id: 'map', enabled: true },
-      { id: 'rsvp', enabled: true }, { id: 'gift', enabled: false }, { id: 'wishes', enabled: true },
-      { id: 'closing', enabled: true }, { id: 'quote', enabled: false }, { id: 'info', enabled: false },
-    ],
+      'cover', 'welcome', 'couple', 'parents', 'quote', 'event', 'countdown', 'story',
+      'gallery', 'map', 'info', 'rsvp', 'gift', 'wishes', 'closing',
+    ].map((id) => ({ id, enabled: enabledSections.has(id) })),
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
+}
+
+// A family starts with the sections that support its storytelling style. Users
+// can still reveal or hide any section in the editor, so the form stays flexible.
+function sectionPresetFor(templateId) {
+  const core = ['cover', 'welcome', 'couple', 'event', 'countdown', 'gallery', 'map', 'rsvp', 'wishes', 'closing'];
+  const optional = {
+    amora: ['parents', 'quote', 'story', 'info'],
+    elysian: ['quote', 'story'],
+    serena: ['quote'],
+    lumiere: ['story', 'info'],
+    nusantara: ['parents', 'quote', 'info'],
+    meadow: ['story', 'info'],
+  };
+  return new Set([...core, ...(optional[templateId] || [])]);
 }
 
 /** Persist a draft locally. Updates index + updatedAt. */

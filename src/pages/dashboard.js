@@ -148,7 +148,7 @@ function profileView(user) {
       <div class="profile-grid">
         <article class="profile-card profile-card--identity"><div class="profile-avatar">${escapeHtml(firstName(user.displayName || user.email).charAt(0).toUpperCase())}</div><h3>${escapeHtml(user.displayName || 'Pengguna Enveely')}</h3><p>${escapeHtml(user.email)}</p><span>Akun terverifikasi Firebase</span></article>
         <article class="profile-card"><p class="eyebrow">Informasi Akun</p><label><span>Nama tampilan</span><input value="${escapeHtml(user.displayName || '')}" disabled/></label><label><span>Email</span><input value="${escapeHtml(user.email || '')}" disabled/></label><p class="profile-hint">Perubahan nama dan email akan tersedia setelah profil cloud diaktifkan.</p></article>
-        <article class="profile-card"><p class="eyebrow">Keamanan</p><h3>Sesi dan akses</h3><p class="profile-copy">Keluar jika menggunakan perangkat bersama. Draft yang sudah tersinkron tetap terhubung ke akun kalian.</p><button type="button" class="btn btn--ghost" data-logout>Keluar dari akun</button></article>
+        <article class="profile-card profile-card--security"><p class="eyebrow">Keamanan</p><h3>Sesi dan akses</h3><p class="profile-copy">Keluar jika menggunakan perangkat bersama. Draft yang sudah tersinkron tetap terhubung ke akun kalian.</p><div class="profile-security-row"><span class="profile-security-row__state">Sesi aktif</span><button type="button" class="profile-logout" data-logout><span>↗</span> Keluar dari akun</button></div></article>
       </div>
     </section>`;
 }
@@ -181,7 +181,12 @@ function wireDashboard(root) {
       { label: 'Hapus Draft', kind: 'primary', onClick: () => { deleteDraft(button.dataset.delete); toast('Draft berhasil dihapus.', { type: 'success' }); renderDashboard('invitations'); } },
     ] });
   }));
-  root.querySelector('[data-logout]')?.addEventListener('click', async () => { await logout(); navigate('/'); });
+  root.querySelector('[data-logout]')?.addEventListener('click', () => {
+    openModal({ title: 'Keluar dari akun?', body: '<p>Kamu dapat masuk kembali kapan saja. Draft yang telah tersinkron tetap aman di akunmu.</p>', actions: [
+      { label: 'Batal' },
+      { label: 'Keluar', kind: 'primary', onClick: async () => { await logout(); navigate('/'); } },
+    ] });
+  });
 }
 
 function greeting() {

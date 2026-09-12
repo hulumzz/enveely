@@ -51,6 +51,15 @@ const DEMO_GALLERIES = {
     { url: '/demo/pendopo.webp' },
     { url: '/demo/sunda.webp' },
   ],
+  botanica: [
+    { url: '/demo/jawa.webp' },
+    { url: '/demo/melati-pengantin.webp' },
+    { url: '/demo/candid-laughing.webp' },
+    { url: '/demo/sunda.webp' },
+    { url: '/demo/ring-hand.webp' },
+    { url: '/demo/batik-texture.webp' },
+    { url: '/demo/luxury.webp' },
+  ],
 };
 
 const COVERS = {
@@ -60,6 +69,7 @@ const COVERS = {
   lumiere: '/demo/pendopo.webp',
   nusantara: '/demo/nusantara.webp',
   meadow: '/demo/candid-laughing.webp',
+  botanica: '/demo/jawa.webp',
 };
 
 const FAMILY_INTRO = {
@@ -69,6 +79,7 @@ const FAMILY_INTRO = {
   lumiere: 'Sebuah malam yang ingin kami rayakan bersama orang-orang terdekat &mdash; termasuk kalian.',
   nusantara: 'Dengan restu dan doa, kami mengundang keluarga serta sahabat hadir di hari bahagia kami.',
   meadow: 'Hari yang kami nantikan &mdash; datang, makan bersama, lepas tawa.',
+  botanica: 'Maha Suci Allah yang telah menciptakan makhluk-Nya berpasang-pasangan. Dengan penuh rasa syukur, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu.',
 };
 
 const QUOTES = {
@@ -96,6 +107,10 @@ const QUOTES = {
     text: 'Kalau bukan kita yang memilih untuk bersama, siapa lagi? Cinta sederhana adalah yang paling awet.',
     source: '— Kami',
   },
+  botanica: {
+    text: 'Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu pasangan hidup dari jenismu sendiri, supaya kamu merasa tenteram kepadanya, dan dijadikan-Nya di antaramu rasa kasih dan sayang.',
+    source: 'QS. Ar-Rum: 21',
+  },
 };
 
 const DRESS_CODE = {
@@ -105,6 +120,7 @@ const DRESS_CODE = {
   lumiere: 'Tuxedo / formal dress. Aksen emas dan gelap sangatelcome.',
   nusantara: 'Batik & kebaya casual untuk keluarga dekat, formal attire untuk undangan VIP.',
   meadow: 'Garden casual — floral pattern, warna earthy, sepatu flat atau wedges.',
+  botanica: 'Batik modern atau formal attire bernuansa earth tone & dusty rose. Mohon tidak mengenakan busana serba putih.',
 };
 
 const ACCESS = {
@@ -114,10 +130,12 @@ const ACCESS = {
   lumiere: 'Parkir bawah tanah hotel, tunjukkan QR undangan di gerbang. Lift langsung ke ballroom.',
   nusantara: 'Area parkir pendopo kapasitas 80 mobil. Disarankan naik kendaraan bersama.',
   meadow: 'Parkir rumput di samping venue, roda dua dan empat. Akses jalan kaki 50m dari gate.',
+  botanica: 'Area parkir luas tersedia di pelataran dan basement gedung. Drop-off tamu VIP dan keluarga berada di lobi barat.',
 };
 
 export function sampleInvitation(templateId, variantId) {
   const tplId = (templateId || 'amora').toLowerCase();
+  const isBotanica = tplId === 'botanica';
   return {
     id: 'demo',
     locale: 'id',
@@ -125,23 +143,28 @@ export function sampleInvitation(templateId, variantId) {
     design: { templateId: tplId, variantId },
     content: {
       coverImage: COVERS[tplId] || COVERS.amora,
-      groom: { name: 'Raka Aditya', nickname: 'Raka', description: 'Putra pertama dari Bapak Hartono & Ibu Dewi' },
-      bride: { name: 'Alya Paramita', nickname: 'Alya', description: 'Putri kedua dari Bapak Bambang & Ibu Sri' },
-      weddingDate: '2026-12-20',
+      groom: isBotanica
+        ? { name: 'Odiq Pratama, S.T.', nickname: 'Odiq', description: 'Putra pertama dari Bapak Triyono & Ibu Sri Rahayu' }
+        : { name: 'Raka Aditya', nickname: 'Raka', description: 'Putra pertama dari Bapak Hartono & Ibu Dewi' },
+      bride: isBotanica
+        ? { name: 'Ayu Lestari, S.Farm.', nickname: 'Ayu', description: 'Putri kedua dari Bapak Handoko & Ibu Endang Susilowati' }
+        : { name: 'Alya Paramita', nickname: 'Alya', description: 'Putri kedua dari Bapak Bambang & Ibu Sri' },
+      weddingDate: '2026-11-07',
       coverEyebrow: 'THE WEDDING OF',
+      guestName: isBotanica ? 'Siti Nuroh' : '',
+      guestGreeting: isBotanica ? 'Kepada Yth. Bapak/Ibu/Saudara/i' : '',
       welcomeMessage: FAMILY_INTRO[tplId] || FAMILY_INTRO.amora,
-      parents: {
-        groom: 'Bapak Hartono & Ibu Dewi Lestari',
-        bride: 'Bapak Bambang Wirawan & Ibu Sri Handayani',
-      },
+      parents: isBotanica
+        ? { groom: 'Bapak Triyono & Ibu Sri Rahayu', bride: 'Bapak Handoko & Ibu Endang Susilowati' }
+        : { groom: 'Bapak Hartono & Ibu Dewi Lestari', bride: 'Bapak Bambang Wirawan & Ibu Sri Handayani' },
       events: [
         {
-          id: 'akad', type: 'akad', title: 'Akad Nikah', date: '2026-12-20',
+          id: 'akad', type: 'akad', title: 'Akad Nikah', date: '2026-11-07',
           startTime: '08.00', endTime: '10.00',
           venue: 'Masjid Agung Al-Falah', address: 'Jl. Diponegoro No. 12, Yogyakarta',
         },
         {
-          id: 'resepsi', type: 'resepsi', title: 'Resepsi', date: '2026-12-20',
+          id: 'resepsi', type: 'resepsi', title: 'Resepsi Pernikahan', date: '2026-11-07',
           startTime: '11.00', endTime: '14.00',
           venue: 'Grand Ballroom Ambarrukmo', address: 'Jl. Laksda Adisucipto No. 81, Yogyakarta',
         },

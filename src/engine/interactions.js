@@ -41,9 +41,13 @@ export function wireCopyButtons(root) {
     if (!btn) return;
     try {
       await navigator.clipboard.writeText(btn.dataset.copy || '');
-      const original = btn.textContent;
-      btn.textContent = '✓';
-      setTimeout(() => (btn.textContent = original), 1400);
+      const original = btn.innerHTML;
+      btn.innerHTML = '✓ Tersalin';
+      btn.classList.add('is-copied');
+      setTimeout(() => {
+        btn.innerHTML = original;
+        btn.classList.remove('is-copied');
+      }, 1500);
     } catch {
       /* clipboard unavailable */
     }
@@ -96,4 +100,123 @@ export function wireWishesForms(root, { demo = false } = {}) {
       form.reset();
     });
   });
+}
+
+/**
+ * Wire persistent bottom navigation with smooth scrolling and active scroll spy.
+ */
+export function wireBottomNav(root) {
+  const nav = root.querySelector('[data-inv-nav]');
+  if (!nav) return;
+
+  const items = nav.querySelectorAll('[data-nav-target]');
+  if (!items.length) return;
+
+  // Determine scroll container: either closest scrollable ancestor or window
+  let scrollContainer = root.closest('.device-frame__inner');
+  const isWindow = !scrollContainer;
+
+  const targetIds = ['cover', 'couple', 'event', 'gallery', 'wishes'];
+  const targets = targetIds
+    .map((id) => ({ id, el: root.querySelector(`#${id}`) }))
+    .filter((t) => Boolean(t.el));
+
+  // Smooth scroll handler
+  nav.addEventListener('click', (e) => {
+    const link = e.target.closest('[data-nav-target]');
+    if (!link) return;
+    e.preventDefault();
+    const id = link.dataset.navTarget;
+    const targetEl = root.querySelector(`#${id}`);
+    if (!targetEl) return;
+
+    if (isWindow) {
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+
+  // Scroll spy to update active pill item
+  const updateActive = () => {
+    const viewportMiddle = isWindow
+      ? window.innerHeight / 2
+      : (scrollContainer?.clientHeight || 400) / 2;
+
+    let closest = null;
+    let minDistance = Infinity;
+
+    targets.forEach(({ id, el }) => {
+      const rect = el.getBoundingClientRect();
+      const distance = Math.abs(rect.top + rect.height / 2 - viewportMiddle);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closest = id;
+      }
+    });
+
+    if (closest) {
+      items.forEach((item) => {
+        item.classList.toggle('is-active', item.dataset.navTarget === closest);
+      });
+    }
+  };
+
+  const scroller = isWindow ? window : scrollContainer;
+  scroller?.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
+}
+
+/**
+ * Wire gallery image lightbox preview.
+ */
+export function wireLightbox(root) {
+  const lightbox = root.querySelector('[data-lightbox]');
+  if (!lightbox) return;
+
+  const img = lightbox.querySelector('[data-lightbox-img]');
+
+  const open = (src) => {
+    if (!img || !src) return;
+    img.src = src;
+    lightbox.removeAttribute('aria-hidden');
+    lightbox.classList.add('is-open');
+  };
+
+  const close = () => {
+    lightbox.classList.remove('is-open');
+    setTimeout(() => {
+      lightbox.setAttribute('aria-hidden', 'true');
+      if (img) img.src = '';
+    }, 240);
+  };
+
+  root.addEventListener('click', (e) => {
+    const item = e.target.closest('[data-lightbox-src]');
+    if (item) {
+      open(item.dataset.lightboxSrc);
+      return;
+    }
+    if (e.target.closest('[data-lightbox-close]')) {
+      close();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && lightbox.classList.contains('is-open')) {
+      close();
+    }
+  });
+}
+
+/**
+ * Convenience helper to wire all invitation engine interactions at once.
+ */
+export function attachInvitationInteractions(root, options = {}) {
+  startCountdowns(root);
+  wireCopyButtons(root);
+  wireRsvpForms(root, options);
+  wireWishesForms(root, options);
+  wireBottomNav(root);
+  wireLightbox(root);
 }

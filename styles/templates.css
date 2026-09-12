@@ -265,4 +265,532 @@
 .inv--nusantara .info__card { border-radius: 4px; box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--inv-bg) 80%, var(--inv-accent)); }
 .inv--meadow .info__card { background: #fffdf7; color: #40382e; box-shadow: 0 6px 18px rgba(64,56,46,0.14); transform: rotate(-0.4deg); }
 .inv--meadow .info__card:nth-of-type(2) { transform: rotate(0.6deg); }
+.inv--botanica .info__card {
+  background: #FFFFFF;
+  border: 1px solid color-mix(in srgb, var(--inv-accent) 24%, transparent);
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(95, 48, 61, 0.05);
+}
+.inv--botanica .info__icon { color: var(--inv-accent, #B97882); }
 .tpl-card__price{color:var(--accent);font-weight:700;font-size:.84rem;margin-top:4px}.tpl-card__price small{color:var(--muted);font-weight:500}
+
+/* ================= BOTANICA VARIANT COMPOSITIONS ================= */
+
+/* Dusty Rose (default) — editorial collage gallery */
+.inv--v-botanica-dusty-rose .gallery__grid { grid-template-columns: 2fr 1fr; gap: 10px; }
+.inv--v-botanica-dusty-rose .gallery__item:first-child { grid-row: span 2; aspect-ratio: auto; }
+
+/* Mauve Intimate — narrower centered editorial */
+.inv--botanica.inv--v-botanica-mauve-intimate .sec { max-width: 680px; margin-inline: auto; }
+.inv--botanica.inv--v-botanica-mauve-intimate .couple__grid { flex-direction: column; align-items: center; }
+.inv--botanica.inv--v-botanica-mauve-intimate .person__photo {
+  width: clamp(180px, calc(var(--inv-vw) * 40), 260px);
+  border-radius: 999px;
+}
+.inv--botanica.inv--v-botanica-mauve-intimate .gallery__grid { grid-template-columns: 1fr; max-width: 480px; margin-inline: auto; }
+.inv--botanica.inv--v-botanica-mauve-intimate .gallery__item { aspect-ratio: 3/2; }
+
+/* Blush Cream — double arch cover, extra soft */
+.inv--botanica.inv--v-botanica-blush-cream .sec--cover {
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(213, 162, 169, 0.35), rgba(61, 51, 44, 0.65)),
+    linear-gradient(180deg, rgba(95, 48, 61, 0.3) 0%, rgba(45, 38, 33, 0.78) 100%);
+}
+.inv--botanica.inv--v-botanica-blush-cream .sec--cover {
+  margin: 14px;
+  min-height: calc(100svh - 28px);
+  border-radius: 180px 180px 10px 10px;
+  overflow: hidden;
+}
+.inv--botanica.inv--v-botanica-blush-cream .gallery__grid { gap: 18px; }
+.inv--botanica.inv--v-botanica-blush-cream .gallery__item { border-radius: 12px; border-width: 4px; }
+
+/* ================= BOTANICA — Romantic Botanical (Editorial Dusty Rose) ================= */
+
+.inv--botanica {
+  --pad-x: clamp(22px, calc(var(--inv-vw) * 6), 46px);
+  background-color: var(--inv-bg, #F7F2ED);
+  color: var(--inv-text, #382E2E);
+  position: relative;
+}
+
+/* Subtle watercolor edge texture & continuous canvas warmth */
+.inv--botanica::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle at 10% 5%, rgba(185, 120, 130, 0.04) 0%, transparent 40%),
+                    radial-gradient(circle at 90% 95%, rgba(135, 92, 105, 0.05) 0%, transparent 45%);
+  z-index: 1;
+}
+
+/* Section Spacing & Transitions: Generous whitespace, no harsh borders */
+.inv--botanica .sec {
+  padding-block: clamp(68px, calc(var(--inv-vw) * 11), 120px);
+}
+.inv--botanica .sec-head h2 {
+  font-family: var(--inv-font-display, 'Cormorant Garamond', serif);
+  font-size: clamp(2rem, calc(var(--inv-vw) * 5.4), 3.2rem);
+  color: var(--inv-primary, #5F303D);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.inv--botanica .sec-sub {
+  color: var(--inv-accent, #B97882);
+  letter-spacing: 0.12em;
+  font-size: 0.84rem;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-top: 6px;
+}
+
+/* Section Divider */
+.inv--botanica .sec-divider {
+  margin-top: 32px;
+}
+.inv--botanica .sec-divider .orn {
+  width: min(280px, 75%);
+  height: 32px;
+  color: var(--inv-accent, #B97882);
+}
+
+/* Corner Botanical Ornaments */
+.inv--botanica .corner {
+  color: var(--inv-accent, #B97882);
+  width: clamp(110px, calc(var(--inv-vw) * 22), 175px);
+  opacity: 0.85;
+}
+.inv--botanica .corner--tl {
+  top: -8px;
+  left: -8px;
+}
+.inv--botanica .corner--br {
+  bottom: -8px;
+  right: -8px;
+  transform: rotate(180deg);
+}
+
+/* ---------- 01. Cover Gate ---------- */
+.inv--botanica .sec--cover {
+  min-height: 100svh;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(247, 242, 237, 0.4), rgba(56, 46, 46, 0.55)),
+    linear-gradient(180deg, rgba(95, 48, 61, 0.35) 0%, rgba(56, 46, 46, 0.72) 100%);
+  color: #FFFFFF;
+  text-align: center;
+}
+.inv--botanica .sec--cover .cover__media img {
+  filter: brightness(0.88) saturate(0.95);
+  animation: botanica-ken-burns 16s ease-in-out infinite alternate;
+}
+@keyframes botanica-ken-burns {
+  0% { transform: scale(1.02); }
+  100% { transform: scale(1.08) translate(-1%, -1%); }
+}
+.inv--botanica .sec--cover .cover__eyebrow {
+  letter-spacing: 0.32em;
+  font-size: 0.76rem;
+  color: #F7F2ED;
+  opacity: 0.9;
+}
+.inv--botanica .sec--cover .cover__names {
+  font-family: var(--inv-font-display, 'Cormorant Garamond', serif);
+  font-size: clamp(3.2rem, calc(var(--inv-vw) * 9.5), 5.6rem);
+  line-height: 1.02;
+  font-weight: 500;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  margin-block: 6px;
+  color: #FFFFFF;
+}
+.inv--botanica .sec--cover .cover__guest {
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  padding: 10px 24px;
+  border-radius: 999px;
+  margin-top: 14px;
+}
+.inv--botanica .sec--cover .cover__guest-greet {
+  color: #EFE5DD;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+}
+.inv--botanica .sec--cover .cover__guest-name {
+  color: #FFFFFF;
+  font-size: 1.22rem;
+}
+.inv--botanica .sec--cover .cover__date {
+  letter-spacing: 0.22em;
+  font-size: 0.92rem;
+  opacity: 0.92;
+  color: #EFE5DD;
+  margin-top: 8px;
+}
+.inv--botanica .sec--cover .btn-inv {
+  background: var(--inv-primary, #5F303D);
+  border: 1px solid color-mix(in srgb, var(--inv-accent) 40%, #fff);
+  color: #FFFFFF;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  padding: 13px 32px;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(95, 48, 61, 0.35);
+  animation: botanica-pulse 3s ease-in-out infinite;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.inv--botanica .sec--cover .btn-inv:hover {
+  background: color-mix(in srgb, var(--inv-primary) 85%, black);
+  transform: translateY(-2px) scale(1.02);
+}
+.inv--botanica .btn-inv__icon {
+  width: 17px;
+  height: 17px;
+}
+@keyframes botanica-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(95, 48, 61, 0.35); }
+  50% { transform: scale(1.03); box-shadow: 0 12px 30px rgba(185, 120, 130, 0.45); }
+}
+
+/* ---------- 02. Welcome & Quote ---------- */
+.inv--botanica .sec--welcome {
+  max-width: 680px;
+  margin-inline: auto;
+  background: radial-gradient(ellipse at 50% 50%, rgba(239, 229, 221, 0.55), transparent 70%);
+}
+.inv--botanica .welcome__text {
+  font-family: var(--inv-font-display, 'Cormorant Garamond', serif);
+  font-size: clamp(1.15rem, calc(var(--inv-vw) * 2.8), 1.45rem);
+  line-height: 1.75;
+  color: var(--inv-text, #382E2E);
+}
+.inv--botanica .sec--quote {
+  background: color-mix(in srgb, var(--inv-bg, #F7F2ED) 94%, var(--inv-accent, #B97882));
+  padding-block: clamp(74px, calc(var(--inv-vw) * 12), 130px);
+}
+.inv--botanica .quote__mark {
+  color: var(--inv-accent, #B97882);
+  font-size: 4.8rem;
+  opacity: 0.55;
+  line-height: 0.5;
+}
+.inv--botanica .quote__text {
+  font-family: var(--inv-font-display, 'Cormorant Garamond', serif);
+  font-size: clamp(1.18rem, calc(var(--inv-vw) * 3), 1.52rem);
+  color: var(--inv-primary, #5F303D);
+  line-height: 1.72;
+  font-style: italic;
+  max-width: 48ch;
+}
+.inv--botanica .quote__source {
+  color: var(--inv-accent, #B97882);
+  letter-spacing: 0.22em;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+/* ---------- 03. Couple Section ---------- */
+.inv--botanica .couple__grid {
+  gap: 34px;
+  margin-top: 42px;
+}
+.inv--botanica .person__photo {
+  border-radius: 140px 140px 18px 18px; /* Arch romantic framing */
+  border: 4px solid #FFFFFF;
+  box-shadow: 0 16px 40px rgba(56, 46, 46, 0.12), 0 0 0 1px color-mix(in srgb, var(--inv-accent) 30%, transparent);
+  width: clamp(165px, calc(var(--inv-vw) * 36), 230px);
+  aspect-ratio: 4/5;
+  overflow: hidden;
+  transition: transform 400ms ease;
+}
+.inv--botanica .person:hover .person__photo {
+  transform: translateY(-4px) scale(1.01);
+}
+.inv--botanica .person__name {
+  font-family: var(--inv-font-display, 'Cormorant Garamond', serif);
+  font-size: clamp(1.5rem, calc(var(--inv-vw) * 3.8), 2.1rem);
+  color: var(--inv-primary, #5F303D);
+  font-weight: 600;
+  margin-top: 8px;
+}
+.inv--botanica .person__nick {
+  font-family: var(--inv-font-accent, 'DM Serif Display', serif);
+  color: var(--inv-accent, #B97882);
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+}
+.inv--botanica .person__desc {
+  font-size: 0.88rem;
+  color: color-mix(in srgb, var(--inv-text) 80%, transparent);
+  line-height: 1.6;
+}
+.inv--botanica .couple__amp {
+  color: var(--inv-accent, #B97882);
+  font-size: clamp(2.4rem, calc(var(--inv-vw) * 6), 3.4rem);
+  opacity: 0.7;
+}
+
+/* ---------- 04. Events Section (Prominent Date Numeral) ---------- */
+.inv--botanica .events__list {
+  gap: 30px;
+  margin-top: 42px;
+}
+.inv--botanica .event-card {
+  background: #FFFFFF;
+  border: 1px solid color-mix(in srgb, var(--inv-accent) 26%, transparent);
+  border-radius: 24px;
+  padding: 34px 28px;
+  box-shadow: 0 14px 36px rgba(95, 48, 61, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+.inv--botanica .event-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--inv-accent, #B97882), var(--inv-primary, #5F303D));
+}
+.inv--botanica .event-card__date {
+  background: color-mix(in srgb, var(--inv-bg, #F7F2ED) 90%, #fff);
+  border: 1px solid color-mix(in srgb, var(--inv-accent) 20%, transparent);
+  border-radius: 16px;
+  padding: 12px 22px;
+  margin-bottom: 8px;
+}
+.inv--botanica .d-weekday {
+  color: var(--inv-accent, #B97882);
+  letter-spacing: 0.26em;
+  font-weight: 700;
+  font-size: 0.72rem;
+}
+.inv--botanica .d-day {
+  font-family: var(--inv-font-display, 'Cormorant Garamond', serif);
+  font-size: 3.4rem;
+  color: var(--inv-primary, #5F303D);
+  line-height: 1;
+  font-weight: 600;
+  margin-block: 2px;
+}
+.inv--botanica .d-monthyear {
+  color: var(--inv-text, #382E2E);
+  font-size: 0.82rem;
+  letter-spacing: 0.16em;
+}
+.inv--botanica .event-card__info h3 {
+  font-family: var(--inv-font-display, 'Cormorant Garamond', serif);
+  font-size: 1.6rem;
+  color: var(--inv-primary, #5F303D);
+}
+.inv--botanica .event-card__time {
+  color: var(--inv-accent, #B97882);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+}
+.inv--botanica .event-card__link {
+  background: var(--inv-primary, #5F303D);
+  color: #FFFFFF;
+  border-radius: 999px;
+  padding: 8px 22px;
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  text-decoration: none;
+  font-weight: 600;
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 14px rgba(95, 48, 61, 0.25);
+  transition: transform 160ms ease, background 160ms ease;
+}
+.inv--botanica .event-card__link:hover {
+  background: color-mix(in srgb, var(--inv-primary) 82%, black);
+  transform: translateY(-1px);
+}
+
+/* ---------- 05. Countdown Section ---------- */
+.inv--botanica .sec--countdown {
+  background: radial-gradient(ellipse at 50% 50%, rgba(239, 229, 221, 0.7), transparent 75%);
+  padding-block: clamp(54px, calc(var(--inv-vw) * 8), 86px);
+}
+.inv--botanica .countdown__title {
+  color: var(--inv-primary, #5F303D);
+  font-family: var(--inv-font-display, 'Cormorant Garamond', serif);
+}
+.inv--botanica .countdown__grid {
+  gap: 14px;
+}
+.inv--botanica .countdown__cell {
+  background: #FFFFFF;
+  border: 1px solid color-mix(in srgb, var(--inv-accent) 24%, transparent);
+  border-radius: 18px;
+  padding: 16px 8px;
+  box-shadow: 0 8px 22px rgba(95, 48, 61, 0.05);
+}
+.inv--botanica .countdown__num {
+  font-family: var(--inv-font-display, 'Cormorant Garamond', serif);
+  font-size: clamp(1.8rem, calc(var(--inv-vw) * 5), 2.5rem);
+  color: var(--inv-primary, #5F303D);
+  font-weight: 600;
+}
+.inv--botanica .countdown__label {
+  color: var(--inv-accent, #B97882);
+  letter-spacing: 0.2em;
+  font-weight: 600;
+  font-size: 0.62rem;
+}
+
+/* ---------- 06. Gallery (Editorial Layout) ---------- */
+.inv--botanica .gallery__grid {
+  gap: 14px;
+}
+.inv--botanica .gallery__item {
+  border-radius: 16px;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 10px 28px rgba(56, 46, 46, 0.1);
+  overflow: hidden;
+  transition: transform 300ms ease, box-shadow 300ms ease;
+}
+.inv--botanica .gallery__item:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 14px 34px rgba(95, 48, 61, 0.16);
+}
+
+/* ---------- 07. RSVP & Wishes (Warm Cream Panels) ---------- */
+.inv--botanica .sec--rsvp,
+.inv--botanica .sec--wishes {
+  background: color-mix(in srgb, var(--inv-bg, #F7F2ED) 92%, #fff);
+}
+.inv--botanica .rsvp__form,
+.inv--botanica .wishes__form {
+  background: #FFFFFF;
+  padding: 32px 26px;
+  border-radius: 24px;
+  border: 1px solid color-mix(in srgb, var(--inv-accent) 22%, transparent);
+  box-shadow: 0 14px 36px rgba(95, 48, 61, 0.06);
+}
+.inv--botanica .fld input,
+.inv--botanica .fld textarea {
+  border: 1px solid color-mix(in srgb, var(--inv-accent) 30%, transparent);
+  border-radius: 12px;
+  background: #FCFAF7;
+  padding: 13px 16px;
+  font-size: 0.9rem;
+  color: var(--inv-text, #382E2E);
+}
+.inv--botanica .fld input:focus-visible,
+.inv--botanica .fld textarea:focus-visible {
+  outline: 2px solid var(--inv-accent, #B97882);
+  outline-offset: 1px;
+  background: #FFFFFF;
+}
+.inv--botanica .rsvp__form .btn-inv,
+.inv--botanica .wishes__form .btn-inv {
+  background: var(--inv-primary, #5F303D);
+  color: #FFFFFF;
+  border: 0;
+  border-radius: 999px;
+  padding: 13px 34px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  box-shadow: 0 6px 20px rgba(95, 48, 61, 0.28);
+}
+.inv--botanica .wishes__list li {
+  background: #FFFFFF;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--inv-accent) 18%, transparent);
+  box-shadow: 0 4px 16px rgba(56, 46, 46, 0.04);
+  padding: 16px 20px;
+}
+.inv--botanica .wishes__list b {
+  color: var(--inv-primary, #5F303D);
+  font-family: var(--inv-font-display, 'Cormorant Garamond', serif);
+  font-size: 1.05rem;
+}
+
+/* ---------- 08. Wedding Gift ---------- */
+.inv--botanica .gift__card {
+  background: #FFFFFF;
+  border: 1px solid color-mix(in srgb, var(--inv-accent) 32%, transparent);
+  border-radius: 20px;
+  box-shadow: 0 10px 28px rgba(95, 48, 61, 0.06);
+  padding: 24px 22px;
+}
+.inv--botanica .gift__bank {
+  color: var(--inv-accent, #B97882);
+  letter-spacing: 0.26em;
+  font-weight: 700;
+}
+.inv--botanica .gift__number {
+  color: var(--inv-primary, #5F303D);
+  font-size: 1.55rem;
+}
+.inv--botanica .gift__card .btn-inv {
+  border-color: var(--inv-accent, #B97882);
+  color: var(--inv-primary, #5F303D);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+/* ---------- 09. Closing ---------- */
+.inv--botanica .sec--closing {
+  padding-bottom: clamp(90px, calc(var(--inv-vw) * 14), 150px);
+}
+.inv--botanica .closing__thanks {
+  font-family: var(--inv-font-display, 'Cormorant Garamond', serif);
+  font-size: clamp(1.1rem, calc(var(--inv-vw) * 2.8), 1.4rem);
+  line-height: 1.7;
+}
+.inv--botanica .closing__names {
+  font-family: var(--inv-font-display, 'Cormorant Garamond', serif);
+  font-size: clamp(2.4rem, calc(var(--inv-vw) * 6.5), 3.8rem);
+  color: var(--inv-primary, #5F303D);
+  font-weight: 500;
+  margin-top: 18px;
+}
+
+/* ---------- 10. Variants Overrides ---------- */
+
+/* Variant: Mauve Intimate */
+.inv--botanica.inv--v-botanica-mauve-intimate {
+  --inv-bg: #F3ECE7;
+  --inv-text: #2E2525;
+  --inv-primary: #4A222D;
+  --inv-accent: #875C69;
+}
+.inv--botanica.inv--v-botanica-mauve-intimate .sec--cover {
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(135, 92, 105, 0.4), rgba(46, 37, 37, 0.75)),
+    linear-gradient(180deg, rgba(74, 34, 45, 0.4) 0%, rgba(30, 24, 25, 0.85) 100%);
+}
+.inv--botanica.inv--v-botanica-mauve-intimate .event-card,
+.inv--botanica.inv--v-botanica-mauve-intimate .countdown__cell,
+.inv--botanica.inv--v-botanica-mauve-intimate .rsvp__form,
+.inv--botanica.inv--v-botanica-mauve-intimate .wishes__form,
+.inv--botanica.inv--v-botanica-mauve-intimate .gift__card {
+  background: #FCF9F7;
+  border-color: color-mix(in srgb, var(--inv-accent) 26%, transparent);
+}
+
+/* Variant: Blush Cream */
+.inv--botanica.inv--v-botanica-blush-cream {
+  --inv-bg: #EFE5DD;
+  --inv-text: #3D332C;
+  --inv-primary: #5F303D;
+  --inv-accent: #D5A2A9;
+}
+.inv--botanica.inv--v-botanica-blush-cream .sec--cover {
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(213, 162, 169, 0.35), rgba(61, 51, 44, 0.65)),
+    linear-gradient(180deg, rgba(95, 48, 61, 0.3) 0%, rgba(45, 38, 33, 0.78) 100%);
+}
+.inv--botanica.inv--v-botanica-blush-cream .person__photo {
+  border-radius: 999px;
+}

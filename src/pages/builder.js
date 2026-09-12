@@ -16,6 +16,8 @@ import { invitationUrl, whatsappMessage, whatsappUrl, copyToClipboard, nativeSha
 import { analyticsEvents } from '../services/analytics.js';
 import { requireAuthenticated } from '../services/access.js';
 import { getOrderForInvitation } from '../services/payment-store.js';
+import { getGalleryLimit } from '../data/plans.js';
+import { suggestEditorCopy } from '../services/editor-ai.js';
 
 export function renderBuilder(invitationId) {
   return requireAuthenticated(() => renderBuilderWorkspace(invitationId), `/builder/${invitationId}`);
@@ -37,6 +39,7 @@ function renderBuilderWorkspace(invitationId) {
         <span class="builder__title">${escTitle(draft)}</span>
         <span class="builder__save" data-save-status>Tersimpan</span>
         <div class="builder__top-actions">
+          <button type="button" class="btn btn--ai btn--sm" data-act="assist">✦ Bantu isi</button>
           <button type="button" class="btn btn--ghost btn--sm" data-act="preview">Pratinjau</button>
           <button type="button" class="btn btn--primary btn--sm" data-act="publish">Publikasikan</button>
         </div>
@@ -56,6 +59,7 @@ function renderBuilderWorkspace(invitationId) {
         draft,
         selectedSection: 'cover',
         uploading: false,
+        aiBusy: false,
       };
 
       const rootEl = document.querySelector('[data-builder]');
@@ -126,7 +130,22 @@ function renderBuilderWorkspace(invitationId) {
 
       // ---- top actions ----
       rootEl.querySelector('[data-act="preview"]').addEventListener('click', () => {
-        window.open(`/templates/${state.draft.design.templateId}/preview/${state.draft.design.variantId || ''}`, '_blank');
+        saveDraft(state.draft);
+        window.open(`/builder/${state.draft.id}/preview`, '_blank', 'noopener');
+      });
+      rootEl.querySelector('[data-act="assist"]').addEventListener('click', async (event) => {
+        if (state.aiBusy) return;
+        state.aiBusy = true;
+        const button = event.currentTarget;
+        button.disabled = true;
+        button.textContent = 'Menyusun…';
+        const result = await suggestEditorCopy({ task: 'complete', draft: state.draft });
+        applyAssistantDraft(state.draft, result.content);
+        persist(); paintCanvas(); paintProps();
+        button.disabled = false;
+        button.textContent = '✦ Bantu isi';
+        state.aiBusy = false;
+        toast(result.source === 'groq' ? 'Draf copy dari Groq siap kamu sesuaikan.' : 'Saran dasar sudah disiapkan. Kamu tetap bisa mengedit semuanya.', { type: 'success' });
       });
       rootEl.querySelector('[data-act="publish"]').addEventListener('click', () => publishFlow(state, { persist, saveStatus }));
 
@@ -197,6 +216,7 @@ function propsHeader(iconChar, title, subtitle) {
       <strong>${title}</strong>
       <small>${subtitle}</small>
     </span>
+    <span class="builder__props-ai">✦ Pilih kolom lalu pakai saran</span>
   </header>`;
 }
 
@@ -205,6 +225,7 @@ function field(label, name, value, attrs = '') {
   <label class="fld-ui fld-ui--sm">
     <span>${label}</span>
     <input name="${name}" value="${escapeAttr(value)}" ${attrs} data-prop-input/>
+    ${aiButton(name)}
   </label>`;
 }
 
@@ -213,7 +234,16 @@ function textarea(label, name, value, placeholder = '') {
   <label class="fld-ui fld-ui--sm">
     <span>${label}</span>
     <textarea name="${name}" rows="3" placeholder="${escapeAttr(placeholder)}" data-prop-input>${escapeHtml(value)}</textarea>
+    ${aiButton(name)}
   </label>`;
+}
+
+function aiButton(name) {
+  return isAiField(name) ? `<button type="button" class="field-suggest" data-ai-suggest="${name}">✦ Saran caption</button>` : '';
+}
+
+function isAiField(name) {
+  return /^(coverEyebrow|welcomeMessage|closingMessage|quoteSettings\.(text|source)|infoSettings\.(dressCode|access|notes)|story\.\d+\.text)$/.test(name);
 }
 
 function coupleProps(draft) {
@@ -270,9 +300,12 @@ function eventsProps(draft) {
 function galleryProps(draft, state) {
   const photos = draft.content.gallery;
   const pending = draft.content._pendingUploads || {};
+  const limit = getGalleryLimit(draft.design.variantId);
+  const remaining = Math.max(0, limit - photos.length);
   return panel(
     'Galeri Foto',
     `
+    <div class="bgallery__meta"><strong>${photos.length} / ${limit} foto</strong><span>${remaining ? `${remaining} slot masih tersedia` : 'Batas foto paket ini sudah tercapai'}</span></div>
     <div class="bgallery">
       ${photos.map((p, i) => `
         <figure class="bgallery__item">
@@ -280,13 +313,13 @@ function galleryProps(draft, state) {
           ${p._local ? '<span class="bgallery__uploading">Mengunggah</span>' : ''}
           <button type="button" class="icon-btn icon-btn--danger" data-del-photo="${i}" title="Hapus">✕</button>
         </figure>`).join('')}
-      <label class="upload-drop ${state.uploading ? 'is-busy' : ''}">
-        <input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden data-gallery-upload/>
-        <strong>${state.uploading ? 'Mengunggah…' : '+ Tambah Foto'}</strong>
-        <small>${state.uploading ? 'Mohon tunggu sebentar' : 'JPG, PNG, atau WebP · bisa banyak sekaligus'}</small>
+      <label class="upload-drop ${state.uploading || !remaining ? 'is-busy' : ''}">
+        <input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden data-gallery-upload ${remaining ? '' : 'disabled'}/>
+        <strong>${state.uploading ? 'Mengunggah…' : remaining ? '+ Tambah Foto' : 'Galeri sudah lengkap'}</strong>
+        <small>${state.uploading ? 'Mohon tunggu sebentar' : remaining ? `JPG, PNG, atau WebP · tambah hingga ${remaining} foto lagi` : 'Hapus satu foto untuk menambahkan foto baru'}</small>
       </label>
     </div>
-    <p class="bprops__hint">Foto otomatis dikompresi ke maks 1400px. Saat diunggah, foto tampil instan dari perangkat lalu otomatis pindah ke server.</p>
+    <p class="bprops__hint">Jatah galeri mengikuti desain dan paket yang dipilih. Foto otomatis dikompresi ke maks 1400px sebelum diunggah.</p>
     `,
   );
 }
@@ -559,6 +592,28 @@ function wireProps(root, state, { persist, paintCanvas, repaintProps }) {
     });
   });
 
+  root.querySelectorAll('[data-ai-suggest]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      if (button.disabled) return;
+      const path = button.dataset.aiSuggest;
+      button.disabled = true;
+      button.textContent = 'Menyusun…';
+      const result = await suggestEditorCopy({ task: 'field', field: path, draft });
+      const value = String(result.value || '').trim();
+      if (value) {
+        setByPath(draft.content, path, value);
+        const input = [...root.querySelectorAll('[data-prop-input]')].find((item) => item.name === path);
+        if (input) input.value = value;
+        persist(); paintCanvas();
+        toast(result.source === 'groq' ? 'Saran Groq sudah diterapkan. Silakan poles sesuai gaya kalian.' : 'Saran dasar diterapkan. Silakan sesuaikan bahasanya.', { type: 'success' });
+      } else {
+        toast('Lengkapi nama atau detail acara dulu agar saran lebih relevan.', { type: 'error' });
+      }
+      button.disabled = false;
+      button.textContent = '✦ Saran caption';
+    });
+  });
+
   // checkboxes (music settings etc.)
   root.querySelectorAll('[data-prop-check]').forEach((input) => {
     input.addEventListener('change', () => {
@@ -614,9 +669,17 @@ function wireProps(root, state, { persist, paintCanvas, repaintProps }) {
     const files = [...e.target.files || []];
     if (!files.length) return;
     e.target.value = '';
+    const limit = getGalleryLimit(draft.design.variantId);
+    const remaining = Math.max(0, limit - draft.content.gallery.length);
+    const accepted = files.slice(0, remaining);
+    if (!accepted.length) {
+      toast(`Galeri ${limit} foto untuk desain ini sudah penuh.`, { type: 'error' });
+      return;
+    }
+    if (accepted.length < files.length) toast(`Kami menambahkan ${accepted.length} foto sesuai sisa jatah galeri.`, { type: 'success' });
     state.uploading = true;
     repaintProps();
-    const tasks = files.map((file) => uploadWithLocalPreview(file, draft, 'gallery'));
+    const tasks = accepted.map((file) => uploadWithLocalPreview(file, draft, 'gallery'));
     await Promise.allSettled(tasks);
     state.uploading = false;
     persist(); paintCanvas(); repaintProps();
@@ -732,6 +795,35 @@ function setByPath(obj, path, value) {
     cur = cur[k];
   }
   cur[parts.at(-1)] = value;
+}
+
+function applyAssistantDraft(draft, suggestion = {}) {
+  const content = draft.content;
+  const putIfEmpty = (path, value) => {
+    if (!String(value || '').trim()) return;
+    if (!String(getByPath(content, path) || '').trim()) setByPath(content, path, value);
+  };
+  putIfEmpty('coverEyebrow', suggestion.coverEyebrow);
+  putIfEmpty('welcomeMessage', suggestion.welcomeMessage);
+  putIfEmpty('closingMessage', suggestion.closingMessage);
+  putIfEmpty('quoteSettings.text', suggestion.quoteSettings?.text);
+  putIfEmpty('quoteSettings.source', suggestion.quoteSettings?.source);
+  putIfEmpty('infoSettings.dressCode', suggestion.infoSettings?.dressCode);
+  putIfEmpty('infoSettings.access', suggestion.infoSettings?.access);
+  putIfEmpty('infoSettings.notes', suggestion.infoSettings?.notes);
+  const enable = (id) => {
+    const section = draft.sections?.find((item) => item.id === id);
+    if (section) section.enabled = true;
+  };
+  if (suggestion.quoteSettings?.text) enable('quote');
+  if (suggestion.infoSettings?.dressCode || suggestion.infoSettings?.access || suggestion.infoSettings?.notes) enable('info');
+  if (Array.isArray(suggestion.story) && !content.story?.length) content.story = suggestion.story.filter((item) => item?.title || item?.text);
+  if (Array.isArray(content.story) && Array.isArray(suggestion.story)) {
+    content.story.forEach((item, index) => {
+      if (!item.text && suggestion.story[index]?.text) item.text = suggestion.story[index].text;
+    });
+    if (content.story.some((item) => item.text)) enable('story');
+  }
 }
 
 /* ---------- Publish + share flow (Phase 3/5) ---------- */

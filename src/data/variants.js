@@ -48,6 +48,16 @@ export const templateVariants = [
   { id: 'meadow-picnic', parentTemplate: 'meadow', name: 'Picnic', density: 'high', layoutStrategy: 'playfulCollage', ornamentSet: 'doodle-leaves', frameSet: 'polaroid-tape', colorOverrides: { bg: '#fbf7ec', accent: '#d99a4e' } },
   { id: 'meadow-garden', parentTemplate: 'meadow', name: 'Garden', density: 'high', layoutStrategy: 'elegantBotanical', ornamentSet: 'leafy-botanical', frameSet: 'organic-irregular', colorOverrides: { bg: '#f3f4ea', accent: '#7d8f63' } },
   { id: 'meadow-film', parentTemplate: 'meadow', name: 'Film', density: 'high', layoutStrategy: 'analogScrapbook', ornamentSet: 'grain-doodle', frameSet: 'polaroid-grain', colorOverrides: { bg: '#efe9dc', accent: '#8a7355' } },
+
+  // Botanica — Romantic Botanical (Editorial Dusty Rose)
+  { id: 'botanica-dusty-rose', parentTemplate: 'botanica', name: 'Dusty Rose', density: 'high', layoutStrategy: 'botanicalEditorial', ornamentSet: 'watercolor-rose', frameSet: 'botanical-arch', colorOverrides: { bg: '#F7F2ED', text: '#382E2E', primary: '#5F303D', accent: '#B97882' } },
+  { id: 'botanica-mauve-intimate', parentTemplate: 'botanica', name: 'Mauve Intimate', density: 'medium', layoutStrategy: 'intimateEditorial', ornamentSet: 'watercolor-rose', frameSet: 'soft-editorial', colorOverrides: { bg: '#F3ECE7', text: '#2E2525', primary: '#4A222D', accent: '#875C69' } },
+  { id: 'botanica-blush-cream', parentTemplate: 'botanica', name: 'Blush Cream', density: 'high', layoutStrategy: 'blushEditorial', ornamentSet: 'watercolor-rose', frameSet: 'double-arch', colorOverrides: { bg: '#EFE5DD', text: '#3D332C', primary: '#5F303D', accent: '#D5A2A9' } },
+
+  // Tempwed — Luxury Floral Animated
+  { id: 'tempwed-classic', parentTemplate: 'tempwed', name: 'Classic', density: 'high', layoutStrategy: 'classicFloral', ornamentSet: 'floral-corner-animated', frameSet: 'arch-frame', colorOverrides: {} },
+  { id: 'tempwed-golden-hour', parentTemplate: 'tempwed', name: 'Golden Hour', density: 'high', layoutStrategy: 'goldenHour', ornamentSet: 'floral-corner-animated', frameSet: 'arch-frame-gold', colorOverrides: { bg: '#FFF8F0', primary: '#B8860B', accent: '#DAA520' } },
+  { id: 'tempwed-midnight-garden', parentTemplate: 'tempwed', name: 'Midnight Garden', density: 'medium', layoutStrategy: 'midnightGarden', ornamentSet: 'floral-corner-dark', frameSet: 'arch-frame-dark', colorOverrides: { bg: '#1A0F12', text: '#FBF9F7', primary: '#D4AF37', accent: '#C98870' } },
 ];
 
 export function getVariantsFor(templateId) {

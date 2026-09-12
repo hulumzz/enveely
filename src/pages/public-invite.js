@@ -7,7 +7,7 @@ import { renderPage } from '../ui/app-shell.js';
 import { getPublishedInvitation, listApprovedWishes } from '../services/firestore-data.js';
 import { loadDraft } from '../services/draft-store.js';
 import { renderInvitation } from '../engine/renderer.js';
-import { startCountdowns, wireCopyButtons, wireRsvpForms, wireWishesForms } from '../engine/interactions.js';
+import { attachInvitationInteractions } from '../engine/interactions.js';
 import { initInvitationMusic, stopInvitationMusic } from '../engine/music.js';
 import { esc, invT } from '../core/format.js';
 import { stopAllVideos } from '../engine/media.js';
@@ -31,11 +31,13 @@ export async function renderPublicInvitation({ id }, query = new URLSearchParams
   // Dynamic OG tags so WhatsApp/IG previews show the couple's names.
   applyInviteMeta(invitation);
 
+  const guestName = query.get('to') || '';
+
   renderPage(
     `
     <div class="public-invite">
       <div class="invite-gate" data-gate>
-        <p class="invite-gate__to">${query.get('to') ? `Kepada ${esc(query.get('to'))}` : ''}</p>
+        <p class="invite-gate__to">${guestName ? `Kepada ${esc(guestName)}` : ''}</p>
         <p class="invite-gate__eyebrow">THE WEDDING OF</p>
         <h1 class="invite-gate__names">${esc(guestNames(invitation))}</h1>
         <p class="invite-gate__date">${esc(shortDate(invitation.content?.weddingDate))}</p>
@@ -46,12 +48,16 @@ export async function renderPublicInvitation({ id }, query = new URLSearchParams
     `,
     (rootEl) => {
       const body = rootEl.querySelector('[data-invite-body]');
-      body.innerHTML = renderInvitation({ ...invitation, _draft: false });
+      body.innerHTML = renderInvitation({
+        ...invitation,
+        _draft: false,
+        content: {
+          ...invitation.content,
+          guestName: guestName || invitation.content?.guestName,
+        },
+      });
 
-      startCountdowns(body);
-      wireCopyButtons(body);
-      wireRsvpForms(body, {});
-      wireWishesForms(body, {});
+      attachInvitationInteractions(body, {});
       hydrateWishes(body, id);
 
       const gate = rootEl.querySelector('[data-gate]');

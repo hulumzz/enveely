@@ -8,7 +8,8 @@ import { getTemplate } from '../data/templates.js';
 import { getVariantsFor } from '../data/variants.js';
 import { sampleInvitation } from '../data/sample-invitation.js';
 import { renderInvitation } from '../engine/renderer.js';
-import { startCountdowns, wireCopyButtons, wireRsvpForms, wireWishesForms } from '../engine/interactions.js';
+import { attachInvitationInteractions } from '../engine/interactions.js';
+import { initInvitationMusic } from '../engine/music.js';
 import { navigate } from '../router.js';
 
 export function renderLivePreview(templateId, variantId) {
@@ -49,11 +50,8 @@ export function renderLivePreview(templateId, variantId) {
       const paint = () => {
         const invitation = sampleInvitation(templateId, activeVariant);
         canvas.innerHTML = renderInvitation(invitation);
-        startCountdowns(canvas);
-        wireCopyButtons(canvas);
-        // Forms are wired but submissions stay local in preview mode.
-        wireRsvpForms(canvas, { demo: true });
-        wireWishesForms(canvas, { demo: true });
+        attachInvitationInteractions(canvas, { demo: true });
+        initInvitationMusic(canvas);
       };
 
       root.querySelector('.livepreview__variants')?.addEventListener('click', (e) => {

@@ -62,6 +62,8 @@ export const builderCss = `
   display: flex;
   gap: var(--sp-2);
 }
+.btn--ai { background: #2d2520; color: #f8efe7; border-color: #2d2520; }
+.btn--ai:hover { background: #4a392f; border-color: #4a392f; }
 
 /* ---------- Section navigator (kiri) ---------- */
 .builder__nav {
@@ -217,6 +219,7 @@ export const builderCss = `
   font-size: var(--fs-caption);
   color: var(--muted);
 }
+.builder__props-ai { margin-left: auto; color: var(--accent); font-size: .68rem; text-align: right; max-width: 110px; line-height: 1.35; }
 
 .bprops__group {
   display: grid;
@@ -278,6 +281,9 @@ export const builderCss = `
   color: var(--text);
   transition: border-color 180ms ease, box-shadow 180ms ease;
 }
+.field-suggest { justify-self: start; padding: 0; border: 0; background: transparent; color: var(--accent); font: inherit; font-size: .72rem; cursor: pointer; }
+.field-suggest:hover { text-decoration: underline; text-underline-offset: 3px; }
+.field-suggest:disabled { color: var(--muted); cursor: wait; text-decoration: none; }
 .fld-ui input:hover,
 .fld-ui textarea:hover {
   border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
@@ -436,6 +442,15 @@ export const builderCss = `
   grid-template-columns: repeat(3, 1fr);
   gap: var(--sp-2);
 }
+.bgallery__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: var(--fs-caption);
+  color: var(--muted);
+}
+.bgallery__meta strong { color: var(--accent); letter-spacing: .03em; }
 .bgallery__item {
   position: relative;
   aspect-ratio: 1;

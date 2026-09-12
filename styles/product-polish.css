@@ -1,0 +1,90 @@
+/* Focused product UI polish: denser page openings and a quieter studio-like
+   dashboard. Invitation templates retain their own family DNA in templates.css. */
+
+.gallery-page { padding-block: clamp(34px, 5vw, 76px) var(--sp-16); }
+.gallery-page .gallery-head { margin-bottom: var(--sp-6); }
+.preview-page { padding-top: clamp(28px, 4vw, 56px); }
+.preview-slider__viewport, .tpl-card__preview { contain: layout paint; }
+
+.account-page { padding: clamp(14px, 2.5vw, 30px) 0 96px; background: #f6f3ee; }
+.account-shell { gap: clamp(16px, 2.5vw, 32px); }
+.account-sidebar { border-radius: 18px; box-shadow: 0 16px 42px rgba(34, 27, 22, .13); }
+.account-content { padding-block: 2px; }
+.account-topbar { min-height: 70px; padding: 4px 2px 16px; }
+.account-topbar h1 { letter-spacing: -.035em; }
+.dash-view { gap: 20px; }
+.dash-page-head { padding-bottom: 16px; border-bottom: 1px solid rgba(55, 43, 35, .11); }
+.dash-page-head h2 { letter-spacing: -.035em; }
+.dash-welcome { border-radius: 18px; min-height: 210px; box-shadow: none; }
+.dash-stats { gap: 1px; border: 1px solid rgba(55, 43, 35, .13); border-radius: 14px; overflow: hidden; background: rgba(55,43,35,.12); }
+.dash-stat { border: 0; border-radius: 0; background: #fffdf9; }
+.dash-stat strong { font-size: 2.2rem; }
+
+/* The full invitation library reads as a curated work list on desktop, not a
+   stack of marketing cards. The overview keeps its compact cards. */
+.dash-invites--all { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.dash-invites--all .invite-card { display: grid; grid-template-columns: 178px minmax(0, 1fr); min-height: 142px; border-radius: 12px; box-shadow: none; }
+.dash-invites--all .invite-card:hover { transform: none; box-shadow: 0 10px 24px rgba(50, 38, 29, .08); border-color: rgba(96, 70, 52, .32); }
+.dash-invites--all .invite-card__cover { height: auto; min-height: 142px; border-radius: 0; align-items: end; justify-items: start; text-align: left; }
+.dash-invites--all .invite-card__cover::before { width: 78px; height: 98px; left: 22px; top: 18px; }
+.dash-invites--all .invite-card__cover span { font-size: .95rem; max-width: 12ch; }
+.dash-invites--all .invite-card__body { padding: 18px 20px; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 18px; align-content: center; }
+.dash-invites--all .invite-card__status, .dash-invites--all .invite-card__body > p { grid-column: 1; }
+.dash-invites--all .invite-card h3 { grid-column: 1; margin: 5px 0 0; font-size: 1.45rem; }
+.dash-invites--all .invite-card__actions { grid-column: 2; grid-row: 1 / span 3; margin: 0; align-self: center; }
+.dash-invites--all .invite-card__actions button { margin-left: 2px; }
+.dash-filterbar { border-radius: 10px; background: transparent; padding-inline: 0; border-inline: 0; }
+
+.profile-grid { gap: 12px; }
+.profile-card { border-radius: 14px; box-shadow: none; }
+.profile-card--identity { background: linear-gradient(155deg, #2d2622, #5d4537); color: #fff; }
+.profile-card--identity p { color: #e8dcd3; }
+.profile-card--identity span { background: rgba(255,255,255,.12); color: #fff; }
+.profile-avatar { border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.1); color: #fff; }
+.profile-card--security { display: flex; flex-direction: column; justify-content: space-between; min-height: 195px; }
+.profile-security-row { margin-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid var(--border); padding-top: 16px; }
+.profile-security-row__state { color: #3e7250; font-size: .74rem; font-weight: 700; }
+.profile-security-row__state::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; background: currentColor; }
+.profile-logout { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #d89b94; background: #fffafa; color: #9a3f37; padding: 9px 13px; border-radius: 8px; font: inherit; font-size: .76rem; font-weight: 700; cursor: pointer; transition: .18s ease; }
+.profile-logout:hover { background: #9a3f37; color: #fff; border-color: #9a3f37; }
+.profile-logout span { transform: rotate(90deg); font-size: .9rem; }
+
+.livepreview__draft-note { margin: 0; color: var(--text-soft); font-size: .75rem; }
+.livepreview__draft-note span { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--success); margin-right: 5px; }
+
+/* Soft layered treatments outside the cover keep every family from becoming a
+   flat color field while preserving contrast for the actual content. */
+.inv--amora .sec--welcome, .inv--amora .sec--quote { background: radial-gradient(circle at 12% 16%, rgba(197, 146, 150, .13), transparent 25%), radial-gradient(circle at 88% 80%, rgba(168, 148, 132, .14), transparent 28%); }
+.inv--elysian .sec--couple, .inv--elysian .sec--story { background: linear-gradient(90deg, transparent 0 7%, rgba(181,163,128,.09) 7% 7.2%, transparent 7.2% 92.8%, rgba(181,163,128,.09) 92.8% 93%, transparent 93%); }
+.inv--serena .sec--welcome, .inv--serena .sec--closing { background: radial-gradient(45% 40% at 50% 0%, rgba(154,147,139,.10), transparent 70%); }
+.inv--lumiere .sec--story, .inv--lumiere .sec--rsvp { background: radial-gradient(circle at 50% 0%, rgba(200,180,140,.12), transparent 42%), linear-gradient(145deg, rgba(255,255,255,.025), transparent); }
+.inv--nusantara .sec--events, .inv--nusantara .sec--info { background: repeating-linear-gradient(45deg, transparent 0 16px, rgba(185,138,78,.055) 16px 17px), repeating-linear-gradient(-45deg, transparent 0 16px, rgba(185,138,78,.04) 16px 17px); }
+.inv--meadow .sec--welcome, .inv--meadow .sec--closing { background: radial-gradient(ellipse at 0 0, rgba(125,143,99,.16), transparent 34%), radial-gradient(ellipse at 100% 100%, rgba(217,154,78,.12), transparent 35%); }
+
+@media (max-width: 760px) {
+  .gallery-page { padding-top: 28px; }
+  .account-page { padding: 10px 0 92px; }
+  .account-topbar { min-height: 62px; padding: 8px 0 14px; }
+  .account-sidebar { padding: 7px 8px calc(7px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; }
+  .account-nav { grid-template-columns: repeat(5, minmax(58px, 1fr)); gap: 0; overflow-x: auto; }
+  .account-nav a { min-width: 58px; font-size: .62rem; line-height: 1.12; padding: 8px 1px; }
+  .account-nav a span { font-size: 1.05rem; }
+  .dash-welcome { min-height: 190px; border-radius: 14px; }
+  .dash-stats { grid-template-columns: 1fr; border-radius: 12px; gap: 1px; }
+  .dash-stat { padding: 16px 18px; display: grid; grid-template-columns: 1fr auto; align-items: center; }
+  .dash-stat p, .dash-stat small { grid-column: 1; }
+  .dash-stat strong { grid-column: 2; grid-row: 1 / span 2; font-size: 2rem; }
+  .dash-invites--all .invite-card { grid-template-columns: 96px minmax(0, 1fr); min-height: 132px; }
+  .dash-invites--all .invite-card__cover { min-height: 132px; padding: 11px; }
+  .dash-invites--all .invite-card__cover::before { width: 48px; height: 64px; left: 18px; top: 13px; }
+  .dash-invites--all .invite-card__cover span { font-size: .75rem; }
+  .dash-invites--all .invite-card__cover i { font-size: .45rem; left: 11px; }
+  .dash-invites--all .invite-card__body { grid-template-columns: 1fr; padding: 14px; }
+  .dash-invites--all .invite-card h3 { font-size: 1.2rem; }
+  .dash-invites--all .invite-card__actions { grid-column: 1; grid-row: auto; margin-top: 11px; flex-wrap: wrap; }
+  .dash-invites--all .invite-card__actions button { margin-left: auto; }
+  .profile-security-row { align-items: flex-start; flex-direction: column; }
+  .profile-logout { width: 100%; justify-content: center; }
+  .livepreview__bar { padding: 10px 14px; gap: 9px; }
+  .livepreview__draft-note { order: 3; width: 100%; }
+}

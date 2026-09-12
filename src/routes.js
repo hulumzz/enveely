@@ -6,6 +6,7 @@ import { renderLanding } from './pages/landing.js';
 import { renderTemplateGallery } from './pages/template-gallery.js';
 import { renderTemplatePreview } from './pages/template-preview.js';
 import { renderLivePreview } from './pages/live-preview.js';
+import { renderDraftPreview } from './pages/draft-preview.js';
 import { renderCreate } from './pages/create.js';
 import { renderBuilder } from './pages/builder.js';
 import { renderDashboard } from './pages/dashboard.js';
@@ -24,6 +25,7 @@ export function setupRoutes() {
   registerRoute('/templates/:id/preview/:variant', ({ id, variant }) => renderLivePreview(id, variant));
   registerRoute('/create', (_params, query) => renderCreate(query));
   registerRoute('/builder/:id', ({ id }) => renderBuilder(id));
+  registerRoute('/builder/:id/preview', ({ id }) => renderDraftPreview(id));
   registerRoute('/checkout/:id', ({ id }) => renderCheckout(id));
   registerRoute('/dashboard', () => renderDashboard());
   registerRoute('/dashboard/invitations', () => renderDashboard('invitations'));

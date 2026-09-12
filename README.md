@@ -33,6 +33,8 @@ Isi `.env.local` dan jangan commit file tersebut.
 | `VITE_FREEIMAGE_API_KEY` | Provider gambar cadangan |
 | `VITE_QRIS_STATIC_PAYLOAD` | Payload QRIS statis merchant yang diubah menjadi QRIS dinamis saat checkout |
 
+`GROQ_API_KEY` adalah secret server, bukan environment frontend. Simpan di `.dev.vars` saat lokal dan Pages secret di production.
+
 Payload QRIS asli dan hasil decoder merchant tidak boleh masuk repository. `.gitignore` sudah mencakup `.env.local` dan `QRIS Decoder.md`.
 
 ## Route produk
@@ -80,6 +82,7 @@ Konfigurasikan binding Pages Functions berikut di Cloudflare Dashboard:
 | `PAYMENTS_DB` | D1 | Order dan status review |
 | `PAYMENT_PROOFS` | R2 | Bukti pembayaran privat |
 | `AI` | Workers AI | Pemeriksaan awal screenshot |
+| `GROQ_API_KEY` | Secret | Copy assistant editor (Qwen 3.8 27B dan GPT-OSS 120B) |
 | `FIREBASE_WEB_API_KEY` | Secret | Verifikasi Firebase ID token di server |
 | `ADMIN_EMAILS` | Secret | Email reviewer, pisahkan dengan koma |
 | `FIREBASE_PROJECT_ID` | Variable | Project ID Firebase untuk entitlement |

@@ -62,14 +62,18 @@ export function renderInvitation(invitation) {
     return html || (ctx.draftMode ? emptySection(id) : '');
   }).join('\n');
 
-  // Music is an overlay control, not a scroll section.
+  // Floating controls & modals
   const music = ctx.liteMode ? '' : S.renderMusic(ctx);
+  const bottomNav = ctx.liteMode ? '' : S.renderBottomNav(ctx);
+  const lightbox = ctx.liteMode ? '' : S.renderLightbox();
 
   return `
   <article class="inv inv--${design.templateId} ${design.variantId ? `inv--v-${design.variantId}` : ''}"
            style="${designVarsCss(design)}">
     ${body}
     ${music}
+    ${bottomNav}
+    ${lightbox}
   </article>`;
 }
 
@@ -84,6 +88,16 @@ function designVarsCss(design) {
     '--inv-font-body': design.fonts.body,
   };
   if (design.fonts.accent) styleVars['--inv-font-accent'] = design.fonts.accent;
+  if (design.templateId === 'botanica') {
+    styleVars['--inv-canvas'] = '#F7F2ED';
+    styleVars['--inv-warm-cream'] = '#EFE5DD';
+    styleVars['--inv-dusty-rose'] = '#B97882';
+    styleVars['--inv-muted-mauve'] = '#875C69';
+    styleVars['--inv-deep-burgundy'] = '#5F303D';
+    styleVars['--inv-soft-blush'] = '#D5A2A9';
+    styleVars['--inv-lavender-grey'] = '#AEB3C6';
+    styleVars['--inv-charcoal'] = '#382E2E';
+  }
   return Object.entries(styleVars)
     .map(([k, v]) => `${k}:${String(v).replace(/"/g, "'")}`)
     .join(';');
