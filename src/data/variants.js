@@ -75,7 +75,8 @@ export function getVariant(variantId) {
 export function resolveDesign(templateId, variantId) {
   const tpl = getTemplate(templateId);
   if (!tpl) return null;
-  const variant = getVariant(variantId) || getVariantsFor(templateId)[0] || null;
+  const requested = getVariant(variantId);
+  const variant = (requested?.parentTemplate === templateId ? requested : null) || getVariantsFor(templateId)[0] || null;
 
   return {
     templateId: tpl.id,

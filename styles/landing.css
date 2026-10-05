@@ -898,7 +898,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   /* Pop-in: rise + gentle scale, GPU-friendly (opacity/transform only). */
-  .reveal {
+  .reveal.is-reveal-ready {
     opacity: 0;
     transform: translateY(26px) scale(0.965);
     transition:
@@ -907,7 +907,7 @@
     transition-delay: var(--reveal-delay, 0ms);
     will-change: opacity, transform;
   }
-  .reveal.is-visible {
+  .reveal.is-reveal-ready.is-visible {
     opacity: 1;
     transform: none;
     will-change: auto;

@@ -59,7 +59,6 @@ export function renderLivePreview(templateId, variantId) {
         if (!chip) return;
         root.querySelectorAll('[data-variant]').forEach((c) => c.classList.toggle('is-active', c === chip));
         navigate(`/templates/${templateId}/preview/${chip.dataset.variant}`, { replace: true });
-        paint();
       });
 
       root.querySelector('.device-toggle')?.addEventListener('click', (e) => {

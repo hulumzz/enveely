@@ -173,7 +173,7 @@ export function renderPage(html, setup) {
   outlet.innerHTML = html;
   applyTranslations(outlet);
   if (typeof setup === 'function') setup(outlet);
-  window.scrollTo({ top: 0 });
+  window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
 export { t };

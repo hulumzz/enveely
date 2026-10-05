@@ -1,63 +1,72 @@
-// Enveely — Background music engine for public invitations.
-// Autoplay policies require user interaction; the gate cover click provides
-// it. A visible floating control is always present (Design-1.md §24).
-
-let currentAudio = null;
-
-/**
- * Attach music behavior to a rendered invitation root.
- * Expects markup from renderMusic(): [data-music] with audio[data-music-src].
- */
+// One owned player, gesture-based start and cancellable volume envelopes.
+let disposeCurrent = null;
 export function initInvitationMusic(root) {
+  stopInvitationMusic();
   const wrap = root.querySelector('[data-music]');
-  if (!wrap) return;
-  const src = wrap.dataset.musicSrc;
-  if (!src) return;
-
-  const btn = wrap.querySelector('[data-music-toggle]');
+  if (!wrap?.dataset.musicSrc) return;
+  const button = wrap.querySelector('[data-music-toggle]');
   const icon = wrap.querySelector('[data-music-icon]');
-  const audio = new Audio(src);
+  const audio = new Audio(wrap.dataset.musicSrc);
+  audio.preload = 'none';
   audio.loop = wrap.dataset.musicLoop !== 'false';
-  audio.volume = Math.min(Math.max(Number(wrap.dataset.musicVolume) || 0.55, 0), 1);
-  currentAudio = audio;
-
-  const setIcon = (playing) => {
-    if (icon) icon.textContent = playing ? '♪' : '♪̸';
-    btn?.setAttribute('aria-pressed', String(playing));
+  const parsed = Number(wrap.dataset.musicVolume);
+  const volume = Number.isFinite(parsed) ? Math.min(1, Math.max(0, parsed)) : .55;
+  let frame = 0, sequence = 0, playing = false, disposed = false;
+  const state = value => {
+    playing = value;
+    button?.setAttribute('aria-pressed', String(value));
+    button?.setAttribute('aria-label', value ? 'Jeda musik' : 'Putar musik');
+    if (icon) icon.textContent = value ? '♫' : '♪';
   };
-
-  btn?.addEventListener('click', () => {
-    if (audio.paused) {
-      audio.play().then(() => setIcon(true)).catch(() => setIcon(false));
-    } else {
-      audio.pause();
-      setIcon(false);
+  const fade = (target, duration, done = () => {}) => {
+    cancelAnimationFrame(frame);
+    const initial = audio.volume, start = performance.now();
+    const step = now => {
+      const progress = Math.min(1, (now - start) / duration);
+      audio.volume = initial + (target - initial) * (progress * progress * (3 - 2 * progress));
+      if (progress < 1) frame = requestAnimationFrame(step); else done();
+    };
+    frame = requestAnimationFrame(step);
+  };
+  const play = () => {
+    if (disposed) return;
+    const token = ++sequence;
+    cancelAnimationFrame(frame);
+    if (audio.paused) audio.volume = 0;
+    state(true);
+    audio.play().then(() => {
+      if (disposed || token !== sequence) return;
+      fade(volume, 1800);
+    }).catch(() => { if (token === sequence) state(false); });
+  };
+  const pause = () => { ++sequence; state(false); fade(0, 650, () => audio.pause()); };
+  const toggle = () => playing ? pause() : play();
+  const open = e => {
+    if (wrap.dataset.musicAutoplay === 'false') return;
+    if (e.type === 'env:gate-opened' || e.target.closest?.('[data-open-cover]')) {
+      if (!playing) play();
     }
-  });
-
-  // Auto-start attempt after first user interaction anywhere (gate open).
-  const tryAutoplay = () => {
-    if (!audio.paused) return cleanup();
-    audio.play().then(() => setIcon(true)).catch(() => {}).finally(cleanup);
   };
-  function cleanup() {
-    document.removeEventListener('click', tryAutoplay, { capture: true });
-  }
-  if (wrap.dataset.musicAutoplay !== 'false') {
-    document.addEventListener('click', tryAutoplay, { capture: true, once: true });
-  }
-
-  // Stop when leaving the page (SPA navigation).
-  window.addEventListener('env:navigate', () => {
-    audio.pause();
-    audio.src = '';
-  }, { once: true });
+  const hidden = () => { if (document.hidden) { ++sequence; cancelAnimationFrame(frame); audio.pause(); state(false); } };
+  const ended = () => state(false);
+  button?.addEventListener('click', toggle);
+  root.addEventListener('click', open);
+  document.addEventListener('env:gate-opened', open);
+  document.addEventListener('visibilitychange', hidden);
+  audio.addEventListener('ended', ended);
+  audio.addEventListener('error', ended);
+  const dispose = () => {
+    disposed = true; ++sequence; cancelAnimationFrame(frame); audio.pause(); audio.removeAttribute('src'); audio.load();
+    button?.removeEventListener('click', toggle);
+    root.removeEventListener('click', open);
+    document.removeEventListener('env:gate-opened', open);
+    document.removeEventListener('visibilitychange', hidden);
+    audio.removeEventListener('ended', ended); audio.removeEventListener('error', ended);
+    document.removeEventListener('env:navigate', dispose);
+    if (disposeCurrent === dispose) disposeCurrent = null;
+  };
+  disposeCurrent = dispose;
+  document.addEventListener('env:navigate', dispose, { once: true });
+  state(false);
 }
-
-/** Stop any playing invitation audio. */
-export function stopInvitationMusic() {
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio = null;
-  }
-}
+export function stopInvitationMusic() { disposeCurrent?.(); }

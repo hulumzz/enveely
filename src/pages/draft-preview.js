@@ -5,7 +5,8 @@ import { renderPage } from '../ui/app-shell.js';
 import { loadDraft } from '../services/draft-store.js';
 import { requireAuthenticated } from '../services/access.js';
 import { renderInvitation } from '../engine/renderer.js';
-import { startCountdowns, wireCopyButtons, wireRsvpForms, wireWishesForms } from '../engine/interactions.js';
+import { attachInvitationInteractions } from '../engine/interactions.js';
+import { initInvitationMusic } from '../engine/music.js';
 import { navigate } from '../router.js';
 
 export function renderDraftPreview(invitationId) {
@@ -36,10 +37,8 @@ export function renderDraftPreview(invitationId) {
       const canvas = root.querySelector('[data-canvas]');
       const frame = root.querySelector('[data-frame]');
       canvas.innerHTML = renderInvitation({ ...draft, status: 'draft', _draft: true });
-      startCountdowns(canvas);
-      wireCopyButtons(canvas);
-      wireRsvpForms(canvas, { demo: true });
-      wireWishesForms(canvas, { demo: true });
+      attachInvitationInteractions(canvas, { demo: true });
+      initInvitationMusic(canvas);
 
       root.querySelector('.device-toggle')?.addEventListener('click', (event) => {
         const chip = event.target.closest('[data-device]');

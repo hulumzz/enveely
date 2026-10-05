@@ -474,7 +474,8 @@ function setupReveal(root) {
       }
     });
   }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
-  items.forEach((el) => io.observe(el));
+  items.forEach(el => { el.classList.add('is-reveal-ready'); io.observe(el); });
+  document.addEventListener('env:navigate', () => io.disconnect(), { once: true });
 }
 
 /**

@@ -3,7 +3,10 @@
 // clipboard, RSVP/wishes form handling. Firestore submission lands in Phase 3.
 
 /** Start all [data-countdown-date] tickers within a root. */
+import { initInvitationMotion } from './motion.js';
+
 export function startCountdowns(root) {
+  const timers = [];
   root.querySelectorAll('[data-countdown-date]').forEach((el) => {
     const target = new Date(`${el.dataset.countdownDate}T00:00:00`);
     if (Number.isNaN(target.getTime())) return;
@@ -29,9 +32,13 @@ export function startCountdowns(root) {
       cells.seconds.textContent = pad(diff % 60);
     };
 
-    tick();
     const timer = setInterval(tick, 1000);
+    tick();
+    timers.push(timer);
   });
+  const cleanup = () => { timers.forEach(clearInterval); document.removeEventListener('env:navigate', cleanup); };
+  document.addEventListener('env:navigate', cleanup, { once: true });
+  return cleanup;
 }
 
 /** Wire [data-copy] buttons (gift account numbers). */
@@ -130,11 +137,9 @@ export function wireBottomNav(root) {
     const targetEl = root.querySelector(`#${id}`);
     if (!targetEl) return;
 
-    if (isWindow) {
-      targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    const behavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth';
+    if (isWindow) targetEl.scrollIntoView({ behavior, block: 'start' });
+    else scrollContainer.scrollTo({ top: scrollContainer.scrollTop + targetEl.getBoundingClientRect().top - scrollContainer.getBoundingClientRect().top, behavior });
   });
 
   // Scroll spy to update active pill item
@@ -148,7 +153,7 @@ export function wireBottomNav(root) {
 
     targets.forEach(({ id, el }) => {
       const rect = el.getBoundingClientRect();
-      const distance = Math.abs(rect.top + rect.height / 2 - viewportMiddle);
+      const distance = Math.abs(rect.top - (scrollContainer?.getBoundingClientRect().top || 0) - viewportMiddle);
       if (distance < minDistance) {
         minDistance = distance;
         closest = id;
@@ -165,6 +170,7 @@ export function wireBottomNav(root) {
   const scroller = isWindow ? window : scrollContainer;
   scroller?.addEventListener('scroll', updateActive, { passive: true });
   updateActive();
+  document.addEventListener('env:navigate', () => scroller?.removeEventListener('scroll', updateActive), { once: true });
 }
 
 /**
@@ -213,6 +219,7 @@ export function wireLightbox(root) {
  * Convenience helper to wire all invitation engine interactions at once.
  */
 export function attachInvitationInteractions(root, options = {}) {
+  initInvitationMotion(root);
   startCountdowns(root);
   wireCopyButtons(root);
   wireRsvpForms(root, options);

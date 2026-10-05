@@ -5,6 +5,7 @@
 
 import { resolveDesign } from '../data/variants.js';
 import * as S from './sections.js';
+import { atelierDecoration } from '../data/atelier-art.js';
 
 const SECTION_RENDERERS = {
   cover: S.renderCover,
@@ -59,7 +60,7 @@ export function renderInvitation(invitation) {
 
   const body = order.map((id) => {
     const html = SECTION_RENDERERS[id](ctx);
-    return html || (ctx.draftMode ? emptySection(id) : '');
+    return html ? html.replace(/(<section\b[^>]*>)/, `$1${atelierDecoration(design, id)}`) : (ctx.draftMode ? emptySection(id) : '');
   }).join('\n');
 
   // Floating controls & modals

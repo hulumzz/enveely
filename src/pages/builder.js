@@ -47,9 +47,9 @@ function renderBuilderWorkspace(invitationId) {
 
       <aside class="builder__nav" data-nav></aside>
 
-      <main class="builder__canvas-wrap">
+      <div class="builder__canvas-wrap" role="region" aria-label="Kanvas undangan">
         <div class="builder__canvas" data-canvas></div>
-      </main>
+      </div>
 
       <aside class="builder__props" data-props></aside>
     </div>
@@ -63,10 +63,10 @@ function renderBuilderWorkspace(invitationId) {
       };
 
       const rootEl = document.querySelector('[data-builder]');
-      const nav = document.querySelector('[data-nav]');
-      const canvas = document.querySelector('[data-canvas]');
-      const props = document.querySelector('[data-props]');
-      const saveStatus = document.querySelector('[data-save-status]');
+      const nav = rootEl.querySelector('[data-nav]');
+      const canvas = rootEl.querySelector('[data-canvas]');
+      const props = rootEl.querySelector('[data-props]');
+      const saveStatus = rootEl.querySelector('[data-save-status]');
 
       // ---- persistence ----
       let saveTimer = null;
@@ -99,10 +99,12 @@ function renderBuilderWorkspace(invitationId) {
         `;
       }
 
+      let clearCountdowns = () => {};
+      wireCopyButtons(canvas);
       function paintCanvas() {
+        clearCountdowns();
         canvas.innerHTML = `<div class="builder__frame"><div class="builder__device">${renderInvitation({ ...state.draft, status: 'draft', _draft: true })}</div></div>`;
-        startCountdowns(canvas);
-        wireCopyButtons(canvas);
+        clearCountdowns = startCountdowns(canvas);
         canvas.querySelectorAll('.sec').forEach((sec) => {
           sec.addEventListener('click', () => selectSection(sec.dataset.section));
         });
@@ -125,7 +127,11 @@ function renderBuilderWorkspace(invitationId) {
         paintNav();
         paintProps();
         const el = canvas.querySelector(`[data-section="${id}"]`);
-        el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const scroller = rootEl.querySelector('.builder__canvas-wrap');
+        if (el && scroller) scroller.scrollTo({
+          top: scroller.scrollTop + el.getBoundingClientRect().top - scroller.getBoundingClientRect().top - 12,
+          behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+        });
       }
 
       // ---- top actions ----
