@@ -144,25 +144,19 @@ export function wireBottomNav(root) {
 
   // Scroll spy to update active pill item
   const updateActive = () => {
-    const viewportMiddle = isWindow
-      ? window.innerHeight / 2
-      : (scrollContainer?.clientHeight || 400) / 2;
-
-    let closest = null;
-    let minDistance = Infinity;
-
+    const viewportTop = scrollContainer?.getBoundingClientRect().top || 0;
+    const height = isWindow ? window.innerHeight : scrollContainer.clientHeight;
+    // Keep the current chapter selected until the following chapter enters.
+    let closest = targets[0]?.id;
     targets.forEach(({ id, el }) => {
-      const rect = el.getBoundingClientRect();
-      const distance = Math.abs(rect.top - (scrollContainer?.getBoundingClientRect().top || 0) - viewportMiddle);
-      if (distance < minDistance) {
-        minDistance = distance;
-        closest = id;
-      }
+      if (el.getBoundingClientRect().top <= viewportTop + height * .25) closest = id;
     });
 
     if (closest) {
       items.forEach((item) => {
         item.classList.toggle('is-active', item.dataset.navTarget === closest);
+        if (item.dataset.navTarget === closest) item.setAttribute('aria-current', 'location');
+        else item.removeAttribute('aria-current');
       });
     }
   };
@@ -181,38 +175,58 @@ export function wireLightbox(root) {
   if (!lightbox) return;
 
   const img = lightbox.querySelector('[data-lightbox-img]');
+  const closeButton = lightbox.querySelector('button[data-lightbox-close]');
+  let closeTimer = 0, returnFocus = null;
+  lightbox.inert = true;
 
-  const open = (src) => {
+  const open = (src, trigger) => {
     if (!img || !src) return;
+    clearTimeout(closeTimer);
+    returnFocus = trigger || document.activeElement;
     img.src = src;
+    lightbox.inert = false;
     lightbox.removeAttribute('aria-hidden');
+    lightbox.setAttribute('aria-modal', 'true');
     lightbox.classList.add('is-open');
+    closeButton?.focus({ preventScroll: true });
   };
 
   const close = () => {
     lightbox.classList.remove('is-open');
-    setTimeout(() => {
+    lightbox.inert = true;
+    lightbox.removeAttribute('aria-modal');
+    returnFocus?.focus({ preventScroll: true });
+    closeTimer = setTimeout(() => {
       lightbox.setAttribute('aria-hidden', 'true');
-      if (img) img.src = '';
-    }, 240);
+      img?.removeAttribute('src');
+    }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 260);
   };
 
-  root.addEventListener('click', (e) => {
+  const click = (e) => {
     const item = e.target.closest('[data-lightbox-src]');
     if (item) {
-      open(item.dataset.lightboxSrc);
+      open(item.dataset.lightboxSrc, item);
       return;
     }
     if (e.target.closest('[data-lightbox-close]')) {
       close();
     }
-  });
+  };
 
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && lightbox.classList.contains('is-open')) {
-      close();
+  const keydown = (e) => {
+    if (lightbox.classList.contains('is-open')) {
+      if (e.key === 'Escape') close();
+      if (e.key === 'Tab') { e.preventDefault(); closeButton?.focus(); }
+    } else if ((e.key === 'Enter' || e.key === ' ') && root.contains(e.target)) {
+      const item = e.target.closest('[data-lightbox-src]');
+      if (item) { e.preventDefault(); open(item.dataset.lightboxSrc, item); }
     }
-  });
+  };
+  root.addEventListener('click', click);
+  document.addEventListener('keydown', keydown);
+  const cleanup = () => { clearTimeout(closeTimer); root.removeEventListener('click', click); document.removeEventListener('keydown', keydown); document.removeEventListener('env:navigate', cleanup); };
+  document.addEventListener('env:navigate', cleanup, { once: true });
+  return cleanup;
 }
 
 /**

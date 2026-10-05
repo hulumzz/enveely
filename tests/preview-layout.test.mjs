@@ -59,6 +59,6 @@ const cells=Object.fromEntries(['days','hours','minutes','seconds'].map(unit=>[u
 const counter={dataset:{countdownDate:'2099-01-01'},querySelector:selector=>cells[selector.match(/"(.*?)"/)[1]]};
 const clean=startCountdowns({querySelectorAll:()=>[counter]});assert.equal(intervals.size,1);clean();assert.equal(intervals.size,0);
 startCountdowns({querySelectorAll:()=>[counter]});document.dispatchEvent(new Event('env:navigate'));assert.equal(intervals.size,0);
-for(const file of ['styles/product-layout.css','styles/landing.css']) postcss.parse(await readFile(new URL('../'+file,import.meta.url),'utf8'));
+for(const file of ['styles/product-layout.css','styles/landing.css','styles/pusaka.css','styles/mayura.css','styles/blocka.css','styles/meadow.css','styles/serena.css']) postcss.parse(await readFile(new URL('../'+file,import.meta.url),'utf8'));
 postcss.parse(builderCss);
-console.log('PASS: 120 section previews, thumbnail geometry, slide click/swipe/keyboard/resize/reduced motion, editor timer cleanup, CSS parsing');
+console.log(`PASS: ${templateVariants.length * 5} section previews, thumbnail geometry, slide click/swipe/keyboard/resize/reduced motion, editor timer cleanup, CSS parsing`);

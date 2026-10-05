@@ -6,6 +6,9 @@
 
 import { esc, invT, formatDateLong, formatDateParts, formatTimeRange, mapsUrlFor } from '../core/format.js';
 import { ornamentSvg, cornerOrnament, dividerOrnament } from '../data/ornaments.js';
+import { ceremonialSeal } from '../data/nusantara-art.js';
+import { coutureSeal } from '../data/elysian-art.js';
+import { royalCrown } from '../data/serena-art.js';
 
 const AMP = '&amp;'; // renders as "&" between couple names
 
@@ -15,6 +18,161 @@ export function renderCover(ctx) {
   const guestGreeting = c.guestGreeting || 'Kepada Yth. Bapak/Ibu/Saudara/i';
   const guestName = c.guestName || (ctx.guestName ? ctx.guestName : '');
   const layout = design.layouts.cover;
+
+  if (layout === 'royalBallroom') {
+    const names = [c.groom?.name, c.bride?.name].filter(Boolean);
+    const initials = names.map(name => [...name.trim()][0] || '').join(' & ');
+    return `<section class="sec sec--cover" data-section="cover" data-layout="royalBallroom" id="cover">
+      <div class="cover__body cover__body--royal">
+        <span class="royal__crown" aria-hidden="true">${royalCrown()}</span>
+        <p class="cover__eyebrow">${esc(c.coverEyebrow ?? defaultEyebrow(ctx.locale))}</p>
+        <h1 class="cover__names">${names.map(name => `<span class="cover__name">${esc(name)}</span>`).join('<span class="cover__amp" aria-hidden="true">&amp;</span>')}</h1>
+        <div class="royal__portrait"><div class="royal__photo">${c.coverImage ? `<img src="${esc(c.coverImage)}" alt="" loading="eager" fetchpriority="high"/>` : `<span class="royal__initials">${esc(initials)}</span>`}</div><span class="royal__pearl" aria-hidden="true"></span></div>
+        <p class="cover__date">${esc(formatDateLong(c.weddingDate, ctx.locale))}</p>
+        ${guestName ? `<div class="cover__guest"><p class="cover__guest-greet">${esc(guestGreeting)}</p><p class="cover__guest-name"><strong>${esc(guestName)}</strong></p></div>` : ''}
+        <a class="btn-inv btn-inv--open" href="#welcome" data-scroll data-open-cover><svg class="btn-inv__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M2 5h16v11H2Zm0 0 8 6 8-6"/></svg><span>${esc(invT(ctx.locale, 'open'))}</span></a>
+      </div>
+    </section>`;
+  }
+
+  if (layout === 'fieldJournal') {
+    const names = [c.groom?.name, c.bride?.name].filter(Boolean);
+    const initials = names.map(name => [...name.trim()][0] || '').join(' & ');
+    return `<section class="sec sec--cover" data-section="cover" data-layout="fieldJournal" id="cover">
+      <div class="cover__body cover__body--journal">
+        <p class="cover__eyebrow">${esc(c.coverEyebrow ?? defaultEyebrow(ctx.locale))}</p>
+        <h1 class="cover__names">${names.map(name => `<span class="cover__name">${esc(name)}</span>`).join('<span class="cover__amp" aria-hidden="true">&amp;</span>')}</h1>
+        <div class="journal__portrait"><span class="journal__backpage" aria-hidden="true"></span><div class="journal__photo">${c.coverImage ? `<img src="${esc(c.coverImage)}" alt="" loading="eager" fetchpriority="high"/>` : `<span class="journal__initials">${esc(initials)}</span>`}</div><span class="journal__tape" aria-hidden="true"></span><span class="journal__caption">${esc(formatDateLong(c.weddingDate, ctx.locale))}</span></div>
+        <p class="cover__date">${esc(formatDateLong(c.weddingDate, ctx.locale))}</p>
+        ${guestName ? `<div class="cover__guest"><p class="cover__guest-greet">${esc(guestGreeting)}</p><p class="cover__guest-name"><strong>${esc(guestName)}</strong></p></div>` : ''}
+        <a class="btn-inv btn-inv--open" href="#welcome" data-scroll data-open-cover><svg class="btn-inv__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M2 5h16v11H2Zm0 0 8 6 8-6"/></svg><span>${esc(invT(ctx.locale, 'open'))}</span></a>
+      </div>
+    </section>`;
+  }
+
+  if (layout === 'blockPortal') {
+    const names = [c.groom?.name, c.bride?.name].filter(Boolean);
+    return `<section class="sec sec--cover" data-section="cover" data-layout="blockPortal" id="cover">
+      <div class="cover__body cover__body--block">
+        <p class="cover__eyebrow">${esc(c.coverEyebrow ?? defaultEyebrow(ctx.locale))}</p>
+        <div class="block__stage ${c.coverImage ? 'block__stage--photo' : ''}">
+          ${c.coverImage ? `<div class="block__portrait"><img src="${esc(c.coverImage)}" alt="" loading="eager" fetchpriority="high"/></div>` : ''}
+          <img class="block__avatars" src="/art/blocka/couple.webp" width="900" height="822" alt="" loading="eager" ${c.coverImage ? '' : 'fetchpriority="high"'}/>
+          <span class="block__stage-floor" aria-hidden="true"></span>
+        </div>
+        <h1 class="cover__names">${names.map(name => `<span class="cover__name">${esc(name)}</span>`).join('<span class="cover__amp" aria-hidden="true">&amp;</span>')}</h1>
+        <p class="cover__date">${esc(formatDateLong(c.weddingDate, ctx.locale))}</p>
+        ${guestName ? `<div class="cover__guest"><p class="cover__guest-greet">${esc(guestGreeting)}</p><p class="cover__guest-name"><strong>${esc(guestName)}</strong></p></div>` : ''}
+        <a class="btn-inv btn-inv--open" href="#welcome" data-scroll data-open-cover><svg class="btn-inv__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="m6 3 11 7-11 7Z"/></svg><span>${esc(invT(ctx.locale, 'open'))}</span></a>
+      </div>
+    </section>`;
+  }
+
+  if (layout === 'aviaryWindow') {
+    const names = [c.groom?.name, c.bride?.name].filter(Boolean);
+    const initials = names.map(name => [...name.trim()][0] || '').join(' & ');
+    return `<section class="sec sec--cover" data-section="cover" data-layout="aviaryWindow" id="cover">
+      <div class="cover__body cover__body--aviary">
+        <p class="cover__eyebrow">${esc(c.coverEyebrow ?? defaultEyebrow(ctx.locale))}</p>
+        <h1 class="cover__names">${names.map(name => `<span class="cover__name">${esc(name)}</span>`).join('<span class="cover__amp" aria-hidden="true">&amp;</span>')}</h1>
+        <p class="cover__date">${esc(formatDateLong(c.weddingDate, ctx.locale))}</p>
+        <div class="aviary__portrait"><div class="aviary__photo">${c.coverImage ? `<img src="${esc(c.coverImage)}" alt="" loading="eager" fetchpriority="high"/>` : `<span class="aviary__initials">${esc(initials)}</span>`}</div><span class="aviary__jewel" aria-hidden="true"></span></div>
+        ${guestName ? `<div class="cover__guest"><p class="cover__guest-greet">${esc(guestGreeting)}</p><p class="cover__guest-name"><strong>${esc(guestName)}</strong></p></div>` : ''}
+        <a class="btn-inv btn-inv--open" href="#welcome" data-scroll data-open-cover><svg class="btn-inv__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M2 5h16v11H2Zm0 0 8 6 8-6"/></svg><span>${esc(invT(ctx.locale, 'open'))}</span></a>
+      </div>
+    </section>`;
+  }
+
+  if (layout === 'heritageStage') {
+    const names = [c.groom?.name, c.bride?.name].filter(Boolean);
+    const initials = names.map(name => [...name.trim()][0] || '').join(' & ');
+    return `<section class="sec sec--cover" data-section="cover" data-layout="heritageStage" id="cover">
+      <div class="cover__body cover__body--heritage">
+        <p class="cover__eyebrow">${esc(c.coverEyebrow ?? defaultEyebrow(ctx.locale))}</p>
+        <div class="heritage__portrait"><div class="heritage__photo">${c.coverImage ? `<img src="${esc(c.coverImage)}" alt="" loading="eager" fetchpriority="high"/>` : `<span class="heritage__initials">${esc(initials)}</span>`}</div><span class="heritage__crest" aria-hidden="true"></span></div>
+        <h1 class="cover__names">${names.map(name => `<span class="cover__name">${esc(name)}</span>`).join('<span class="cover__amp" aria-hidden="true">&amp;</span>')}</h1>
+        <p class="cover__date">${esc(formatDateLong(c.weddingDate, ctx.locale))}</p>
+        ${guestName ? `<div class="cover__guest"><p class="cover__guest-greet">${esc(guestGreeting)}</p><p class="cover__guest-name"><strong>${esc(guestName)}</strong></p></div>` : ''}
+        <a class="btn-inv btn-inv--open" href="#welcome" data-scroll data-open-cover><svg class="btn-inv__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M2 5h16v11H2Zm0 0 8 6 8-6"/></svg><span>${esc(invT(ctx.locale, 'open'))}</span></a>
+      </div>
+    </section>`;
+  }
+
+  if (layout === 'coutureFolio') {
+    const names = [c.groom?.name, c.bride?.name].filter(Boolean);
+    const initials = names.map(name => [...name.trim()][0] || '').join('');
+    return `<section class="sec sec--cover" data-section="cover" data-layout="coutureFolio" id="cover">
+      <div class="cover__body cover__body--folio">
+        <p class="cover__eyebrow">${esc(c.coverEyebrow ?? defaultEyebrow(ctx.locale))}</p>
+        <h1 class="cover__names">${names.map(name => `<span class="cover__name">${esc(name)}</span>`).join('<span class="cover__amp" aria-hidden="true">&amp;</span>')}</h1>
+        <p class="cover__date">${esc(formatDateLong(c.weddingDate, ctx.locale))}</p>
+        <div class="folio__portrait ${c.coverImage ? '' : 'folio__portrait--initials'}">
+          ${c.coverImage ? `<img src="${esc(c.coverImage)}" alt="" loading="eager" fetchpriority="high"/>` : `<span class="folio__initials">${esc(initials)}</span>`}
+          <span class="folio__seal">${coutureSeal(esc(initials))}</span>
+        </div>
+        ${guestName ? `<div class="cover__guest"><p class="cover__guest-greet">${esc(guestGreeting)}</p><p class="cover__guest-name"><strong>${esc(guestName)}</strong></p></div>` : ''}
+        <a class="btn-inv btn-inv--open" href="#welcome" data-scroll data-open-cover><svg class="btn-inv__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M2 5h16v11H2Zm0 0 8 6 8-6"/></svg><span>${esc(invT(ctx.locale, 'open'))}</span></a>
+      </div>
+    </section>`;
+  }
+
+  if (layout === 'cinematicTitle') {
+    const names = [c.groom?.name, c.bride?.name].filter(Boolean);
+    const initials = names.map(name => [...name.trim()][0] || '').join(' & ');
+    return `<section class="sec sec--cover" data-section="cover" data-layout="cinematicTitle" id="cover">
+      <div class="cinema__media ${c.coverImage ? '' : 'cinema__media--initials'}">${c.coverImage ? `<img src="${esc(c.coverImage)}" alt="" loading="eager" fetchpriority="high"/>` : `<span class="cinema__initials">${esc(initials)}</span>`}</div>
+      <div class="cover__body cover__body--cinema">
+        <p class="cover__eyebrow">${esc(c.coverEyebrow ?? defaultEyebrow(ctx.locale))}</p>
+        <h1 class="cover__names">${names.map(name => `<span class="cover__name">${esc(name)}</span>`).join('<span class="cover__amp" aria-hidden="true">&amp;</span>')}</h1>
+        <p class="cover__date">${esc(formatDateLong(c.weddingDate, ctx.locale))}</p>
+        ${guestName ? `<div class="cover__guest"><p class="cover__guest-greet">${esc(guestGreeting)}</p><p class="cover__guest-name"><strong>${esc(guestName)}</strong></p></div>` : ''}
+        <a class="btn-inv btn-inv--open" href="#welcome" data-scroll data-open-cover><svg class="btn-inv__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="m7 4 8 6-8 6Z"/></svg><span>${esc(invT(ctx.locale, 'open'))}</span></a>
+      </div>
+    </section>`;
+  }
+
+  if (layout === 'ceremonialGate') {
+    const names = [c.groom?.name, c.bride?.name].filter(Boolean);
+    const initials = names.map(name => [...name.trim()][0] || '').join(' · ');
+    return `<section class="sec sec--cover" data-section="cover" data-layout="ceremonialGate" id="cover">
+      <div class="cover__body cover__body--ceremony">
+        <p class="cover__eyebrow">${esc(c.coverEyebrow ?? defaultEyebrow(ctx.locale))}</p>
+        <div class="ceremony__portrait ${c.coverImage ? '' : 'ceremony__portrait--initials'}">
+          <div class="ceremony__photo">${c.coverImage ? `<img src="${esc(c.coverImage)}" alt="" loading="eager" fetchpriority="high"/>` : `<span class="ceremony__initials">${esc(initials)}</span>`}</div>
+          <span class="ceremony__seal" aria-hidden="true">${ceremonialSeal()}</span>
+        </div>
+        <h1 class="cover__names">${names.map(name => `<span class="cover__name">${esc(name)}</span>`).join('<span class="cover__amp" aria-hidden="true">&amp;</span>')}</h1>
+        <p class="cover__date">${esc(formatDateLong(c.weddingDate, ctx.locale))}</p>
+        ${guestName ? `<div class="cover__guest"><p class="cover__guest-greet">${esc(guestGreeting)}</p><p class="cover__guest-name"><strong>${esc(guestName)}</strong></p></div>` : ''}
+        <a class="btn-inv btn-inv--open" href="#welcome" data-scroll data-open-cover><svg class="btn-inv__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><path d="M2 5h16v11H2Zm0 0 8 6 8-6"/></svg><span>${esc(invT(ctx.locale, 'open'))}</span></a>
+      </div>
+    </section>`;
+  }
+
+  // A portrait portal keeps the photo and invitation copy in one composition.
+  if (layout === 'floralPortal') {
+    const names = [c.groom?.name, c.bride?.name].filter(Boolean);
+    const initials = names.map((name) => [...name.trim()][0] || '').join(' & ');
+    return `
+  <section class="sec sec--cover" data-section="cover" data-layout="floralPortal" id="cover">
+    <div class="cover__body cover__body--portal">
+      <p class="cover__eyebrow">${esc(c.coverEyebrow ?? defaultEyebrow(ctx.locale))}</p>
+      <div class="cover__portrait ${c.coverImage ? '' : 'cover__portrait--monogram'}">
+        <div class="cover__portrait-inner">
+          ${c.coverImage ? `<img src="${esc(c.coverImage)}" alt="" loading="eager" fetchpriority="high"/>` : `<span class="cover__monogram">${esc(initials)}</span>`}
+        </div>
+        <span class="cover__portrait-flower" aria-hidden="true"></span>
+      </div>
+      <h1 class="cover__names">${names.map((name) => `<span class="cover__name">${esc(name)}</span>`).join('<span class="cover__amp" aria-hidden="true">&amp;</span>')}</h1>
+      <p class="cover__date">${esc(formatDateLong(c.weddingDate, ctx.locale))}</p>
+      ${guestName ? `<div class="cover__guest"><p class="cover__guest-greet">${esc(guestGreeting)}</p><p class="cover__guest-name"><strong>${esc(guestName)}</strong></p></div>` : ''}
+      <a class="btn-inv btn-inv--open" href="#welcome" data-scroll data-open-cover>
+        <svg class="btn-inv__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" aria-hidden="true"><rect x="2" y="4" width="16" height="12" rx="2"/><path d="m2 5 8 6 8-6"/></svg>
+        <span>${esc(invT(ctx.locale, 'open'))}</span>
+      </a>
+    </div>
+  </section>`;
+  }
   
   // Tempwed arch frame layout
   if (layout === 'archFrame') {
@@ -189,20 +347,20 @@ export function renderInfo(ctx) {
       ${i.dressCode ? `
         <article class="info__card">
           <span class="info__icon">${infoIconSvg('dress')}</span>
-          <h3>Dress Code</h3>
-          <p>${esc(i.dressCode)}</p>
+          <div class="info__body"><h3>Dress Code</h3>
+          <p>${esc(i.dressCode).replace(/\n/g, '<br/>')}</p></div>
         </article>` : ''}
       ${i.access ? `
         <article class="info__card">
           <span class="info__icon">${infoIconSvg('car')}</span>
-          <h3>${esc(invT(ctx.locale, 'infoAccess'))}</h3>
-          <p>${esc(i.access).replace(/\n/g, '<br/>')}</p>
+          <div class="info__body"><h3>${esc(invT(ctx.locale, 'infoAccess'))}</h3>
+          <p>${esc(i.access).replace(/\n/g, '<br/>')}</p></div>
         </article>` : ''}
       ${i.notes ? `
         <article class="info__card info__card--wide">
           <span class="info__icon">${infoIconSvg('note')}</span>
-          <h3>${esc(invT(ctx.locale, 'infoNotes'))}</h3>
-          <p>${esc(i.notes).replace(/\n/g, '<br/>')}</p>
+          <div class="info__body"><h3>${esc(invT(ctx.locale, 'infoNotes'))}</h3>
+          <p>${esc(i.notes).replace(/\n/g, '<br/>')}</p></div>
         </article>` : ''}
     </div>
   </section>`;
@@ -354,6 +512,8 @@ export function renderMusic(ctx) {
        data-music-src="${esc(m.url)}"
        data-music-autoplay="${m.autoplay === false ? 'false' : 'true'}"
        data-music-loop="${m.loop === false ? 'false' : 'true'}"
+       data-music-fade-in="${ctx.design.motion.fadeIn ?? (ctx.design.templateId === 'amora' ? 2200 : 1800)}"
+       data-music-fade-out="${ctx.design.motion.fadeOut ?? (ctx.design.templateId === 'amora' ? 800 : 650)}"
        data-music-volume="${Number.isFinite(+m.volume) ? +m.volume : 0.55}">
     <button type="button" class="music-float__btn" data-music-toggle aria-pressed="false" aria-label="Putar / jeda musik">
       <span data-music-icon>♪̸</span>
@@ -364,11 +524,14 @@ export function renderMusic(ctx) {
 export function renderClosing(ctx) {
   const { c, design } = ctx;
   const div = dividerOrnament(design.ornamentSet);
+  const names = ['pusaka', 'mayura', 'blocka', 'meadow', 'serena'].includes(design.templateId)
+    ? [c.groom?.name, c.bride?.name].filter(Boolean).map(name => `<span class="closing__name">${esc(name)}</span>`).join('<span class="closing__amp" aria-hidden="true">&amp;</span>')
+    : namesLine(ctx);
   return `
   <section class="sec sec--closing" data-section="closing" data-layout="${esc(design.layouts.closing)}">
     ${c.closingImage ? `<figure class="closing__fig"><img src="${esc(c.closingImage)}" alt="" loading="lazy"/></figure>` : ''}
     <p class="closing__thanks">${esc(c.closingMessage || defaultClosing(ctx.locale))}</p>
-    <h2 class="closing__names">${namesLine(ctx)}</h2>
+    <h2 class="closing__names">${names}</h2>
     ${div ? `<div class="sec-divider">${ornamentSvg(div)}</div>` : ''}
   </section>`;
 }

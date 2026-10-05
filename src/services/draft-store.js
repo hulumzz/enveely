@@ -112,10 +112,13 @@ function sectionPresetFor(templateId) {
   const optional = {
     amora: ['parents', 'quote', 'story', 'info'],
     elysian: ['quote', 'story'],
-    serena: ['quote'],
+    serena: ['quote', 'story', 'info'],
     lumiere: ['story', 'info'],
     nusantara: ['parents', 'quote', 'info'],
-    meadow: ['story', 'info'],
+    pusaka: ['parents', 'quote', 'info'],
+    mayura: ['quote', 'story', 'info'],
+    blocka: ['quote', 'story', 'info'],
+    meadow: ['quote', 'story', 'info'],
   };
   return new Set([...core, ...(optional[templateId] || [])]);
 }

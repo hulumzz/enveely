@@ -76,7 +76,7 @@ export function renderLanding() {
             <span class="chip__dot" style="--dot:#8b6f5a"></span> Amora · Romantis
           </button>
           <button type="button" class="chip" data-showcase="serena" role="tab" aria-selected="false">
-            <span class="chip__dot" style="--dot:#55504a"></span> Serena · Minimalis
+            <span class="chip__dot" style="--dot:#a7833d"></span> Serena · Kerajaan
           </button>
           <button type="button" class="chip" data-showcase="lumiere" role="tab" aria-selected="false">
             <span class="chip__dot" style="--dot:#c8b48c"></span> Lumière · Sinematik
@@ -114,7 +114,7 @@ export function renderLanding() {
         <header class="reveal">
           <p class="eyebrow">Pilihan Desain</p>
           <h2 class="section__title" style="text-align:left;margin-top:12px">Temukan Desain yang Mewakili Cerita Kalian.</h2>
-          <p class="muted" style="text-align:left;margin-top:12px;max-width:56ch">Enam keluarga desain untuk berbagai nuansa, dari floral yang hangat hingga tampilan sinematik. Masing-masing tersedia dalam tiga variasi warna.</p>
+          <p class="muted" style="text-align:left;margin-top:12px;max-width:56ch">Berbagai keluarga desain, dari floral yang hangat hingga panggung budaya. Tiap keluarga memiliki tata letak, ornamen, dan variasi dengan nuansa tersendiri.</p>
         </header>
         <div class="families__grid">
           ${templateFamilies.map((f, i) => `
@@ -153,7 +153,7 @@ export function renderLanding() {
           <p>Mulai gratis selama 7 hari, atau aktifkan koleksi premium selama 3 bulan. Butuh lebih lama? Tambah Rp15.000 untuk masa tayang 6 bulan.</p>
         </header>
         <div class="pricing-story__cards">
-          <article class="price-card reveal"><span class="price-card__num">01</span><p class="eyebrow">Untuk Mencoba</p><h3>Polos Gratis</h3><strong>Rp0</strong><small>Aktif 7 hari</small><ul><li>Semua section penting</li><li>Editor & pratinjau penuh</li><li>1 tautan undangan</li></ul><a href="/create?template=serena&variant=serena-paper" data-link class="btn btn--ghost">Mulai Gratis</a></article>
+          <article class="price-card reveal"><span class="price-card__num">01</span><p class="eyebrow">Untuk Mencoba</p><h3>Undangan Gratis</h3><strong>Rp0</strong><small>Aktif 7 hari</small><ul><li>Semua section penting</li><li>Editor & pratinjau penuh</li><li>1 tautan undangan</li></ul><a href="/create?template=serena&variant=serena-paper" data-link class="btn btn--ghost">Mulai Gratis</a></article>
           <article class="price-card price-card--featured reveal"><span class="price-card__badge">Paling Fleksibel</span><span class="price-card__num">02</span><p class="eyebrow">Koleksi Berbayar</p><h3>Signature & Premium</h3><strong>Rp55.000–Rp220.000</strong><small>Aktif 3 bulan</small><ul><li>18 pilihan desain & variasi</li><li>QRIS dan kode unik otomatis</li><li>Perpanjang 6 bulan +Rp15.000</li></ul><a href="/templates" data-link class="btn btn--primary">Pilih Desain</a></article>
           <article class="price-card reveal"><span class="price-card__num">03</span><p class="eyebrow">Selalu Aman</p><h3>Draft Tersimpan</h3><strong>Otomatis</strong><small>Editor & checkout</small><ul><li>Lanjutkan setelah tab tertutup</li><li>Riwayat pembayaran rapi</li><li>Bukti diperiksa dengan bantuan AI</li></ul><a href="/login?mode=register" data-link class="btn btn--ghost">Buat Akun</a></article>
         </div>
@@ -309,14 +309,14 @@ function setupShowcase(root) {
     },
     serena: {
       variant: 'serena-paper',
-      frame: 'phone',
+      frame: 'editorial',
       title: 'Serena',
-      tagline: 'Minimalis · Modern',
-      text: 'Garis tipis, ruang yang lega, dan tipografi yang tenang membuat Serena tampil bersih tanpa kehilangan kehangatan. Nama kalian menjadi pusat perhatian, pas untuk gaya yang elegan dan tidak berlebihan.',
-      layout: 'Tengah Minimalis',
+      tagline: 'Prince & Princess',
+      text: 'Serena membawa kalian ke aula istana: tirai sutra terbuka, bingkai emas mengelilingi setiap cerita, dan merpati melintas di antara bab undangan. Tiga suasana kerajaan untuk merayakan kisah kalian.',
+      layout: 'Medali & Jendela Istana',
       fonts: 'Cormorant + Inter',
-      ornament: 'Tanpa Ornamen',
-      density: 'Sedikit',
+      ornament: 'Istana, Mahkota & Merpati',
+      density: 'Sedang',
     },
     lumiere: {
       variant: 'lumiere-gallery',
@@ -380,56 +380,71 @@ function familyFrame(id) {
   return ({
     amora: 'arch',
     elysian: 'editorial',
-    serena: 'phone',
-    lumiere: 'phone',
-    nusantara: 'arch',
-    meadow: 'polaroid',
+    serena: 'editorial',
+    lumiere: 'editorial',
+    nusantara: 'editorial',
+    meadow: 'editorial',
   })[id] || 'editorial';
 }
 
 function familyBadgeBg(id) {
   return ({
-    amora: '#faf6f1', elysian: '#f7f4ee', serena: '#fbfaf8',
-    lumiere: '#111013', nusantara: '#f6efe4', meadow: '#f7f3ea',
+    blocka: '#c9e9ff',
+    mayura: '#073e39',
+    pusaka: '#302019',
+    amora: '#faf6f1', elysian: '#f1eadc', serena: '#f8efdb',
+    lumiere: '#09182d', nusantara: '#073b3b', meadow: '#fff1d8',
   })[id] || '#faf6f1';
 }
 function familyBadgeFg(id) {
   return ({
-    amora: '#8b6f5a', elysian: '#2f2a25', serena: '#55504a',
-    lumiere: '#c8b48c', nusantara: '#7c3f2c', meadow: '#6b7a54',
+    blocka: '#225bb8',
+    mayura: '#edc88c',
+    pusaka: '#e9bf75',
+    amora: '#8b6f5a', elysian: '#743234', serena: '#806024',
+    lumiere: '#ffbd9c', nusantara: '#f4c66b', meadow: '#8b5b29',
   })[id] || '#8b6f5a';
 }
 
 function familyShortDesc(id) {
   return ({
+    blocka: 'Dunia blok 3D, pulau melayang, dan pesta yang penuh warna.',
+    mayura: 'Merak, sulur taman, dan lengkungan Art Nouveau yang hidup.',
+    pusaka: 'Wayang, gunungan, batik, dan bingkai ukiran di setiap bagian.',
     amora: 'Lengkungan floral yang lembut dengan tipografi hangat.',
-    elysian: 'Tata letak editorial yang lega dan berkelas.',
-    serena: 'Garis tipis dan ruang lega yang fokus pada nama kalian.',
-    lumiere: 'Foto besar, latar gelap, dan aksen emas yang hangat.',
-    nusantara: 'Sentuhan tradisi, motif batik, dan bingkai yang hangat.',
-    meadow: 'Nuansa botanikal dengan polaroid dan tulisan tangan.',
+    elysian: 'Tipografi couture, segel, dan lembar undangan berlapis.',
+    serena: 'Aula istana, mahkota, tirai sutra, dan merpati yang hidup.',
+    lumiere: 'Foto besar, cahaya bergerak, dan cerita dalam bingkai film.',
+    nusantara: 'Warna permata, anyaman geometris, dan bingkai perayaan.',
+    meadow: 'Album pedesaan dengan burung, lentera, dan taman yang hidup.',
   })[id] || '';
 }
 
 function familyMoodLabel(id) {
   return ({
+    blocka: 'Dunia Blok 3D',
+    mayura: 'Taman Merak · Art Nouveau',
+    pusaka: 'Tradisional · Budaya',
     amora: 'Romantis · Floral',
-    elysian: 'Mewah · Editorial',
-    serena: 'Minimalis · Modern',
+    elysian: 'Mewah · Couture',
+    serena: 'Prince & Princess',
     lumiere: 'Sinematik · Modern',
-    nusantara: 'Tradisional · Modern',
-    meadow: 'Rustik · Botanikal',
+    nusantara: 'Geometris · Perayaan',
+    meadow: 'Rustik · Buku Cerita',
   })[id] || '';
 }
 
 function familyChips(id) {
   return ({
+    blocka: ['Avatar Blok', 'Pulau Melayang', 'Pesta 3D'],
+    mayura: ['Merak', 'Sulur Taman', 'Art Nouveau'],
+    pusaka: ['Wayang', 'Batik', 'Ukiran'],
     amora: ['Floral', 'Lengkung Arch', 'Hangat'],
-    elysian: ['Editorial', 'Tipografi', 'Mewah'],
-    serena: ['Minimalis', 'Bersih', 'Modern'],
-    lumiere: ['Galeri', 'Sinematik', 'Aksen Emas'],
-    nusantara: ['Tradisi', 'Batik', 'Berbingkai'],
-    meadow: ['Rustik', 'Polaroid', 'Botanikal'],
+    elysian: ['Couture', 'Emboss', 'Segel'],
+    serena: ['Istana', 'Bingkai Emas', 'Merpati'],
+    lumiere: ['Sinematik', 'Sorot Cahaya', 'Bingkai Film'],
+    nusantara: ['Anyaman', 'Warna Permata', 'Medali'],
+    meadow: ['Buku Cerita', 'Lentera', 'Taman Pedesaan'],
   })[id] || [];
 }
 

@@ -25,12 +25,15 @@ const FILTERS = [
 
 function familyShortDesc(id) {
   return ({
+    blocka: 'Dunia blok 3D, pulau melayang, dan pesta yang penuh warna.',
+    mayura: 'Taman merak, sulur berlapis, dan bingkai Art Nouveau.',
+    pusaka: 'Panggung wayang, batik, dan bingkai ukiran di setiap bagian.',
     amora: 'Hangat, floral, dan terasa dekat.',
-    elysian: 'Editorial, mewah, dan penuh spasi.',
-    serena: 'Minimal, tenang, fokus pada nama.',
-    lumiere: 'Sinematik, gelap megah, penuh foto.',
-    nusantara: 'Tradisional modern dengan aksen batik.',
-    meadow: 'Rustic, polaroid, dan botanical.',
+    elysian: 'Kertas berlapis, emboss, dan detail couture.',
+    serena: 'Istana, bingkai kerajaan, dan merpati yang berterbangan.',
+    lumiere: 'Foto besar, sorot cahaya, dan detail sinematik.',
+    nusantara: 'Warna berani, anyaman, dan detail keemasan.',
+    meadow: 'Buku cerita pedesaan, burung, lentera, dan bingkai taman.',
     tempwed: 'Paviliun floral, potret berlapis, dan gerak lembut.',
     botanica: 'Romantis, botanical watercolor, dan nuansa dusty rose.',
   })[id] || '';

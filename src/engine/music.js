@@ -11,6 +11,9 @@ export function initInvitationMusic(root) {
   audio.loop = wrap.dataset.musicLoop !== 'false';
   const parsed = Number(wrap.dataset.musicVolume);
   const volume = Number.isFinite(parsed) ? Math.min(1, Math.max(0, parsed)) : .55;
+  const duration = (value, fallback) => Number.isFinite(+value) && +value > 0 ? Math.min(5000, +value) : fallback;
+  const fadeIn = duration(wrap.dataset.musicFadeIn, 1800);
+  const fadeOut = duration(wrap.dataset.musicFadeOut, 650);
   let frame = 0, sequence = 0, playing = false, disposed = false;
   const state = value => {
     playing = value;
@@ -36,10 +39,10 @@ export function initInvitationMusic(root) {
     state(true);
     audio.play().then(() => {
       if (disposed || token !== sequence) return;
-      fade(volume, 1800);
+      fade(volume, fadeIn);
     }).catch(() => { if (token === sequence) state(false); });
   };
-  const pause = () => { ++sequence; state(false); fade(0, 650, () => audio.pause()); };
+  const pause = () => { ++sequence; state(false); fade(0, fadeOut, () => audio.pause()); };
   const toggle = () => playing ? pause() : play();
   const open = e => {
     if (wrap.dataset.musicAutoplay === 'false') return;

@@ -1,0 +1,285 @@
+/* NUSANTARA — woven geometry, jewel colours and ceremonial folds.
+   Container queries refer to the invitation canvas, including editor previews. */
+.inv--nusantara {
+  --nt-paper:#fff1d6; --nt-ink:#163c38; --nt-night:#052e30; --nt-jewel:#125858;
+  --nt-line:color-mix(in srgb,var(--inv-primary) 44%,transparent);
+  --nt-cover-height:100svh; --nt-progress:0; --nt-cut:18px;
+  --pad-x:clamp(24px,7cqi,72px);
+  background:var(--inv-bg); color:var(--inv-text); letter-spacing:.01em;
+}
+.inv--nusantara .sec {
+  min-height:0; padding:72px var(--pad-x) 82px; overflow:hidden;
+  background:var(--inv-bg); border:0; margin:0;
+}
+.inv--nusantara .sec::before {
+  content:''; position:absolute; inset:18px 14px; border:1px solid var(--nt-line);
+  clip-path:polygon(0 0,28% 0,28% 1%,72% 1%,72% 0,100% 0,100% 100%,72% 100%,72% 99%,28% 99%,28% 100%,0 100%);
+  pointer-events:none; z-index:1;
+}
+.inv--nusantara .sec-head { max-width:650px; margin:0 auto 30px; }
+.inv--nusantara .sec-head h2 { color:var(--inv-primary); font-size:clamp(1.65rem,6.5cqi,3.2rem); letter-spacing:.035em; }
+.inv--nusantara .sec-sub { color:inherit; opacity:.85; font-size:.82rem; max-width:36ch; margin:12px auto 0; }
+.inv--nusantara .sec-divider { height:16px; margin-top:28px; }
+.inv--nusantara .sec-divider .orn { display:none; }
+.inv--nusantara .sec-divider::after { content:''; width:12px; height:12px; border:1px solid var(--inv-primary); transform:rotate(45deg); box-shadow:14px -14px 0 -3px var(--inv-accent),-14px 14px 0 -3px var(--inv-accent); }
+.inv--nusantara .btn-inv { border-radius:0; border-color:var(--nt-line); background:var(--inv-primary); color:var(--nt-ink); font-size:.65rem; letter-spacing:.12em; min-height:46px; padding:14px 22px; box-shadow:4px 4px 0 color-mix(in srgb,var(--inv-primary) 23%,transparent); }
+.inv--nusantara .btn-inv:hover { background:var(--nt-paper); color:var(--nt-ink); }
+.inv--nusantara .btn-inv { gap:10px; }
+.inv--nusantara .btn-inv__icon { width:18px; height:18px; flex:none; }
+.inv--nusantara .muted-inv { opacity:.85; }
+.inv--nusantara :is(.cover__names,.person__name,.event-card__info,.story__text,.info__body,.closing__names,.gift__number) { overflow-wrap:anywhere; min-width:0; }
+
+/* A paired gate, with an inset portrait and a rotating metal seal. */
+.inv--nusantara .sec--cover {
+  min-height:min(850px,var(--nt-cover-height)); padding:28px 30px 88px;
+  display:grid; align-content:center; justify-items:center; gap:0;
+  color:var(--inv-text); background:radial-gradient(ellipse at 50% 20%,var(--nt-jewel),var(--inv-bg) 70%);
+}
+.inv--nusantara .sec--cover::after { display:none; }
+.inv--nusantara .cover__body { margin:0 auto; width:100%; max-width:650px; }
+.inv--nusantara .cover__body--ceremony { display:grid; justify-items:center; gap:0; }
+.inv--nusantara .cover__eyebrow { font-size:.6rem; letter-spacing:.26em; margin:0 0 22px; color:var(--inv-primary); }
+.inv--nusantara .ceremony__portrait { position:relative; width:min(58cqi,240px); margin:0 auto 24px; padding:9px; border:1px solid var(--nt-line); background:var(--nt-night); box-shadow:8px 8px 0 var(--nt-jewel),9px 9px 0 var(--nt-line); }
+.inv--nusantara .ceremony__portrait::before { content:''; position:absolute; inset:-8px; border:1px solid var(--inv-primary); clip-path:polygon(0 0,25% 0,25% 25%,0 25%,0 0,100% 0,100% 25%,75% 25%,75% 0,100% 0,100% 100%,75% 100%,75% 75%,100% 75%,100% 100%,0 100%,0 75%,25% 75%,25% 100%); }
+.inv--nusantara .ceremony__photo { aspect-ratio:4/5; overflow:hidden; background:var(--nt-jewel); display:grid; place-items:center; clip-path:polygon(14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px),0 14px); }
+.inv--nusantara .ceremony__photo img { width:100%; height:100%; object-fit:cover; }
+.inv--nusantara .ceremony__initials { font-family:var(--inv-font-display); color:var(--inv-primary); font-size:clamp(2rem,9cqi,3.6rem); }
+.inv--nusantara .ceremony__seal { position:absolute; width:78px; bottom:-28px; right:-30px; color:var(--inv-primary); filter:drop-shadow(0 2px 4px #0005); }
+.inv--nusantara .cover__names { font-size:clamp(1.65rem,7cqi,3.1rem); line-height:1.2; letter-spacing:.025em; margin:0; text-wrap:balance; }
+.inv--nusantara .cover__name { display:block; }
+.inv--nusantara .cover__amp { display:block; font-family:var(--inv-font-accent); color:var(--inv-primary); font-size:.65em; line-height:1.4; font-style:italic; }
+.inv--nusantara .cover__date { margin:16px 0 0; font-size:.65rem; letter-spacing:.12em; }
+.inv--nusantara .cover__guest { padding:12px 16px; margin-top:15px; border:1px solid var(--nt-line); border-radius:0; background:var(--nt-jewel); backdrop-filter:none; width:min(100%,320px); font-size:.76rem; }
+.inv--nusantara .cover__guest-greet { font-size:.65rem; }
+.inv--nusantara .cover__guest-name { overflow-wrap:anywhere; margin-top:4px; }
+.inv--nusantara .btn-inv--open { margin-top:22px; }
+.device-frame .inv--nusantara { --nt-cover-height:100cqh; }
+.inv-frame__content .inv--nusantara .sec { min-height:0; }
+.inv-frame__content .inv--nusantara .sec--cover { --nt-cover-height:680px; min-height:680px; }
+
+/* Decorative entrance wrappers and idle artwork animate independently. */
+.inv--nusantara .nt-scene { position:absolute; inset:0; z-index:1; overflow:hidden; pointer-events:none; color:var(--inv-primary); }
+.nt-scene svg { display:block; width:100%; height:auto; }
+.nt-entry { position:absolute; display:block; opacity:.45; }
+.nt-entry--weave-left,.nt-entry--weave-right { width:clamp(50px,18cqi,100px); top:0; height:100%; opacity:.17; }
+.nt-entry--weave-left { left:-35px; }
+.nt-entry--weave-right { right:-35px; transform:rotate(180deg); }
+.nt-entry--weave-left svg,.nt-entry--weave-right svg { height:100%; width:100%; }
+.nt-entry--seal { width:clamp(145px,46cqi,300px); top:-58px; right:-68px; opacity:.22; }
+.nt-entry--fan { width:clamp(150px,55cqi,340px); bottom:-12px; left:-64px; transform:rotate(24deg); opacity:.25; }
+.nt-entry--ribbon { right:-30px; bottom:50px; width:100px; height:100px; opacity:.24; }
+.nt-ribbon-idle { display:block; width:100%; height:100%; border:10px double currentColor; transform:rotate(45deg); box-shadow:20px -20px 0 -11px var(--inv-accent); }
+.nt-fan-idle { display:block; transform-origin:50% 90%; }
+.nt-seal__outer,.nt-seal__inner { transform-origin:100px 100px; }
+.nt-scene--ceremony .nt-entry--seal { width:clamp(240px,78cqi,470px); top:-90px; right:-125px; opacity:.35; }
+.nt-scene--ceremony .nt-entry--fan { width:clamp(230px,75cqi,440px); bottom:-6px; left:-100px; opacity:.5; }
+.nt-door { position:absolute; inset:0 50% 0 0; border:1px solid var(--nt-line); margin:10px; opacity:.5; background:repeating-linear-gradient(135deg,transparent 0 19px,color-mix(in srgb,var(--inv-primary) 8%,transparent) 19px 20px,transparent 20px 39px); }
+.nt-door--right { inset:0 0 0 50%; }
+.inv--nusantara .sec:nth-of-type(3n) .nt-entry--seal { left:-70px; right:auto; top:35%; }
+.inv--nusantara .sec:nth-of-type(3n) .nt-entry--fan { left:auto; right:-80px; transform:rotate(-28deg); }
+.inv--nusantara .sec:nth-of-type(4n) .nt-entry--ribbon { bottom:auto; top:35px; }
+
+/* Inset invitation letter, then two offset portrait shields. */
+.inv--nusantara .sec--welcome { padding-block:62px; background:var(--nt-night); }
+.inv--nusantara .welcome__text { padding:32px 24px; max-width:650px; background:var(--nt-jewel); border:1px solid var(--nt-line); box-shadow:8px 8px 0 var(--inv-bg); font-family:var(--inv-font-accent); font-size:clamp(1.25rem,5.2cqi,1.9rem); line-height:1.65; }
+.inv--nusantara .welcome__host { margin-top:20px; font-size:.8rem; }
+.inv--nusantara .sec--parents { background:var(--nt-night); display:grid; gap:20px; justify-items:center; }
+.inv--nusantara .sec--parents > p { width:min(100%,540px); padding:24px; background:var(--nt-jewel); border:1px solid var(--nt-line); font-family:var(--inv-font-accent); font-size:1.2rem; }
+.inv--nusantara .couple__grid { max-width:800px; margin:auto; gap:28px; }
+.inv--nusantara .person { width:min(100%,360px); padding:20px 24px 26px; background:var(--nt-jewel); border:1px solid var(--nt-line); box-shadow:8px 8px 0 var(--nt-night); }
+.inv--nusantara .person__photo { width:min(215px,58cqi); aspect-ratio:4/5; border:6px solid var(--nt-paper); border-radius:0; outline:1px solid var(--nt-line); outline-offset:5px; margin-bottom:20px; clip-path:polygon(0 0,88% 0,100% 12%,100% 100%,12% 100%,0 88%); }
+.inv--nusantara .person:nth-child(3) { background:var(--nt-night); }
+.inv--nusantara .person__name { color:var(--inv-primary); font-size:clamp(1.25rem,5cqi,1.8rem); }
+.inv--nusantara .person__desc { color:var(--inv-text); font-size:.8rem; margin:8px auto 0; }
+.inv--nusantara .person__nick { color:var(--inv-accent); font-size:.75rem; opacity:1; }
+.inv--nusantara .couple__amp { font-size:2.1rem; font-family:var(--inv-font-accent); color:var(--inv-primary); }
+
+/* A bright vow field with a radial medallion, no decoration behind small copy. */
+.inv--nusantara .sec--quote { background:var(--nt-paper); color:var(--nt-ink); padding-block:82px; }
+.inv--nusantara .sec--quote::before { border-color:color-mix(in srgb,var(--nt-ink) 25%,transparent); }
+.inv--nusantara .sec--quote .nt-scene { color:var(--nt-ink); }
+.inv--nusantara .sec--quote .nt-entry--seal { right:50%; top:-92px; width:210px; margin-right:-105px; opacity:.18; }
+.inv--nusantara .sec--quote .nt-entry--fan { opacity:.13; }
+.inv--nusantara .quote__mark { color:var(--nt-ink); opacity:1; font-size:3rem; line-height:1; margin:0 auto 18px; }
+.inv--nusantara .quote__text { max-width:36ch; font-family:var(--inv-font-accent); font-style:normal; font-size:clamp(1.35rem,5.5cqi,2.1rem); line-height:1.65; }
+.inv--nusantara .quote__source { color:var(--nt-ink); opacity:1; font-size:.65rem; letter-spacing:.16em; margin-top:24px; }
+.inv--nusantara .sec--quote .sec-divider::after { border-color:var(--nt-ink); box-shadow:14px -14px 0 -3px var(--nt-ink),-14px 14px 0 -3px var(--nt-ink); }
+
+/* Concertina event cards: date plaque, fold line and stepped corner. */
+.inv--nusantara .events__list { max-width:920px; margin:auto; gap:28px; }
+.inv--nusantara .event-card { position:relative; max-width:100%; width:100%; border:0; border-radius:0; background:var(--nt-paper); color:var(--nt-ink); padding:0 24px 28px; gap:22px; box-shadow:8px 8px 0 var(--nt-jewel); }
+.inv--nusantara .event-card::before { content:''; position:absolute; right:0; bottom:0; width:26px; height:26px; background:linear-gradient(135deg,var(--inv-accent) 50%,var(--inv-bg) 50%); }
+.inv--nusantara .event-card__date { width:calc(100% + 48px); padding:20px 18px; background:var(--nt-jewel); color:var(--inv-text); border:1px solid var(--nt-line); border-bottom:2px dashed var(--nt-line); grid-template-columns:1fr auto 1fr; align-items:center; gap:8px; }
+.inv--nusantara .d-day { color:var(--inv-primary); font-size:2.7rem; line-height:1; }
+.inv--nusantara .d-weekday,.inv--nusantara .d-monthyear { font-size:.62rem; letter-spacing:.09em; opacity:1; }
+.inv--nusantara .event-card__info { gap:8px; width:100%; }
+.inv--nusantara .event-card__info h3 { font-size:1.6rem; }
+.inv--nusantara .event-card__time { font-size:.78rem; border-bottom:1px solid color-mix(in srgb,var(--nt-ink) 20%,transparent); padding-bottom:12px; }
+.inv--nusantara .event-card__venue { font-size:.86rem; }
+.inv--nusantara .event-card__addr { font-size:.78rem; max-width:35ch; }
+.inv--nusantara .event-card__link { color:var(--nt-ink); font-size:.63rem; padding:10px; text-decoration:underline; text-underline-offset:4px; }
+.inv--nusantara .sec--countdown { background:var(--nt-night); padding-block:54px 66px; }
+.inv--nusantara .countdown__title { color:var(--inv-primary); font-size:clamp(1.2rem,4.8cqi,1.8rem); }
+.inv--nusantara .countdown__grid { grid-template-columns:repeat(4,minmax(0,90px)); gap:8px; max-width:420px; margin:24px auto 0; }
+.inv--nusantara .countdown__cell { padding:17px 3px; border-radius:0; border:1px solid var(--nt-line); background:var(--nt-jewel); clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px); }
+.inv--nusantara .countdown__num { font-size:clamp(1.2rem,6cqi,2.1rem); color:var(--inv-primary); }
+.inv--nusantara .countdown__label { font-size:.52rem; letter-spacing:.08em; opacity:1; }
+
+/* Story chapters connect through an offset woven spine. */
+.inv--nusantara .story__list { position:relative; max-width:720px; margin:0 auto; gap:28px; padding:0 0 0 18px; border-left:1px solid var(--nt-line); counter-reset:chapter; }
+.inv--nusantara .story__item { position:relative; width:100%; padding:24px; background:var(--nt-jewel); border:1px solid var(--nt-line); text-align:left; justify-items:start; counter-increment:chapter; }
+.inv--nusantara .story__item::before { content:counter(chapter,decimal-leading-zero); position:absolute; top:15px; left:-30px; width:28px; height:28px; background:var(--inv-primary); color:var(--nt-ink); font-family:var(--inv-font-display); display:grid; place-items:center; font-size:.65rem; border:4px solid var(--inv-bg); }
+.inv--nusantara .story__item:nth-child(even) { background:var(--nt-night); border-right:4px solid var(--inv-accent); }
+.inv--nusantara .story__fig { width:100%; border-radius:0; margin:0 0 10px; }
+.inv--nusantara .story__text time { color:var(--inv-primary); font-size:.6rem; letter-spacing:.13em; }
+.inv--nusantara .story__text h3 { margin:8px 0 12px; font-size:1.2rem; }
+.inv--nusantara .story__text p { font-size:.83rem; opacity:1; line-height:1.8; }
+
+/* A jewel mosaic: alternating coloured mounts, generous photo area. */
+.inv--nusantara .sec--gallery { background:var(--nt-night); }
+.inv--nusantara .gallery__grid { max-width:880px; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; margin:auto; }
+.inv--nusantara .gallery__item { aspect-ratio:4/5; border:6px solid var(--nt-paper); outline:1px solid var(--nt-line); outline-offset:4px; border-radius:0; min-width:0; background:var(--nt-jewel); }
+.inv--nusantara .gallery__item:first-child { grid-column:span 2; aspect-ratio:5/4; border-width:8px; }
+.inv--nusantara .gallery__item:nth-child(3n) { border-color:var(--inv-accent); clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px); }
+.inv--nusantara .gallery__item img { transition:transform 850ms cubic-bezier(.22,.61,.36,1); }
+.inv--nusantara .map__frame { border-radius:0; border:8px solid var(--nt-paper); outline:1px solid var(--nt-line); outline-offset:6px; box-shadow:14px 14px 0 var(--nt-night); margin:28px auto; }
+.inv--nusantara .map__venue { color:var(--inv-primary); font-size:1.3rem; }
+.inv--nusantara .map__addr { max-width:45ch; margin:8px auto 0; font-size:.83rem; }
+.inv--nusantara .map__actions .btn-inv { max-width:100%; }
+
+/* Practical copy stays in a wide text column, even in a 320px preview. */
+.inv--nusantara .info__cards { max-width:780px; margin:auto; grid-template-columns:1fr; gap:20px; }
+.inv--nusantara .info__card { position:relative; border-radius:0; border:1px solid var(--nt-line); background:var(--nt-jewel); color:var(--inv-text); padding:24px 20px; grid-template-columns:32px minmax(0,1fr); gap:14px; box-shadow:5px 5px 0 var(--nt-night); }
+.inv--nusantara .info__card::after { content:''; position:absolute; right:0; top:0; width:12px; height:12px; background:linear-gradient(225deg,var(--inv-primary) 50%,transparent 50%); }
+.inv--nusantara .info__card:nth-child(even) { background:var(--nt-night); border-left:3px solid var(--inv-accent); }
+.inv--nusantara .info__icon { background:transparent; color:var(--inv-primary); border:1px solid var(--nt-line); border-radius:0; width:32px; height:32px; }
+.inv--nusantara .info__body h3 { color:var(--inv-primary); font-size:.95rem; margin-bottom:10px; }
+.inv--nusantara .info__body p { font-size:.81rem; line-height:1.85; }
+.inv--nusantara .sec--rsvp { background:var(--nt-paper); color:var(--nt-ink); }
+.inv--nusantara .sec--rsvp .sec-head h2,.inv--nusantara .sec--rsvp .sec-sub { color:var(--nt-ink); }
+.inv--nusantara .sec--rsvp .nt-scene { color:var(--nt-ink); opacity:.5; }
+.inv--nusantara .rsvp__form,.inv--nusantara .wishes__form { border:1px solid var(--nt-line); border-radius:0; padding:28px 24px; background:var(--nt-jewel); color:var(--inv-text); box-shadow:8px 8px 0 var(--nt-night); max-width:580px; margin-inline:auto; }
+.inv--nusantara .rsvp__form { outline:1px solid var(--nt-jewel); outline-offset:7px; }
+.inv--nusantara .fld > span,.inv--nusantara .fld legend { font-size:.76rem; }
+.inv--nusantara .fld input,.inv--nusantara .fld select,.inv--nusantara .fld textarea { background:var(--nt-night); color:var(--inv-text); border-radius:0; border-color:var(--nt-line); font-size:16px; min-width:0; }
+.inv--nusantara .fld--choice { display:flex; flex-wrap:wrap; gap:12px; }
+.inv--nusantara .fld--choice legend { margin-bottom:8px; }
+.inv--nusantara .fld--choice label { font-size:.78rem; min-height:44px; width:100%; display:flex; align-items:center; gap:10px; }
+.inv--nusantara .fld--choice input { width:16px; height:16px; flex:none; padding:0; accent-color:var(--inv-primary); }
+.inv--nusantara .gift__list { gap:24px; }
+.inv--nusantara .gift__card { position:relative; border:1px solid var(--nt-line); border-radius:0; background:var(--nt-jewel); color:var(--inv-text); padding:30px 24px; width:min(100%,380px); box-shadow:8px 8px 0 var(--nt-night); }
+.inv--nusantara .gift__card::before { content:''; position:absolute; width:54px; height:54px; top:16px; right:16px; border:6px double var(--nt-line); transform:rotate(45deg); opacity:.55; }
+.inv--nusantara .gift__bank { color:var(--inv-primary); letter-spacing:.15em; }
+.inv--nusantara .gift__number { font-size:clamp(1.2rem,5.5cqi,1.7rem); position:relative; }
+.inv--nusantara .gift__holder { font-size:.82rem; }
+.inv--nusantara .sec--wishes { background:var(--nt-night); }
+.inv--nusantara .wishes__list { max-width:580px; margin-inline:auto; }
+.inv--nusantara .wishes__list li { border:0; border-left:3px solid var(--inv-accent); border-radius:0; background:var(--nt-jewel); color:var(--inv-text); padding:20px; }
+.inv--nusantara .sec--closing { padding-block:90px 135px; background:radial-gradient(ellipse at 50% 100%,var(--nt-jewel),var(--inv-bg) 70%); }
+.inv--nusantara .closing__fig { width:min(75%,400px); border:8px solid var(--nt-paper); border-radius:0; margin:0 auto 32px; }
+.inv--nusantara .closing__thanks { font-family:var(--inv-font-accent); font-size:clamp(1.2rem,5cqi,1.7rem); max-width:34ch; margin:0 auto 32px; }
+.inv--nusantara .closing__names { color:var(--inv-primary); font-size:clamp(1.7rem,7cqi,3.4rem); max-width:20ch; margin:auto; padding-block:24px; border-block:1px solid var(--nt-line); }
+
+/* Angular navigation with a subtle journey track, no corner labels. */
+.inv--nusantara .inv-nav { width:min(calc(100% - 24px),400px); max-width:calc(100% - 24px); bottom:calc(12px + env(safe-area-inset-bottom)); }
+.inv--nusantara .inv-nav__pill { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:0; padding:5px 6px 7px; border-radius:0; background:var(--nt-night); color:var(--inv-text); border:1px solid var(--nt-line); box-shadow:0 5px 20px #0004; }
+.inv--nusantara .inv-nav__pill::after { content:''; position:absolute; left:0; right:0; bottom:0; height:2px; background:var(--inv-primary); transform:scaleX(var(--nt-progress)); transform-origin:left; }
+.inv--nusantara .inv-nav__item { border-radius:0; min-width:0; min-height:44px; font-size:.52rem; letter-spacing:0; gap:3px; justify-content:center; color:var(--inv-text); }
+.inv--nusantara .inv-nav__item.is-active { background:var(--nt-jewel); color:var(--inv-primary); }
+.inv--nusantara .music-float { right:16px; bottom:84px; }
+.inv--nusantara .music-float__btn { width:42px; height:42px; border-radius:0; background:var(--nt-night); color:var(--inv-primary); border-color:var(--nt-line); }
+.inv--nusantara .inv-lightbox__dialog { max-width:min(calc(100% - 32px),840px); }
+.inv--nusantara .inv-lightbox__img { max-height:min(76svh,calc(var(--nt-cover-height) - 96px)); border:4px solid var(--nt-paper); border-radius:0; }
+.public-invite .inv--nusantara .sec { scroll-margin-top:calc(var(--navbar-h) + 12px); }
+.invite-gate--nusantara { display:block; padding:0; overflow-y:auto; background:var(--inv-bg); justify-items:stretch; align-content:start; transition:opacity 900ms ease; }
+.invite-gate--nusantara .inv { width:100%; min-height:100svh; }
+.invite-gate--nusantara .inv--nusantara .sec--cover { min-height:100svh; padding-bottom:44px; }
+.invite-gate--nusantara .nt-door { transition:transform 850ms cubic-bezier(.65,0,.2,1),opacity 850ms ease; }
+.invite-gate--nusantara.is-leaving { transform:none; }
+.invite-gate--nusantara.is-leaving .nt-door--left { transform:translateX(-100%); opacity:0; }
+.invite-gate--nusantara.is-leaving .nt-door--right { transform:translateX(100%); opacity:0; }
+.invite-gate--nusantara.is-leaving .cover__body { opacity:0; transform:translateY(-12px); transition:opacity 650ms ease,transform 850ms ease; }
+
+/* Puspa: ruby jewels, a radiant octagonal portrait, bolder mosaic rhythm. */
+.inv--nusantara.inv--v-nusantara-puspa { --nt-paper:#ffe3c6; --nt-ink:#511c31; --nt-night:#351024; --nt-jewel:#842e45; }
+.inv--v-nusantara-puspa .ceremony__portrait { border:0; padding:13px; background:var(--inv-primary); box-shadow:none; clip-path:polygon(25% 0,75% 0,100% 25%,100% 75%,75% 100%,25% 100%,0 75%,0 25%); width:min(67cqi,280px); }
+.inv--v-nusantara-puspa .ceremony__photo { aspect-ratio:1; clip-path:inherit; }
+.inv--v-nusantara-puspa .ceremony__portrait::before,.inv--v-nusantara-puspa .ceremony__seal { display:none; }
+.inv--v-nusantara-puspa .person__photo { clip-path:polygon(18% 0,82% 0,100% 18%,100% 82%,82% 100%,18% 100%,0 82%,0 18%); }
+.inv--v-nusantara-puspa .person { border-bottom:4px solid var(--inv-accent); }
+.inv--v-nusantara-puspa .nt-scene--ceremony .nt-entry--seal { width:100cqi; right:50%; margin-right:-50cqi; top:-28cqi; opacity:.23; }
+.inv--v-nusantara-puspa .nt-entry--fan { transform:rotate(-12deg); left:-80px; }
+.inv--v-nusantara-puspa .event-card__date { background:var(--nt-night); }
+.inv--v-nusantara-puspa .story__item { border-top:3px solid var(--inv-accent); }
+.inv--v-nusantara-puspa .gallery__item:first-child { aspect-ratio:1; clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px); }
+.inv--v-nusantara-puspa .countdown__cell { clip-path:polygon(20% 0,80% 0,100% 20%,100% 80%,80% 100%,20% 100%,0 80%,0 20%); }
+
+/* Terra: terraced bronze/plum planes and landscape frames. */
+.inv--nusantara.inv--v-nusantara-terra { --nt-paper:#f9ddae; --nt-ink:#553027; --nt-night:#402439; --nt-jewel:#a64b32; }
+.inv--v-nusantara-terra .ceremony__portrait { width:min(76cqi,330px); border:0; padding:12px; background:var(--nt-night); box-shadow:8px 8px 0 var(--inv-accent); }
+.inv--v-nusantara-terra .ceremony__photo { aspect-ratio:5/4; clip-path:polygon(0 0,92% 0,92% 8%,100% 8%,100% 100%,8% 100%,8% 92%,0 92%); }
+.inv--v-nusantara-terra .ceremony__portrait::before { display:none; }
+.inv--v-nusantara-terra .ceremony__seal { width:66px; right:-15px; bottom:-18px; }
+.inv--v-nusantara-terra .person__photo { aspect-ratio:1; clip-path:polygon(0 0,88% 0,88% 12%,100% 12%,100% 100%,12% 100%,12% 88%,0 88%); }
+.inv--v-nusantara-terra .person { border-left:4px solid var(--inv-accent); }
+.inv--v-nusantara-terra .nt-entry--fan { opacity:.4; bottom:-20px; }
+.inv--v-nusantara-terra .nt-entry--seal { opacity:.14; }
+.inv--v-nusantara-terra .event-card { border-left:7px solid var(--inv-accent); }
+.inv--v-nusantara-terra .story__item { box-shadow:6px 6px 0 var(--nt-night); }
+.inv--v-nusantara-terra .gallery__item { aspect-ratio:1; }
+.inv--v-nusantara-terra .gallery__item:first-child { aspect-ratio:3/2; }
+.inv--v-nusantara-terra .welcome__text { border-left:4px solid var(--inv-accent); }
+
+@container(min-width:720px) {
+  .inv--nusantara .sec { padding-block:100px; }
+  .inv--nusantara .sec--cover { padding-block:42px 88px; }
+  .inv--nusantara .cover__body--ceremony { max-width:900px; grid-template-columns:1fr 1.2fr; column-gap:65px; text-align:left; align-items:center; justify-items:start; }
+  .inv--nusantara .cover__eyebrow { grid-column:2; margin-bottom:20px; }
+  .inv--nusantara .ceremony__portrait { grid-column:1; grid-row:1 / span 5; width:100%; max-width:350px; margin:0; }
+  .inv--nusantara .cover__names,.inv--nusantara .cover__date,.inv--nusantara .cover__guest,.inv--nusantara .btn-inv--open { grid-column:2; }
+  .inv--nusantara .cover__names { font-size:clamp(2rem,4.6cqi,3.4rem); }
+  .inv--nusantara .cover__amp { padding-left:30px; }
+  .inv--nusantara .couple__grid { grid-template-columns:1fr 44px 1fr; }
+  .inv--nusantara .person:nth-child(3) { margin-top:80px; }
+  .inv--nusantara .info__cards { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .inv--nusantara .gallery__grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; }
+  .inv--nusantara .gallery__item:first-child { grid-row:span 2; grid-column:span 1; aspect-ratio:auto; }
+  .inv--nusantara .story__item:nth-child(even) { width:calc(100% - 40px); margin-left:40px; }
+}
+@container(max-width:360px) {
+  .inv--nusantara .sec { padding-inline:22px; }
+  .inv--nusantara .sec--cover { padding:22px 24px 86px; }
+  .inv--nusantara .ceremony__portrait { width:54cqi; margin-bottom:20px; }
+  .inv--nusantara .cover__eyebrow { margin-bottom:16px; }
+  .inv--nusantara .cover__names { font-size:6.9cqi; }
+  .inv--nusantara .cover__date { margin-top:12px; font-size:.6rem; }
+  .inv--nusantara .inv-nav__item { font-size:.48rem; }
+  .inv--nusantara .info__card { padding:22px 16px; gap:12px; }
+  .inv--nusantara .rsvp__form,.inv--nusantara .wishes__form { padding:26px 18px; }
+  .inv--v-nusantara-puspa .ceremony__portrait { width:60cqi; }
+  .inv--v-nusantara-terra .ceremony__portrait { width:70cqi; }
+}
+@media(prefers-reduced-motion:no-preference) {
+  .inv--nusantara.nt-motion .nt-entry { translate:0 var(--nt-drift,0px); transition:opacity 850ms ease,translate 1100ms cubic-bezier(.22,.61,.36,1); }
+  .inv--nusantara.nt-motion .sec:not(.nt-in-view) .nt-entry { opacity:.03; translate:0 35px; }
+  .inv--nusantara.nt-motion .sec:not(.nt-in-view) .nt-entry--weave-left { translate:-40px 0; }
+  .inv--nusantara.nt-motion .sec:not(.nt-in-view) .nt-entry--weave-right { translate:40px 0; }
+  .inv--nusantara.nt-motion .nt-seal__outer { animation:nt-orbit 48s linear infinite; animation-play-state:paused; }
+  .inv--nusantara.nt-motion .nt-seal__inner { animation:nt-orbit 32s linear infinite reverse; animation-play-state:paused; }
+  .inv--nusantara.nt-motion .nt-fan-idle { animation:nt-fan 8s ease-in-out infinite alternate; animation-play-state:paused; }
+  .inv--nusantara.nt-motion .nt-ribbon-idle { animation:nt-ribbon 9s ease-in-out infinite alternate; animation-play-state:paused; }
+  .inv--nusantara.nt-motion .nt-in-view :is(.nt-seal__outer,.nt-seal__inner,.nt-fan-idle,.nt-ribbon-idle) { animation-play-state:running; }
+  .inv--nusantara.nt-motion.is-motion-paused :is(.nt-seal__outer,.nt-seal__inner,.nt-fan-idle,.nt-ribbon-idle) { animation-play-state:paused; }
+  .inv--nusantara .nt-reveal { transition:opacity 900ms ease var(--nt-delay,0ms),translate 1000ms cubic-bezier(.22,.61,.36,1) var(--nt-delay,0ms); }
+  .inv--nusantara .nt-pending { opacity:0; translate:0 26px; }
+  .inv--nusantara .person.nt-pending:nth-child(3) { translate:20px 20px; }
+  .inv--nusantara .event-card.nt-pending:nth-child(odd) { translate:-18px 24px; }
+  .inv--nusantara .gallery__item.nt-pending { translate:0 20px; }
+}
+@keyframes nt-orbit { to { transform:rotate(360deg); } }
+@keyframes nt-fan { from { transform:rotate(-5deg); } to { transform:rotate(5deg) translateY(-6px); } }
+@keyframes nt-ribbon { from { transform:rotate(40deg) translateY(0); } to { transform:rotate(50deg) translateY(-7px); } }
+@media(prefers-reduced-motion:reduce) {
+  .inv--nusantara .nt-pending { opacity:1; translate:none; }
+  .invite-gate--nusantara { transition:none; }
+}

@@ -1,0 +1,262 @@
+/* Pusaka: an illustrated Javanese stage, framed throughout the invitation. */
+.inv--pusaka { --pk-paper:#fbefd4; --pk-ink:#43271d; --pk-line:color-mix(in srgb,var(--inv-primary) 50%,transparent); --pk-cover-height:100svh; --pk-progress:0; color:var(--inv-text); background:var(--inv-bg); }
+.inv--pusaka .sec { position:relative; overflow:hidden; min-height:0; padding:90px clamp(28px,8cqi,90px); background:var(--inv-bg); scroll-margin-top:16px; }
+.inv--pusaka .sec:nth-of-type(2n) { background:color-mix(in srgb,var(--inv-bg) 90%,#000); }
+.inv--pusaka .sec-head { max-width:650px; margin:0 auto 32px; }
+.inv--pusaka .sec-head h2 { font-family:var(--inv-font-display); color:var(--inv-text); font-size:clamp(2.2rem,10cqi,3.5rem); line-height:1.15; }
+.inv--pusaka .sec-sub { font-size:.78rem; line-height:1.8; opacity:1; max-width:36ch; margin:12px auto 0; }
+.inv--pusaka .sec-head::before { content:''; display:block; width:36px; height:55px; margin:0 auto 16px; background:url('/art/pusaka/gunungan.webp') center / contain no-repeat; }
+.inv--pusaka .btn-inv { min-height:44px; padding:13px 22px; border:1px solid var(--inv-primary); border-radius:24px 24px 6px 6px; font-size:.68rem; letter-spacing:.1em; background:var(--inv-primary); color:var(--pk-ink); box-shadow:0 4px 18px #0002; }
+.inv--pusaka .btn-inv--ghost { color:var(--inv-text); background:var(--inv-bg); }
+.inv--pusaka :is(h1,h2,h3,p,span,a) { overflow-wrap:anywhere; }
+.inv--pusaka :is(button,a,input,textarea):focus-visible { outline:2px solid var(--inv-primary); outline-offset:4px; }
+.inv--pusaka .sec-divider,.inv--pusaka .corner { display:none; }
+
+/* Independent edge artwork: four carved corners, textile, kayon and wayang. */
+.inv--pusaka .pk-scene { position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; color:var(--inv-primary); }
+.pk-scene img { display:block; width:100%; height:auto; }
+.pk-frame { position:absolute; inset:16px; border:3px double var(--pk-line); border-radius:48px 48px 4px 4px; }
+.pk-batik { position:absolute; inset:0; background:url('/art/pusaka/batik.svg') repeat; background-size:64px; opacity:.18; mask-image:linear-gradient(90deg,#000,transparent 23%,transparent 77%,#000); }
+.pk-corner { position:absolute; width:clamp(95px,33cqi,230px); height:auto; opacity:.8; }
+.pk-corner svg { display:block; width:100%; height:auto; }
+.pk-corner--tl { top:10px; left:10px; }
+.pk-corner--tr { top:10px; right:10px; transform:scaleX(-1); }
+.pk-corner--bl { bottom:10px; left:10px; transform:scaleY(-1); }
+.pk-corner--br { bottom:10px; right:10px; transform:scale(-1); }
+.pk-entry { position:absolute; display:block; }
+.pk-entry--kayon { width:clamp(130px,46cqi,310px); right:-22cqi; top:28%; opacity:.3; }
+.pk-entry--puppet { width:clamp(120px,40cqi,270px); left:-25cqi; bottom:24px; opacity:.6; }
+.pk-kayon-idle,.pk-puppet-idle { display:block; transform-origin:50% 95%; }
+.pk-scene--stage .pk-entry--puppet { left:-8cqi; bottom:55px; width:39cqi; max-width:350px; opacity:.95; }
+.pk-entry--partner { right:-8cqi; bottom:55px; width:39cqi; max-width:350px; opacity:.95; }
+.pk-entry--partner .pk-puppet-idle { scale:-1 1; }
+.pk-scene--stage .pk-entry--kayon { width:50cqi; max-width:420px; right:25%; top:-20cqi; opacity:.16; }
+.inv--pusaka .sec:nth-of-type(2n) .pk-scene:not(.pk-scene--stage) .pk-entry--puppet { left:auto; right:-25cqi; }
+.inv--pusaka .sec:nth-of-type(2n) .pk-scene:not(.pk-scene--stage) .pk-entry--puppet .pk-puppet-idle { scale:-1 1; }
+.inv--pusaka .sec:nth-of-type(3n) .pk-entry--kayon { right:auto; left:-25cqi; top:7%; }
+.pk-lamp { position:absolute; width:170px; height:170px; border-radius:50%; top:-65px; left:calc(50% - 85px); background:radial-gradient(ellipse,#ffd78d38,transparent 70%); }
+.pk-lamp i { display:block; width:100%; height:100%; background:radial-gradient(ellipse,#ffd78d40,transparent 60%); }
+.pk-dust { position:absolute; inset:0; }
+.pk-dust i { position:absolute; width:3px; height:3px; border-radius:50%; background:#f5d394; box-shadow:0 0 7px #f9c34c; left:8%; top:30%; opacity:.5; }
+.pk-dust i:nth-child(2) { left:auto; right:9%; top:67%; }
+.pk-dust i:nth-child(3) { left:85%; top:12%; }
+.pk-curtain { position:absolute; top:0; bottom:0; width:20px; border-inline:1px solid var(--pk-line); background:var(--inv-bg) url('/art/pusaka/batik.svg'); opacity:.9; }
+.pk-curtain--left { left:0; transform-origin:left center; }
+.pk-curtain--right { right:0; transform-origin:right center; }
+
+/* The opening stage: carved oval portrait, handwritten names and two puppets. */
+.inv--pusaka .sec--cover { min-height:var(--pk-cover-height); display:grid; align-content:center; padding:36px 38px 100px; }
+.inv--pusaka .cover__body { max-width:670px; width:100%; margin:auto; text-align:center; display:block; padding:0; }
+.inv--pusaka .cover__eyebrow { font-size:.57rem; letter-spacing:.24em; color:var(--inv-text); opacity:1; margin:0 0 18px; }
+.inv--pusaka .heritage__portrait { position:relative; width:clamp(145px,50cqi,230px); aspect-ratio:1; margin:0 auto 25px; border:4px double var(--inv-primary); border-radius:50% 50% 8% 8%; padding:7px; box-shadow:0 0 0 5px var(--inv-bg),0 0 0 6px var(--pk-line),0 14px 35px #0003; }
+.heritage__photo { position:absolute; inset:7px; overflow:hidden; border-radius:inherit; background:var(--pk-paper); display:grid; place-items:center; }
+.heritage__photo img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:50% 30%; }
+.heritage__initials { color:var(--pk-ink); font-family:var(--inv-font-display); font-size:2.5rem; }
+.heritage__crest { position:absolute; width:55px; height:80px; bottom:-24px; left:calc(50% - 27.5px); background:url('/art/pusaka/gunungan.webp') center / contain no-repeat; filter:drop-shadow(0 3px 2px #0006); }
+.inv--pusaka .cover__names { display:grid; gap:1px; font-family:var(--inv-font-accent); font-size:clamp(2.25rem,10cqi,4.2rem); font-weight:400; color:var(--inv-text); line-height:1.12; margin:0; text-shadow:0 2px 15px var(--inv-bg); }
+.inv--pusaka .cover__name { display:block; }
+.inv--pusaka .cover__amp { font-family:var(--inv-font-display); font-style:italic; font-size:.5em; line-height:1; color:var(--inv-primary); }
+.inv--pusaka .cover__date { font-size:.61rem; letter-spacing:.1em; opacity:1; margin:16px 0 0; }
+.inv--pusaka .cover__guest { display:block; max-width:100%; margin:16px auto 0; border:0; border-block:1px solid var(--pk-line); border-radius:0; background:var(--inv-bg); padding:10px 16px; backdrop-filter:none; }
+.inv--pusaka .cover__guest-greet { font-size:.58rem; letter-spacing:0; }
+.inv--pusaka .cover__guest-name { font-size:.79rem; margin:5px 0 0; }
+.inv--pusaka .btn-inv--open { display:inline-flex; align-items:center; justify-content:center; gap:9px; margin:22px auto 0; }
+.inv--pusaka .btn-inv__icon { display:block; width:18px; height:18px; flex:none; }
+.device-frame .inv--pusaka { --pk-cover-height:100cqh; }
+.inv-frame__content .inv--pusaka .sec { min-height:0; }
+.inv-frame__content .inv--pusaka .sec--cover { --pk-cover-height:680px; min-height:680px; }
+
+/* Every scene retains its frame. Text occupies a quiet central plane. */
+.inv--pusaka .welcome__text { font-family:var(--inv-font-display); font-size:clamp(1.7rem,7.5cqi,2.6rem); line-height:1.65; max-width:34ch; padding:24px 12px; margin:auto; background:radial-gradient(ellipse,var(--inv-bg) 55%,transparent 75%); }
+.inv--pusaka .welcome__host { font-size:.75rem; margin-top:12px; }
+.inv--pusaka .sec--parents p { max-width:650px; margin:22px auto; padding:25px 18px; font-family:var(--inv-font-display); font-size:1.35rem; line-height:1.6; border-block:1px solid var(--pk-line); background:var(--inv-bg); }
+.inv--pusaka .couple__grid { max-width:820px; margin:auto; gap:28px; }
+.inv--pusaka .person { width:100%; max-width:330px; padding:24px 20px; border:4px double var(--inv-accent); border-radius:130px 130px 12px 12px; background:var(--pk-paper); color:var(--pk-ink); box-shadow:0 12px 30px #0003,inset 0 0 0 6px var(--pk-paper); }
+.inv--pusaka .person__photo { display:block; width:100%; aspect-ratio:4/5; border-radius:130px 130px 6px 6px; border:1px solid var(--inv-accent); padding:0; margin:0 0 20px; }
+.inv--pusaka .person__photo img { object-position:50% 30%; }
+.inv--pusaka .person__name { font-family:var(--inv-font-display); font-size:2rem; color:var(--pk-ink); }
+.inv--pusaka .person__nick { font-family:var(--inv-font-accent); font-size:2rem; color:var(--pk-ink); opacity:1; }
+.inv--pusaka .person__desc { font-size:.78rem; line-height:1.8; opacity:1; margin-top:12px; }
+.inv--pusaka .couple__amp { font-family:var(--inv-font-accent); font-size:3.5rem; color:var(--inv-primary); }
+.inv--pusaka .sec--quote { padding-block:100px; }
+.inv--pusaka .quote__mark { font-size:4rem; color:var(--inv-primary); opacity:1; }
+.inv--pusaka .quote__text { font-size:clamp(1.8rem,7.5cqi,2.9rem); max-width:32ch; line-height:1.6; font-style:italic; background:radial-gradient(ellipse,var(--inv-bg) 60%,transparent 80%); }
+.inv--pusaka .quote__source { font-size:.66rem; color:var(--inv-primary); opacity:1; margin-top:24px; letter-spacing:.1em; }
+
+/* Pendopo programmes: a vaulted crown and full-width date frieze. */
+.inv--pusaka .events__list { max-width:900px; margin:auto; gap:30px; }
+.inv--pusaka .event-card { position:relative; width:100%; max-width:none; display:grid; grid-template-columns:minmax(0,1fr); padding:0; gap:0; border:4px double var(--inv-primary); border-radius:60px 60px 8px 8px; overflow:hidden; background:var(--pk-paper); color:var(--pk-ink); box-shadow:0 10px 22px #0004; }
+.inv--pusaka .event-card__date { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:9px; padding:24px 20px 18px; background:var(--pk-ink) url('/art/pusaka/batik.svg'); color:#ffe6b3; border-bottom:4px double var(--inv-accent); }
+.inv--pusaka .d-weekday,.inv--pusaka .d-monthyear { font-size:.62rem; opacity:1; letter-spacing:.05em; }
+.inv--pusaka .d-day { font-family:var(--inv-font-display); font-size:3rem; color:#ffe6b3; line-height:1; }
+.inv--pusaka .event-card__info { padding:28px 22px; display:grid; gap:12px; justify-items:center; }
+.inv--pusaka .event-card__info h3 { font-size:2rem; color:var(--pk-ink); line-height:1.2; }
+.inv--pusaka .event-card__time { font-size:.77rem; letter-spacing:.04em; }
+.inv--pusaka .event-card__venue { font-size:.8rem; color:var(--pk-ink); }
+.inv--pusaka .event-card__addr { font-size:.77rem; line-height:1.8; opacity:1; }
+.inv--pusaka .event-card__link { color:var(--pk-ink); display:inline-flex; align-items:center; min-height:44px; font-size:.65rem; letter-spacing:.05em; text-decoration:underline; text-underline-offset:4px; }
+.inv--pusaka .countdown__title { font-family:var(--inv-font-display); font-size:clamp(1.7rem,8cqi,2.8rem); }
+.inv--pusaka .countdown__grid { max-width:520px; margin:28px auto 0; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:7px; }
+.inv--pusaka .countdown__cell { border:1px solid var(--pk-line); background:var(--inv-bg); border-radius:50% 50% 4px 4px; padding:23px 2px 16px; }
+.inv--pusaka .countdown__num { font-family:var(--inv-font-display); font-size:clamp(1.8rem,8cqi,3rem); color:var(--inv-primary); }
+.inv--pusaka .countdown__label { font-size:.5rem; letter-spacing:.05em; opacity:1; }
+.inv--pusaka .story__list { max-width:680px; margin:auto; gap:26px; padding:0 0 0 12px; border-left:1px solid var(--pk-line); counter-reset:chapter; }
+.inv--pusaka .story__item { position:relative; counter-increment:chapter; background:var(--pk-paper); color:var(--pk-ink); padding:28px 24px; text-align:left; justify-items:start; border-block:4px double var(--inv-accent); border-radius:0 38px 0 38px; }
+.inv--pusaka .story__item::before { content:''; width:9px; height:9px; position:absolute; left:-17px; top:34px; transform:rotate(45deg); background:var(--inv-primary); }
+.inv--pusaka .story__text time { color:var(--pk-ink); font-size:.67rem; font-weight:700; }
+.inv--pusaka .story__text h3 { font-size:1.7rem; margin-block:8px; color:var(--pk-ink); }
+.inv--pusaka .story__text p { font-size:.81rem; line-height:1.85; opacity:1; }
+.inv--pusaka .gallery__grid { max-width:880px; margin:0 auto; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.inv--pusaka .gallery__item { border:4px solid var(--pk-paper); outline:1px solid var(--inv-accent); border-radius:44px 44px 3px 3px; aspect-ratio:3/4; box-shadow:0 8px 24px #0003; }
+.inv--pusaka .gallery__item:first-child { grid-column:1/-1; aspect-ratio:5/4; border-width:7px; border-radius:90px 90px 4px 4px; }
+.inv--pusaka .gallery__item:nth-child(3n) { border-radius:3px 3px 44px 44px; }
+.inv--pusaka .gallery__grid--1 .gallery__item:first-child { grid-column:1/-1; aspect-ratio:5/4; }
+.inv--pusaka .map__venue { font-size:1.6rem; }
+.inv--pusaka .map__addr { font-size:.8rem; opacity:1; margin-top:10px; }
+.inv--pusaka .map__frame { border:5px double var(--inv-primary); border-radius:60px 60px 8px 8px; margin-block:25px; }
+.inv--pusaka .info__cards { grid-template-columns:minmax(0,1fr); gap:20px; }
+.inv--pusaka .info__card { grid-template-columns:30px minmax(0,1fr); padding:28px 22px; gap:14px; background:var(--pk-paper); color:var(--pk-ink); border:1px solid var(--inv-accent); border-left:5px double var(--inv-accent); border-radius:0 32px 0 32px; box-shadow:0 8px 20px #0002; }
+.inv--pusaka .info__icon { width:30px; height:36px; border-radius:16px 16px 3px 3px; color:var(--pk-ink); background:#ddc598; }
+.inv--pusaka .info__body h3 { font-size:.85rem; line-height:1.5; letter-spacing:0; }
+.inv--pusaka .info__body p { font-size:.8rem; line-height:1.85; opacity:1; margin-top:9px; }
+
+/* Carved writing panels: usable controls on a solid parchment surface. */
+.inv--pusaka .rsvp__form,.inv--pusaka .wishes__form { max-width:520px; padding:35px 25px; background:var(--pk-paper); color:var(--pk-ink); border:4px double var(--inv-accent); border-radius:40px 40px 6px 6px; box-shadow:0 12px 28px #0003; gap:20px; }
+.inv--pusaka .fld { font-size:.81rem; }
+.inv--pusaka .fld > span { opacity:1; letter-spacing:.02em; }
+.inv--pusaka .fld input,.inv--pusaka .fld textarea { min-width:0; background:#fffaf0; color:var(--pk-ink); border:1px solid #b99b70; border-radius:4px; font-size:16px; }
+.inv--pusaka .fld--choice label { min-height:44px; font-size:.8rem; }
+.inv--pusaka .fld--choice input { width:16px; height:16px; padding:0; flex:none; accent-color:var(--pk-ink); }
+.inv--pusaka .rsvp__done { color:var(--pk-ink); }
+.inv--pusaka .gift__note { font-size:.81rem; opacity:1; line-height:1.8; }
+.inv--pusaka .gift__card { width:min(100%,400px); padding:28px 22px; border:4px double var(--inv-accent); background:var(--pk-paper); color:var(--pk-ink); border-radius:8px 50px 8px 50px; box-shadow:0 12px 24px #0003; }
+.inv--pusaka .gift__bank { color:var(--pk-ink); font-size:.73rem; opacity:1; }
+.inv--pusaka .gift__number { font-size:2rem; color:var(--pk-ink); }
+.inv--pusaka .gift__holder { font-size:.78rem; opacity:1; }
+.inv--pusaka .wishes__list li { border:1px solid var(--pk-line); border-radius:3px 24px 3px 24px; background:var(--inv-bg); padding:22px; }
+.inv--pusaka .sec--closing { padding-block:110px 155px; }
+.inv--pusaka .closing__fig { width:75%; max-width:450px; aspect-ratio:4/3; border:4px double var(--inv-primary); border-radius:100px 100px 4px 4px; }
+.inv--pusaka .closing__thanks { font-family:var(--inv-font-display); font-size:clamp(1.6rem,7cqi,2.4rem); max-width:28ch; line-height:1.7; opacity:1; background:radial-gradient(ellipse,var(--inv-bg),transparent 80%); }
+.inv--pusaka .closing__names { max-width:64%; margin:28px auto 0; font-family:var(--inv-font-accent); font-size:clamp(2rem,8cqi,4rem); line-height:1.2; color:var(--inv-primary); }
+.inv--pusaka .closing__name { display:block; }
+.inv--pusaka .closing__amp { display:block; font-family:var(--inv-font-display); font-size:.6em; margin-block:10px; }
+.inv--pusaka .sec--closing .pk-entry--puppet { left:-10cqi; bottom:35px; width:28cqi; }
+.inv--pusaka .sec--closing .pk-entry--partner { right:-10cqi; bottom:35px; width:28cqi; }
+
+.inv--pusaka .inv-nav { width:min(calc(100% - 24px),400px); max-width:calc(100% - 24px); bottom:calc(12px + env(safe-area-inset-bottom)); }
+.inv--pusaka .inv-nav__pill { position:relative; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:0; padding:5px 5px 8px; background:var(--pk-paper); color:var(--pk-ink); border:3px double var(--inv-accent); border-radius:25px 25px 4px 4px; box-shadow:0 8px 25px #0004; overflow:hidden; }
+.inv--pusaka .inv-nav__pill::after { content:''; height:2px; position:absolute; bottom:0; left:0; right:0; background:var(--pk-ink); transform:scaleX(var(--pk-progress)); transform-origin:left; }
+.inv--pusaka .inv-nav__item { min-width:0; min-height:44px; border-radius:15px 15px 3px 3px; color:var(--pk-ink); font-size:.51rem; gap:3px; letter-spacing:0; justify-content:center; }
+.inv--pusaka .inv-nav__item.is-active { background:#dfc598; color:var(--pk-ink); }
+.inv--pusaka .inv-nav__item.is-active svg { color:var(--pk-ink); stroke:var(--pk-ink); }
+.inv--pusaka .music-float { bottom:86px; right:16px; }
+.inv--pusaka .music-float__btn { width:44px; height:44px; border:3px double var(--inv-accent); background:var(--pk-paper); color:var(--pk-ink); }
+.inv--pusaka .inv-lightbox__dialog { max-width:min(calc(100% - 32px),840px); }
+.inv--pusaka .inv-lightbox__img { max-height:min(76svh,calc(var(--pk-cover-height) - 96px)); border:5px solid var(--pk-paper); border-radius:8px; }
+.public-invite .inv--pusaka .sec { scroll-margin-top:calc(var(--navbar-h) + 12px); }
+.invite-gate--pusaka { display:block; padding:0; overflow-y:auto; justify-items:stretch; align-content:start; background:#302019; transition:opacity 1150ms ease; }
+.invite-gate--pusaka .inv { width:100%; min-height:100svh; }
+.invite-body--pusaka[aria-hidden=true] { visibility:hidden; }
+.invite-gate--pusaka .inv--pusaka .sec--cover { min-height:100svh; padding-bottom:45px; }
+.invite-gate--pusaka.is-leaving { transform:none; opacity:1; animation:pk-gate-fade 1150ms ease both; }
+.invite-gate--pusaka.is-leaving .pk-curtain--left { transform:translateX(-100%); }
+.invite-gate--pusaka.is-leaving .pk-curtain--right { transform:translateX(100%); }
+.invite-gate--pusaka.is-leaving .inv--pusaka .pk-entry--puppet { translate:-100% 30px; opacity:0; }
+.invite-gate--pusaka.is-leaving .inv--pusaka .pk-entry--partner { translate:100% 30px; opacity:0; }
+.invite-gate--pusaka.is-leaving .cover__body { opacity:0; translate:0 -24px; transition:opacity 850ms ease,translate 1100ms ease; }
+.pk-curtain { transition:transform 1050ms cubic-bezier(.4,0,.2,1); }
+
+/* Kencana: lacquer-red pendopo, wide crown portrait, ceremonial double arch. */
+.inv--pusaka.inv--v-pusaka-kencana { --pk-paper:#fff1d5; --pk-ink:#622732; }
+.inv--v-pusaka-kencana .heritage__portrait { width:70%; max-width:340px; aspect-ratio:1.7; border-radius:120px 120px 5px 5px; }
+.inv--v-pusaka-kencana .pk-frame { border-radius:100px 100px 8px 8px; inset:12px 18px; }
+.inv--v-pusaka-kencana .pk-scene--stage .pk-entry--kayon { top:-10cqi; opacity:.3; width:70cqi; right:15%; }
+.inv--v-pusaka-kencana .cover__names { font-size:clamp(2.5rem,11cqi,4.7rem); }
+.inv--v-pusaka-kencana .person { border-radius:110px 110px 110px 110px; padding-bottom:34px; }
+.inv--v-pusaka-kencana .event-card { border-radius:90px 90px 30px 30px; border-width:6px; }
+.inv--v-pusaka-kencana .story__item { border-radius:35px 0 35px 0; border-block-width:6px; }
+.inv--v-pusaka-kencana .gallery__item { border-radius:50%; aspect-ratio:1; }
+.inv--v-pusaka-kencana .gallery__item:first-child { border-radius:100px 100px 8px 8px; aspect-ratio:4/3; }
+.inv--v-pusaka-kencana .rsvp__form,.inv--v-pusaka-kencana .wishes__form { border-radius:6px 55px 6px 55px; }
+
+/* Nila: moonlit shadow screen, offset portraits and silver-blue carving. */
+.inv--pusaka.inv--v-pusaka-nila { --pk-paper:#e9edf0; --pk-ink:#22374b; }
+.inv--v-pusaka-nila .pk-batik { opacity:.12; background-size:88px; }
+.inv--v-pusaka-nila .pk-frame { border-radius:5px; border-color:var(--inv-accent); }
+.inv--v-pusaka-nila .pk-corner { color:var(--inv-accent); }
+.inv--v-pusaka-nila .heritage__portrait { width:60%; max-width:245px; aspect-ratio:1.25; border-radius:100px 5px 100px 5px; margin-right:10%; }
+.inv--v-pusaka-nila .cover__names { text-align:left; font-size:clamp(2.2rem,9.5cqi,4.4rem); padding-left:5%; }
+.inv--v-pusaka-nila .cover__amp { padding-left:28%; }
+.inv--v-pusaka-nila .pk-scene--stage .pk-entry--partner { opacity:.22; right:-14cqi; top:8%; bottom:auto; }
+.inv--v-pusaka-nila .pk-scene--stage .pk-entry--puppet { bottom:70px; left:-10cqi; }
+.inv--v-pusaka-nila .person { border-radius:90px 5px 90px 5px; }
+.inv--v-pusaka-nila .person__photo { border-radius:75px 5px 5px 5px; }
+.inv--v-pusaka-nila .event-card { border-radius:5px 45px 5px 45px; }
+.inv--v-pusaka-nila .event-card__date { background:var(--pk-ink) url('/art/pusaka/batik.svg'); }
+.inv--v-pusaka-nila .story__item { background:var(--inv-bg); color:var(--inv-text); border:1px solid var(--inv-accent); border-radius:0; }
+.inv--v-pusaka-nila .story__text :is(time,h3) { color:var(--inv-primary); }
+.inv--v-pusaka-nila .gallery__item { border-radius:0; }
+.inv--v-pusaka-nila .gallery__item:first-child { border-radius:80px 5px 80px 5px; }
+.inv--v-pusaka-nila .rsvp__form,.inv--v-pusaka-nila .wishes__form { border-radius:4px; border-top-width:8px; }
+
+@container(min-width:720px) {
+  .inv--pusaka .sec { padding-block:110px; }
+  .inv--pusaka .sec--cover { padding-block:60px 100px; }
+  .inv--pusaka .heritage__portrait { width:250px; }
+  .inv--pusaka .cover__names { font-size:4.6rem; }
+  .inv--pusaka .pk-scene--stage .pk-entry--puppet { left:3%; bottom:70px; width:24cqi; }
+  .inv--pusaka .pk-entry--partner { right:3%; bottom:70px; width:24cqi; }
+  .inv--pusaka .pk-entry--puppet { width:20cqi; left:-8cqi; }
+  .inv--pusaka .sec:nth-of-type(2n) .pk-scene:not(.pk-scene--stage) .pk-entry--puppet { right:-8cqi; }
+  .inv--pusaka .pk-entry--kayon { right:-10cqi; width:30cqi; }
+  .inv--pusaka .sec:nth-of-type(3n) .pk-entry--kayon { left:-10cqi; }
+  .inv--pusaka .pk-scene--stage .pk-entry--kayon { width:40cqi; right:30%; }
+  .inv--pusaka .couple__grid { grid-template-columns:1fr 40px 1fr; align-items:center; }
+  .inv--pusaka .person:nth-child(3) { margin-top:80px; }
+  .inv--pusaka .sec--closing .pk-entry--puppet { left:3%; width:20cqi; }
+  .inv--pusaka .sec--closing .pk-entry--partner { right:3%; width:20cqi; }
+  .inv--pusaka .events__list { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; }
+  .inv--pusaka .gallery__grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; }
+  .inv--pusaka .gallery__item:first-child { grid-column:span 2; grid-row:span 2; aspect-ratio:auto; }
+  .inv--pusaka .gallery__grid--1 .gallery__item:first-child { grid-column:1/-1; aspect-ratio:5/3; }
+  .inv--pusaka .info__cards { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .inv--pusaka .story__item:nth-child(2n) { margin-left:35px; }
+  .inv--v-pusaka-kencana .heritage__portrait { width:350px; }
+  .inv--v-pusaka-nila .heritage__portrait { margin-right:18%; }
+}
+@container(max-width:360px) {
+  .inv--pusaka .sec { padding-inline:26px; }
+  .inv--pusaka .sec--cover { padding:30px 32px 96px; }
+  .inv--pusaka .heritage__portrait { width:46cqi; margin-bottom:22px; }
+  .inv--pusaka .cover__names { font-size:10.5cqi; }
+  .inv--pusaka .cover__eyebrow { margin-bottom:14px; }
+  .inv--pusaka .info__card { padding:24px 16px; gap:10px; }
+  .inv--pusaka .rsvp__form,.inv--pusaka .wishes__form { padding:28px 18px; }
+  .inv--v-pusaka-kencana .heritage__portrait { width:70%; }
+  .inv--v-pusaka-nila .heritage__portrait { width:60%; }
+}
+@media(prefers-reduced-motion:no-preference) {
+  .inv--pusaka.pk-motion .pk-entry { translate:0 var(--pk-drift,0px); transition:translate 1200ms cubic-bezier(.22,.7,.24,1),opacity 1000ms ease; }
+  .inv--pusaka.pk-motion .sec:not(.pk-in-view) .pk-entry--puppet { translate:-65px 24px; opacity:0; }
+  .inv--pusaka.pk-motion .sec:nth-of-type(2n):not(.pk-in-view) .pk-entry--puppet,.inv--pusaka.pk-motion .sec:not(.pk-in-view) .pk-entry--partner { translate:65px 24px; opacity:0; }
+  .inv--pusaka.pk-motion .sec:not(.pk-in-view) .pk-entry--kayon { translate:0 50px; opacity:0; }
+  .inv--pusaka.pk-motion .pk-corner { transition:opacity 950ms ease,translate 1200ms ease; }
+  .inv--pusaka.pk-motion .sec:not(.pk-in-view) .pk-corner { opacity:0; translate:0 -18px; }
+  .inv--pusaka.pk-motion .pk-puppet-idle { animation:pk-puppet 9s ease-in-out infinite alternate; animation-play-state:paused; }
+  .inv--pusaka.pk-motion .pk-kayon-idle { animation:pk-kayon 12s ease-in-out infinite alternate; animation-play-state:paused; }
+  .inv--pusaka.pk-motion .pk-lamp i { animation:pk-lamplight 5s ease-in-out infinite alternate; animation-play-state:paused; }
+  .inv--pusaka.pk-motion .pk-dust i { animation:pk-dust 11s ease-in-out infinite; animation-play-state:paused; }
+  .inv--pusaka.pk-motion .pk-dust i:nth-child(2) { animation-delay:-5s; }
+  .inv--pusaka.pk-motion .pk-dust i:nth-child(3) { animation-delay:-8s; }
+  .inv--pusaka.pk-motion .pk-entry--partner .pk-puppet-idle { animation-delay:-4s; }
+  .inv--pusaka.pk-motion .pk-in-view :is(.pk-puppet-idle,.pk-kayon-idle,.pk-lamp i,.pk-dust i) { animation-play-state:running; }
+  .inv--pusaka.pk-motion.is-motion-paused :is(.pk-puppet-idle,.pk-kayon-idle,.pk-lamp i,.pk-dust i) { animation-play-state:paused; }
+  .inv--pusaka .pk-reveal { transition:opacity 950ms ease var(--pk-delay,0ms),translate 1100ms cubic-bezier(.22,.7,.24,1) var(--pk-delay,0ms); }
+  .inv--pusaka .pk-pending { opacity:0; translate:0 24px; }
+}
+@keyframes pk-puppet { from { rotate:-2deg; translate:0 0; } to { rotate:2deg; translate:0 -6px; } }
+@keyframes pk-kayon { from { rotate:-1deg; scale:1; } to { rotate:1deg; scale:1.025; } }
+@keyframes pk-lamplight { from { opacity:.45; scale:.9; } to { opacity:1; scale:1.1; } }
+@keyframes pk-dust { 0% { translate:0 15px; opacity:0; } 30%,60% { opacity:.7; } 100% { translate:12px -30px; opacity:0; } }
+@keyframes pk-gate-fade { 0%,70% { opacity:1; } 100% { opacity:0; } }
+@media(prefers-reduced-motion:reduce) { .inv--pusaka .pk-pending { opacity:1; translate:none; } .invite-gate--pusaka,.invite-gate--pusaka * { transition:none!important; } }

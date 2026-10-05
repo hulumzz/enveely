@@ -1,0 +1,258 @@
+/* Mayura: an Art Nouveau aviary with living garden borders. */
+.inv--mayura { --my-panel:#f7edd7; --my-ink:#214a42; --my-line:color-mix(in srgb,var(--inv-primary) 45%,transparent); --my-cover-height:100svh; --my-progress:0; background:var(--inv-bg); color:var(--inv-text); }
+.inv--mayura .sec { position:relative; min-height:0; overflow:hidden; padding:100px clamp(32px,8cqi,110px); background:var(--inv-bg); }
+.inv--mayura .sec:nth-of-type(2n) { background:color-mix(in srgb,var(--inv-bg) 96%,var(--inv-accent)); }
+.inv--mayura .sec-head { max-width:680px; margin:0 auto 35px; padding-inline:10px; }
+.inv--mayura .sec-head h2 { font-family:var(--inv-font-accent); font-size:clamp(2.3rem,10cqi,3.9rem); font-style:italic; font-weight:500; color:var(--inv-text); line-height:1.12; }
+.inv--mayura .sec-head::before { content:''; display:block; width:18px; height:28px; border:1px solid var(--inv-primary); outline:1px solid var(--my-line); outline-offset:5px; border-radius:50%; margin:0 auto 22px; background:radial-gradient(ellipse,var(--inv-primary) 20%,transparent 24%); }
+.inv--mayura .sec-sub { font-size:.76rem; line-height:1.8; opacity:1; margin:12px auto 0; max-width:36ch; }
+.inv--mayura :is(h1,h2,h3,p,span,a) { overflow-wrap:anywhere; }
+.inv--mayura .sec-divider,.inv--mayura .corner { display:none; }
+.inv--mayura .btn-inv { min-height:44px; padding:13px 23px; border:1px solid var(--inv-primary); border-radius:28px 7px 28px 7px; background:var(--inv-primary); color:var(--inv-bg); font-size:.67rem; letter-spacing:.1em; }
+.inv--mayura .btn-inv--ghost { background:var(--inv-bg); color:var(--inv-text); }
+.inv--mayura :is(button,a,input,textarea):focus-visible { outline:2px solid var(--inv-primary); outline-offset:4px; }
+
+/* Artwork lives at the section edge, including every editor placeholder. */
+.inv--mayura .my-scene { position:absolute; inset:0; z-index:1; overflow:hidden; pointer-events:none; color:var(--inv-primary); }
+.my-scene img,.my-scene svg { display:block; width:100%; height:auto; }
+.my-inlay { position:absolute; inset:18px; border:1px solid var(--my-line); border-radius:85px 8px 85px 8px; }
+.my-inlay::after { content:''; position:absolute; inset:6px; border:1px solid var(--my-line); border-radius:inherit; }
+.my-lattice { position:absolute; inset:0; opacity:.16; background:url('/art/mayura/inlay.svg') repeat; background-size:85px 119px; mask-image:linear-gradient(90deg,#000,transparent 20%,transparent 80%,#000); }
+.my-entry { position:absolute; display:block; }
+.my-canopy { width:clamp(230px,77cqi,480px); opacity:.85; }
+.my-canopy--tl { left:-68px; top:-40px; }
+.my-canopy--br { right:-68px; bottom:-40px; rotate:180deg; }
+.my-canopy-idle { display:block; transform-origin:15% 15%; }
+.my-fan { width:clamp(100px,35cqi,240px); opacity:.35; }
+.my-fan--tr { top:15px; right:-36px; rotate:130deg; }
+.my-fan--bl { bottom:15px; left:-36px; rotate:-50deg; }
+.my-quill { transform-box:view-box; transform-origin:120px 145px; }
+.my-entry--bird { left:-26cqi; bottom:25%; width:clamp(140px,43cqi,290px); opacity:.65; }
+.my-bird-idle { display:block; transform-origin:70% 46%; }
+.my-entry--partner { right:-18cqi; bottom:25px; width:43cqi; max-width:330px; opacity:.7; }
+.my-entry--partner .my-bird-idle { scale:-1 1; }
+.my-scene--garden .my-entry--bird { left:-11cqi; bottom:25px; width:43cqi; max-width:330px; opacity:1; }
+.my-scene--garden .my-canopy { width:87cqi; max-width:600px; }
+.inv--mayura .sec:nth-of-type(2n) .my-scene:not(.my-scene--garden) .my-entry--bird { left:auto; right:-26cqi; }
+.inv--mayura .sec:nth-of-type(2n) .my-scene:not(.my-scene--garden) .my-entry--bird .my-bird-idle { scale:-1 1; }
+.my-shimmer { position:absolute; inset:0; background:radial-gradient(ellipse at 70% 0%,#fbd89915,transparent 60%); }
+.my-fireflies { position:absolute; inset:0; }
+.my-fireflies i { position:absolute; left:8%; top:25%; width:3px; height:3px; border-radius:50%; background:#f0d19b; box-shadow:0 0 10px #f9d56d; opacity:.4; }
+.my-fireflies i:nth-child(2) { left:91%; top:40%; }
+.my-fireflies i:nth-child(3) { left:87%; top:73%; }
+.my-leaf-door { position:absolute; width:45px; height:140px; bottom:12%; border:1px solid var(--my-line); background:var(--inv-bg); opacity:.5; border-radius:100% 0; transition:transform 1150ms ease; }
+.my-leaf-door--left { left:-26px; }
+.my-leaf-door--right { right:-26px; scale:-1 1; }
+
+/* Names above a garden window, with a peacock outside the portrait frame. */
+.inv--mayura .sec--cover { min-height:var(--my-cover-height); padding:70px 38px 100px; display:grid; align-content:center; color:var(--inv-text); }
+.inv--mayura .sec--cover::after { display:none; }
+.inv--mayura .cover__body { display:block; text-align:center; max-width:720px; width:100%; margin:auto; padding:0; }
+.inv--mayura .cover__eyebrow { font-size:.55rem; letter-spacing:.23em; color:var(--inv-text); opacity:1; margin:0 0 18px; }
+.inv--mayura .cover__names { display:grid; gap:4px; font-family:var(--inv-font-display); font-weight:400; font-size:clamp(2rem,9cqi,3.6rem); line-height:1.12; color:var(--inv-text); margin:0; letter-spacing:-.035em; }
+.inv--mayura .cover__name { display:block; }
+.inv--mayura .cover__amp { font-family:var(--inv-font-accent); font-size:.58em; line-height:1; font-style:italic; color:var(--inv-primary); }
+.inv--mayura .cover__date { font-size:.6rem; letter-spacing:.08em; margin:16px 0 0; opacity:1; color:var(--inv-text); }
+.inv--mayura .aviary__portrait { position:relative; width:80%; max-width:320px; aspect-ratio:1.6; margin:25px auto 22px; padding:7px; border:1px solid var(--inv-primary); outline:1px solid var(--my-line); outline-offset:5px; border-radius:100px 100px 18px 18px; background:var(--inv-bg); box-shadow:0 12px 35px #0002; }
+.aviary__photo { position:absolute; inset:7px; overflow:hidden; border-radius:inherit; background:var(--my-panel); display:grid; place-items:center; }
+.aviary__photo img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:50% 29%; }
+.aviary__initials { font-family:var(--inv-font-accent); font-style:italic; font-size:2.8rem; color:var(--my-ink); }
+.aviary__jewel { position:absolute; width:20px; height:30px; border:2px solid var(--inv-primary); outline:3px solid var(--inv-bg); border-radius:50%; bottom:-12px; left:calc(50% - 10px); background:radial-gradient(ellipse,var(--inv-primary) 22%,var(--inv-bg) 25%); }
+.inv--mayura .cover__guest { display:block; max-width:100%; margin:20px auto 0; border:0; border-radius:0; border-block:1px solid var(--my-line); background:var(--inv-bg); padding:10px 14px; backdrop-filter:none; }
+.inv--mayura .cover__guest-greet { font-size:.56rem; letter-spacing:0; }
+.inv--mayura .cover__guest-name { font-size:.78rem; margin-top:5px; }
+.inv--mayura .btn-inv--open { display:inline-flex; align-items:center; justify-content:center; gap:9px; margin:20px auto 0; }
+.inv--mayura .btn-inv__icon { display:block; width:18px; height:18px; flex:none; }
+.device-frame .inv--mayura { --my-cover-height:100cqh; }
+.inv-frame__content .inv--mayura .sec { min-height:0; }
+.inv-frame__content .inv--mayura .sec--cover { --my-cover-height:680px; min-height:680px; }
+
+.inv--mayura .welcome__text { position:relative; max-width:32ch; font-family:var(--inv-font-accent); font-size:clamp(1.8rem,7.8cqi,2.8rem); font-style:italic; line-height:1.65; padding:30px 15px; margin:auto; background:radial-gradient(ellipse,var(--inv-bg) 62%,transparent 80%); }
+.inv--mayura .welcome__host { font-size:.74rem; margin-top:20px; }
+.inv--mayura .sec--parents p { font-family:var(--inv-font-accent); font-size:1.5rem; line-height:1.6; max-width:650px; margin:24px auto; padding:25px; border-block:1px solid var(--my-line); background:var(--inv-bg); }
+.inv--mayura .couple__grid { gap:32px; max-width:850px; margin:auto; }
+.inv--mayura .person { position:relative; width:100%; max-width:340px; padding:20px 20px 28px; background:var(--my-panel); color:var(--my-ink); border:1px solid var(--inv-primary); outline:1px solid var(--my-line); outline-offset:6px; border-radius:140px 140px 70px 70px; box-shadow:0 12px 35px #0003; }
+.inv--mayura .person__photo { display:block; width:100%; aspect-ratio:1; border:1px solid #ac915f; border-radius:50%; margin:0 0 20px; }
+.inv--mayura .person__photo img { object-position:50% 30%; }
+.inv--mayura .person__name { font-family:var(--inv-font-display); color:var(--my-ink); font-size:1.85rem; line-height:1.2; }
+.inv--mayura .person__nick { font-family:var(--inv-font-accent); font-size:1.3rem; font-style:italic; opacity:1; margin-top:8px; }
+.inv--mayura .person__desc { font-size:.77rem; line-height:1.8; opacity:1; margin-top:12px; }
+.inv--mayura .couple__amp { color:var(--inv-primary); font-family:var(--inv-font-accent); font-style:italic; font-size:3.8rem; }
+.inv--mayura .quote__mark { font-size:4.5rem; color:var(--inv-primary); opacity:1; margin-bottom:16px; }
+.inv--mayura .quote__text { font-family:var(--inv-font-accent); font-size:clamp(1.9rem,8cqi,3.2rem); line-height:1.5; max-width:28ch; padding-inline:8px; background:radial-gradient(ellipse,var(--inv-bg) 60%,transparent 80%); }
+.inv--mayura .quote__source { color:var(--inv-primary); opacity:1; font-size:.62rem; letter-spacing:.1em; margin-top:26px; }
+
+/* Garden plaques: oval date medallions, inlaid outlines, readable copy. */
+.inv--mayura .events__list { max-width:900px; gap:40px; margin:auto; }
+.inv--mayura .event-card { position:relative; display:grid; grid-template-columns:minmax(0,1fr); gap:0; padding:28px 24px; width:100%; max-width:none; border:1px solid var(--inv-primary); border-radius:80px 80px 40px 40px; background:var(--my-panel); color:var(--my-ink); box-shadow:0 14px 28px #0003; }
+.inv--mayura .event-card::before { content:''; position:absolute; inset:7px; border:1px solid #ba9c6c; border-radius:inherit; pointer-events:none; }
+.inv--mayura .event-card__date { display:grid; grid-template-columns:1fr; gap:5px; width:110px; height:135px; padding:20px 9px; border:1px solid #b39460; border-radius:50%; justify-self:center; align-content:center; background:#e5d5b3; color:var(--my-ink); margin:0 auto 20px; }
+.inv--mayura .d-weekday,.inv--mayura .d-monthyear { font-size:.6rem; opacity:1; letter-spacing:.04em; }
+.inv--mayura .d-day { font-family:var(--inv-font-accent); font-size:3.2rem; line-height:1; color:var(--my-ink); }
+.inv--mayura .event-card__info { display:grid; justify-items:center; gap:12px; padding:0 2px 8px; }
+.inv--mayura .event-card__info h3 { font-family:var(--inv-font-accent); font-size:2.2rem; font-style:italic; color:var(--my-ink); line-height:1.15; }
+.inv--mayura .event-card__time { font-size:.76rem; letter-spacing:.02em; }
+.inv--mayura .event-card__venue { color:var(--my-ink); font-size:.8rem; }
+.inv--mayura .event-card__addr { font-size:.76rem; line-height:1.8; opacity:1; }
+.inv--mayura .event-card__link { display:inline-flex; align-items:center; min-height:44px; color:var(--my-ink); font-size:.64rem; letter-spacing:.05em; text-decoration:underline; text-underline-offset:4px; }
+.inv--mayura .countdown__title { font-family:var(--inv-font-accent); font-style:italic; font-size:clamp(1.8rem,8cqi,3rem); }
+.inv--mayura .countdown__grid { max-width:530px; margin:28px auto 0; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+.inv--mayura .countdown__cell { background:var(--inv-bg); padding:22px 2px; border:1px solid var(--my-line); border-radius:50%; }
+.inv--mayura .countdown__num { color:var(--inv-primary); font-family:var(--inv-font-accent); font-size:clamp(1.9rem,8cqi,3.1rem); }
+.inv--mayura .countdown__label { opacity:1; font-size:.49rem; letter-spacing:.03em; }
+.inv--mayura .story__list { max-width:700px; gap:28px; margin:0 auto; padding-left:15px; border-left:1px solid var(--my-line); }
+.inv--mayura .story__item { position:relative; padding:30px 24px; text-align:left; justify-items:start; background:var(--my-panel); color:var(--my-ink); border:1px solid #bda57b; border-radius:45px 8px 45px 8px; }
+.inv--mayura .story__item::before { content:''; position:absolute; width:10px; height:20px; left:-21px; top:32px; border:1px solid var(--inv-primary); background:var(--inv-bg); border-radius:50%; }
+.inv--mayura .story__text time { color:var(--my-ink); font-size:.65rem; letter-spacing:.13em; font-weight:700; }
+.inv--mayura .story__text h3 { font-family:var(--inv-font-accent); font-style:italic; color:var(--my-ink); font-size:1.8rem; margin-block:8px; }
+.inv--mayura .story__text p { opacity:1; font-size:.81rem; line-height:1.85; }
+.inv--mayura .gallery__grid { max-width:900px; margin:0 auto; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+.inv--mayura .gallery__item { border:5px solid var(--my-panel); outline:1px solid var(--my-line); border-radius:60px 60px 6px 6px; aspect-ratio:3/4; box-shadow:0 9px 26px #0003; }
+.inv--mayura .gallery__item:first-child { grid-column:1/-1; aspect-ratio:4/3; border-radius:90px 8px 90px 8px; border-width:7px; }
+.inv--mayura .gallery__item:nth-child(3n) { border-radius:6px 6px 60px 60px; }
+.inv--mayura .gallery__grid--1 .gallery__item:first-child { grid-column:1/-1; aspect-ratio:4/3; }
+.inv--mayura .map__venue { font-family:var(--inv-font-accent); font-size:1.7rem; }
+.inv--mayura .map__addr { font-size:.79rem; line-height:1.8; opacity:1; margin-top:8px; }
+.inv--mayura .map__frame { border:4px solid var(--my-panel); outline:1px solid var(--my-line); border-radius:50px 8px 50px 8px; }
+.inv--mayura .info__cards { grid-template-columns:minmax(0,1fr); gap:22px; }
+.inv--mayura .info__card { background:var(--my-panel); color:var(--my-ink); border:1px solid #bda57b; border-radius:35px 5px 35px 5px; padding:28px 22px; grid-template-columns:30px minmax(0,1fr); gap:14px; box-shadow:0 10px 24px #0002; }
+.inv--mayura .info__icon { width:30px; height:38px; border-radius:50%; background:#ded2b5; color:var(--my-ink); }
+.inv--mayura .info__body h3 { font-size:.85rem; line-height:1.5; letter-spacing:0; }
+.inv--mayura .info__body p { font-size:.79rem; line-height:1.85; opacity:1; margin-top:10px; }
+
+.inv--mayura .rsvp__form,.inv--mayura .wishes__form { max-width:520px; padding:34px 25px; background:var(--my-panel); color:var(--my-ink); border:1px solid #bda57b; outline:1px solid var(--my-line); outline-offset:6px; border-radius:45px 8px 45px 8px; gap:20px; box-shadow:0 12px 32px #0003; }
+.inv--mayura .fld { font-size:.8rem; }
+.inv--mayura .fld > span { opacity:1; letter-spacing:.02em; }
+.inv--mayura .fld input,.inv--mayura .fld textarea { min-width:0; color:var(--my-ink); background:#fffaf0; border:1px solid #b4a286; border-radius:6px; font-size:16px; }
+.inv--mayura .fld--choice label { min-height:44px; font-size:.8rem; }
+.inv--mayura .fld--choice input { width:16px; height:16px; flex:none; padding:0; accent-color:var(--my-ink); }
+.inv--mayura .rsvp__done { color:var(--my-ink); }
+.inv--mayura .rsvp__form .btn-inv,.inv--mayura .wishes__form .btn-inv,.inv--mayura .gift__card .btn-inv { background:var(--my-ink); color:var(--my-panel); border-color:var(--my-ink); }
+.inv--mayura .gift__note { font-size:.81rem; line-height:1.8; opacity:1; }
+.inv--mayura .gift__card { width:min(100%,400px); padding:32px 24px; background:var(--my-panel); color:var(--my-ink); border:1px solid #bda57b; border-radius:50px 8px 50px 8px; box-shadow:0 12px 24px #0002; }
+.inv--mayura .gift__bank { color:var(--my-ink); opacity:1; font-size:.74rem; }
+.inv--mayura .gift__number { font-family:var(--inv-font-accent); font-size:2rem; }
+.inv--mayura .gift__holder { font-size:.78rem; opacity:1; }
+.inv--mayura .wishes__list li { background:var(--inv-bg); padding:24px; border:1px solid var(--my-line); border-radius:25px 3px 25px 3px; }
+.inv--mayura .sec--closing { padding-block:110px 155px; }
+.inv--mayura .closing__fig { width:75%; max-width:500px; border:5px solid var(--my-panel); border-radius:80px 80px 10px 10px; }
+.inv--mayura .closing__thanks { font-family:var(--inv-font-accent); font-style:italic; font-size:clamp(1.7rem,7cqi,2.8rem); max-width:28ch; line-height:1.6; opacity:1; padding-inline:12px; background:radial-gradient(ellipse,var(--inv-bg) 55%,transparent 80%); }
+.inv--mayura .closing__names { max-width:64%; margin:30px auto 0; font-family:var(--inv-font-display); font-size:clamp(1.75rem,7.5cqi,3.6rem); color:var(--inv-primary); line-height:1.2; }
+.inv--mayura .closing__name { display:block; }
+.inv--mayura .closing__amp { display:block; font-family:var(--inv-font-accent); font-style:italic; font-size:.7em; margin-block:12px; }
+.inv--mayura .sec--closing .my-entry--bird { width:28cqi; left:-10cqi; bottom:35px; }
+.inv--mayura .sec--closing .my-entry--partner { width:28cqi; right:-10cqi; bottom:35px; }
+
+.inv--mayura .inv-nav { width:min(calc(100% - 24px),400px); max-width:calc(100% - 24px); bottom:calc(12px + env(safe-area-inset-bottom)); }
+.inv--mayura .inv-nav__pill { position:relative; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:0; padding:6px 5px 8px; background:var(--my-panel); border:1px solid #b59a69; border-radius:28px 8px 28px 8px; box-shadow:0 8px 24px #0004; overflow:hidden; }
+.inv--mayura .inv-nav__pill::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:var(--my-ink); transform:scaleX(var(--my-progress)); transform-origin:left; }
+.inv--mayura .inv-nav__item { min-width:0; min-height:44px; justify-content:center; color:var(--my-ink); font-size:.51rem; letter-spacing:0; gap:3px; border-radius:20px 6px 20px 6px; }
+.inv--mayura .inv-nav__item.is-active { background:#dfd3b5; color:var(--my-ink); }
+.inv--mayura .inv-nav__item.is-active svg { color:var(--my-ink); stroke:var(--my-ink); }
+.inv--mayura .music-float { right:16px; bottom:86px; }
+.inv--mayura .music-float__btn { width:44px; height:44px; border:1px solid #b59a69; color:var(--my-ink); background:var(--my-panel); }
+.inv--mayura .inv-lightbox__dialog { max-width:min(calc(100% - 32px),840px); }
+.inv--mayura .inv-lightbox__img { max-height:min(76svh,calc(var(--my-cover-height) - 96px)); border:5px solid var(--my-panel); border-radius:18px 5px 18px 5px; }
+.public-invite .inv--mayura .sec { scroll-margin-top:calc(var(--navbar-h) + 12px); }
+.invite-gate--mayura { display:block; padding:0; overflow-y:auto; justify-items:stretch; align-content:start; background:#073e39; }
+.invite-gate--mayura .inv { width:100%; min-height:100svh; }
+.invite-gate--mayura .inv--mayura .sec--cover { min-height:100svh; padding-bottom:45px; }
+.invite-body--mayura[aria-hidden=true] { visibility:hidden; }
+.invite-gate--mayura.is-leaving { transform:none; opacity:1; animation:my-gate-fade 1200ms ease both; }
+.invite-gate--mayura.is-leaving .my-leaf-door--left { transform:rotate(-65deg) translateX(-70px); }
+.invite-gate--mayura.is-leaving .my-leaf-door--right { transform:rotate(-65deg) translateX(-70px); }
+.invite-gate--mayura.is-leaving .inv--mayura .my-entry--bird { translate:-100% 20px; opacity:0; }
+.invite-gate--mayura.is-leaving .inv--mayura .my-entry--partner { translate:100% 20px; opacity:0; }
+.invite-gate--mayura.is-leaving .cover__body { opacity:0; translate:0 -20px; transition:opacity 850ms ease,translate 1100ms ease; }
+
+/* Garnet: scalloped salon medallions, oval windows, a full feather crown. */
+.inv--mayura.inv--v-mayura-garnet { --my-panel:#f9e4dc; --my-ink:#5a2945; }
+.inv--v-mayura-garnet .my-inlay { border-radius:80px; }
+.inv--v-mayura-garnet .my-scene--garden .my-fan--tr { width:75%; right:12.5%; top:-15px; rotate:180deg; opacity:.35; }
+.inv--v-mayura-garnet .cover__names { font-family:var(--inv-font-accent); font-style:italic; font-size:clamp(2.4rem,11cqi,4.2rem); }
+.inv--v-mayura-garnet .aviary__portrait { width:67%; aspect-ratio:1.3; border-radius:50%; }
+.inv--v-mayura-garnet .person { border-radius:80px 80px 8px 8px; }
+.inv--v-mayura-garnet .person__photo { border-radius:70px 70px 5px 5px; aspect-ratio:4/5; }
+.inv--v-mayura-garnet .event-card { border-radius:80px 12px 80px 12px; }
+.inv--v-mayura-garnet .story__item { border-radius:8px 50px 8px 50px; }
+.inv--v-mayura-garnet .gallery__item { border-radius:50%; aspect-ratio:1; }
+.inv--v-mayura-garnet .gallery__item:first-child { aspect-ratio:4/3; border-radius:100px 100px 10px 10px; }
+.inv--v-mayura-garnet .rsvp__form,.inv--v-mayura-garnet .wishes__form { border-radius:70px 70px 8px 8px; }
+
+/* Pearl: a light conservatory, offset windows and emerald porcelain panels. */
+.inv--mayura.inv--v-mayura-pearl { --my-panel:#fffaf0; --my-ink:#214642; }
+.inv--v-mayura-pearl .my-inlay { border-radius:5px 100px 5px 100px; }
+.inv--v-mayura-pearl .cover__names { text-align:left; padding-left:6%; }
+.inv--v-mayura-pearl .cover__amp { margin-left:30%; }
+.inv--v-mayura-pearl .aviary__portrait { width:75%; aspect-ratio:1.45; border-radius:100px 5px 100px 5px; margin-right:3%; }
+.inv--v-mayura-pearl .my-entry--partner { opacity:.5; }
+.inv--v-mayura-pearl .person { border-radius:100px 5px 60px 5px; }
+.inv--v-mayura-pearl .person__photo { border-radius:80px 5px 5px 5px; aspect-ratio:4/5; }
+.inv--v-mayura-pearl .event-card { border-radius:50px 5px 50px 5px; }
+.inv--v-mayura-pearl .event-card__date { border-radius:50px 50px 5px 5px; background:#e5e9df; }
+.inv--v-mayura-pearl .story__item { border-left:4px solid var(--inv-primary); border-radius:0 30px 0 30px; }
+.inv--v-mayura-pearl .gallery__item { border-radius:5px; }
+.inv--v-mayura-pearl .gallery__item:first-child { border-radius:80px 5px 80px 5px; }
+.inv--v-mayura-pearl .rsvp__form,.inv--v-mayura-pearl .wishes__form { border-radius:5px 50px 5px 50px; }
+
+@container(min-width:720px) {
+  .inv--mayura .sec { padding-block:120px; }
+  .inv--mayura .sec--cover { padding-block:85px 95px; }
+  .inv--mayura .cover__body { display:grid; grid-template-columns:1.1fr 1fr; column-gap:65px; align-items:center; max-width:820px; text-align:left; }
+  .inv--mayura .cover__eyebrow,.inv--mayura .cover__names,.inv--mayura .cover__date,.inv--mayura .cover__guest,.inv--mayura .btn-inv--open { grid-column:1; }
+  .inv--mayura .cover__names { font-size:clamp(2.8rem,4.8cqi,4.2rem); }
+  .inv--mayura .aviary__portrait { grid-column:2; grid-row:1 / span 5; width:100%; max-width:none; aspect-ratio:3/4; margin:0; border-radius:180px 180px 20px 20px; }
+  .inv--mayura .btn-inv--open { justify-self:start; margin-inline:0; }
+  .inv--mayura .my-scene--garden .my-entry--bird { left:-8%; width:20cqi; }
+  .inv--mayura .my-entry--partner { right:-9%; width:25cqi; }
+  .inv--mayura .my-entry--bird { left:-8cqi; width:20cqi; }
+  .inv--mayura .sec:nth-of-type(2n) .my-scene:not(.my-scene--garden) .my-entry--bird { right:-8cqi; }
+  .inv--mayura .my-canopy { width:45cqi; }
+  .inv--mayura .my-scene--garden .my-canopy { width:50cqi; }
+  .inv--mayura .couple__grid { grid-template-columns:1fr 40px 1fr; align-items:center; }
+  .inv--mayura .person:nth-child(3) { margin-top:65px; }
+  .inv--mayura .events__list { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; }
+  .inv--mayura .gallery__grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:26px; }
+  .inv--mayura .gallery__item:first-child { grid-column:span 2; grid-row:span 2; aspect-ratio:auto; }
+  .inv--mayura .gallery__grid--1 .gallery__item:first-child { grid-column:1/-1; aspect-ratio:5/3; }
+  .inv--mayura .info__cards { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .inv--mayura .story__item:nth-child(2n) { margin-left:35px; }
+  .inv--mayura .sec--closing .my-entry--bird { width:20cqi; left:3%; }
+  .inv--mayura .sec--closing .my-entry--partner { width:20cqi; right:3%; }
+  .inv--v-mayura-garnet .aviary__portrait { border-radius:50%; }
+  .inv--v-mayura-pearl .aviary__portrait { border-radius:180px 5px 180px 5px; }
+}
+@container(max-width:360px) {
+  .inv--mayura .sec { padding-inline:26px; }
+  .inv--mayura .sec--cover { padding:65px 32px 96px; }
+  .inv--mayura .cover__names { font-size:9cqi; }
+  .inv--mayura .aviary__portrait { margin-block:22px; }
+  .inv--mayura .info__card { padding:24px 16px; gap:10px; }
+  .inv--mayura .rsvp__form,.inv--mayura .wishes__form { padding:32px 18px; }
+  .inv--v-mayura-garnet .cover__names { font-size:10cqi; }
+}
+@media(prefers-reduced-motion:no-preference) {
+  .inv--mayura.my-motion .my-entry { translate:0 var(--my-drift,0px); transition:translate 1250ms cubic-bezier(.2,.7,.25,1),opacity 1100ms ease; }
+  .inv--mayura.my-motion .sec:not(.my-in-view) .my-entry--bird { translate:-70px 25px; opacity:0; }
+  .inv--mayura.my-motion .sec:nth-of-type(2n):not(.my-in-view) .my-entry--bird,.inv--mayura.my-motion .sec:not(.my-in-view) .my-entry--partner { translate:70px 25px; opacity:0; }
+  .inv--mayura.my-motion .sec:not(.my-in-view) .my-canopy--tl { translate:-25px -30px; opacity:0; }
+  .inv--mayura.my-motion .sec:not(.my-in-view) .my-canopy--br { translate:25px 30px; opacity:0; }
+  .inv--mayura.my-motion .sec:not(.my-in-view) .my-fan { translate:0 20px; opacity:0; }
+  .inv--mayura.my-motion .my-bird-idle { animation:my-bird-breathe 10s ease-in-out infinite alternate; animation-play-state:paused; }
+  .inv--mayura.my-motion .my-canopy-idle { animation:my-canopy-sway 14s ease-in-out infinite alternate; animation-play-state:paused; }
+  .inv--mayura.my-motion .my-in-view .my-quill:nth-child(3n) { animation:my-quill-flutter 8s ease-in-out infinite alternate; animation-delay:calc(var(--quill) * -700ms); animation-play-state:paused; }
+  .inv--mayura.my-motion .my-fireflies i { animation:my-firefly 12s ease-in-out infinite; animation-play-state:paused; }
+  .inv--mayura.my-motion .my-fireflies i:nth-child(2) { animation-delay:-4s; }
+  .inv--mayura.my-motion .my-fireflies i:nth-child(3) { animation-delay:-8s; }
+  .inv--mayura.my-motion .my-entry--partner .my-bird-idle { animation-delay:-5s; }
+  .inv--mayura.my-motion .my-in-view :is(.my-bird-idle,.my-canopy-idle,.my-quill,.my-fireflies i) { animation-play-state:running; }
+  .inv--mayura.my-motion.is-motion-paused :is(.my-bird-idle,.my-canopy-idle,.my-quill,.my-fireflies i) { animation-play-state:paused; }
+  .inv--mayura .my-reveal { transition:opacity 1000ms ease var(--my-delay,0ms),translate 1200ms cubic-bezier(.2,.7,.25,1) var(--my-delay,0ms); }
+  .inv--mayura .my-pending { opacity:0; translate:0 26px; }
+}
+@keyframes my-bird-breathe { from { rotate:-1deg; translate:0 0; } to { rotate:1deg; translate:0 -7px; } }
+@keyframes my-canopy-sway { from { rotate:-1deg; } to { rotate:1.3deg; } }
+@keyframes my-quill-flutter { from { rotate:-1.5deg; } to { rotate:1.5deg; } }
+@keyframes my-firefly { 0%,100% { opacity:0; translate:0 12px; } 45% { opacity:.8; translate:8px -18px; } 70% { opacity:.35; translate:-8px -26px; } }
+@keyframes my-gate-fade { 0%,70% { opacity:1; } 100% { opacity:0; } }
+@media(prefers-reduced-motion:reduce) { .inv--mayura .my-pending { opacity:1; translate:none; } .invite-gate--mayura,.invite-gate--mayura * { transition:none!important; animation:none!important; } }

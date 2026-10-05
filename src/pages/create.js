@@ -258,22 +258,27 @@ function basicsForm(tpl, variantId) {
 
 // --- helpers for picker (mirrors landing helpers, locally scoped) ---
 function familyFrameForPicker(id) {
-  return ({ amora: 'arch', elysian: 'editorial', serena: 'phone', lumiere: 'phone', nusantara: 'arch', meadow: 'polaroid' })[id] || 'editorial';
+  return ({ amora: 'arch', elysian: 'editorial', serena: 'editorial', lumiere: 'editorial', nusantara: 'editorial', meadow: 'editorial' })[id] || 'editorial';
 }
 function familyBadgeBg(id) {
-  return ({ amora: '#faf6f1', elysian: '#f7f4ee', serena: '#fbfaf8', lumiere: '#111013', nusantara: '#f6efe4', meadow: '#f7f3ea' })[id] || '#faf6f1';
+  return ({ blocka: '#c9e9ff',
+    mayura: '#073e39', pusaka: '#302019', amora: '#faf6f1', elysian: '#f1eadc', serena: '#f8efdb', lumiere: '#09182d', nusantara: '#073b3b', meadow: '#fff1d8' })[id] || '#faf6f1';
 }
 function familyBadgeFg(id) {
-  return ({ amora: '#8b6f5a', elysian: '#2f2a25', serena: '#55504a', lumiere: '#c8b48c', nusantara: '#7c3f2c', meadow: '#6b7a54' })[id] || '#8b6f5a';
+  return ({ blocka: '#225bb8',
+    mayura: '#edc88c', pusaka: '#e9bf75', amora: '#8b6f5a', elysian: '#743234', serena: '#806024', lumiere: '#ffbd9c', nusantara: '#f4c66b', meadow: '#8b5b29' })[id] || '#8b6f5a';
 }
 function familyShortDescForPicker(id) {
   return ({
+    blocka: 'Dunia blok 3D, pulau melayang, dan pesta yang penuh warna.',
+    mayura: 'Taman merak, sulur berlapis, dan bingkai Art Nouveau.',
+    pusaka: 'Panggung wayang, batik, dan bingkai ukiran di setiap bagian.',
     amora: 'Hangat, floral, dan terasa dekat.',
-    elysian: 'Editorial, mewah, dan penuh spasi.',
-    serena: 'Minimal, tenang, fokus pada nama.',
-    lumiere: 'Sinematik, gelap megah, penuh foto.',
-    nusantara: 'Tradisional modern dengan aksen batik.',
-    meadow: 'Rustic, polaroid, dan botanical.',
+    elysian: 'Kertas berlapis, emboss, dan detail couture.',
+    serena: 'Istana, bingkai kerajaan, dan merpati yang berterbangan.',
+    lumiere: 'Foto besar, sorot cahaya, dan detail sinematik.',
+    nusantara: 'Warna berani, anyaman, dan detail keemasan.',
+    meadow: 'Buku cerita pedesaan, burung, lentera, dan bingkai taman.',
   })[id] || '';
 }
 function pickVariantDot(tplId, variantId) {

@@ -6,6 +6,15 @@
 import { resolveDesign } from '../data/variants.js';
 import * as S from './sections.js';
 import { atelierDecoration } from '../data/atelier-art.js';
+import { amoraDecoration } from '../data/amora-art.js';
+import { nusantaraDecoration } from '../data/nusantara-art.js';
+import { lumiereDecoration } from '../data/lumiere-art.js';
+import { elysianDecoration } from '../data/elysian-art.js';
+import { pusakaDecoration } from '../data/pusaka-art.js';
+import { mayuraDecoration } from '../data/mayura-art.js';
+import { blockaDecoration } from '../data/blocka-art.js';
+import { meadowDecoration } from '../data/meadow-art.js';
+import { serenaDecoration } from '../data/serena-art.js';
 
 const SECTION_RENDERERS = {
   cover: S.renderCover,
@@ -60,7 +69,18 @@ export function renderInvitation(invitation) {
 
   const body = order.map((id) => {
     const html = SECTION_RENDERERS[id](ctx);
-    return html ? html.replace(/(<section\b[^>]*>)/, `$1${atelierDecoration(design, id)}`) : (ctx.draftMode ? emptySection(id) : '');
+    const decoration = design.templateId === 'amora' ? amoraDecoration(id)
+      : design.templateId === 'nusantara' ? nusantaraDecoration(id)
+      : design.templateId === 'lumiere' ? lumiereDecoration(id)
+      : design.templateId === 'elysian' ? elysianDecoration(id)
+      : design.templateId === 'pusaka' ? pusakaDecoration(id)
+      : design.templateId === 'serena' ? serenaDecoration(id)
+      : design.templateId === 'meadow' ? meadowDecoration(id)
+      : design.templateId === 'blocka' ? blockaDecoration(id)
+      : design.templateId === 'mayura' ? mayuraDecoration(id) : atelierDecoration(design, id);
+    const sectionHtml = html || (ctx.draftMode ? emptySection(id) : '');
+    const hasFrame = html || ['pusaka', 'mayura', 'blocka', 'meadow', 'serena'].includes(design.templateId);
+    return sectionHtml ? sectionHtml.replace(/(<section\b[^>]*>)/, `$1${hasFrame ? decoration : ''}`) : '';
   }).join('\n');
 
   // Floating controls & modals

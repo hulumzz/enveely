@@ -9,6 +9,7 @@ import { loadDraft } from '../services/draft-store.js';
 import { renderInvitation } from '../engine/renderer.js';
 import { attachInvitationInteractions } from '../engine/interactions.js';
 import { initInvitationMusic, stopInvitationMusic } from '../engine/music.js';
+import { initInvitationMotion } from '../engine/motion.js';
 import { esc, invT } from '../core/format.js';
 import { stopAllVideos } from '../engine/media.js';
 
@@ -32,18 +33,34 @@ export async function renderPublicInvitation({ id }, query = new URLSearchParams
   applyInviteMeta(invitation);
 
   const guestName = query.get('to') || '';
+  const isAmora = invitation.design?.templateId === 'amora';
+  const isNusantara = invitation.design?.templateId === 'nusantara';
+  const isLumiere = invitation.design?.templateId === 'lumiere';
+  const isElysian = invitation.design?.templateId === 'elysian';
+  const isPusaka = invitation.design?.templateId === 'pusaka';
+  const isMayura = invitation.design?.templateId === 'mayura';
+  const isBlocka = invitation.design?.templateId === 'blocka';
+  const isMeadow = invitation.design?.templateId === 'meadow';
+  const isSerena = invitation.design?.templateId === 'serena';
+  const hasDesignGate = isSerena || isMeadow || isBlocka || isAmora || isNusantara || isLumiere || isElysian || isPusaka || isMayura;
+  const gateCover = hasDesignGate ? renderInvitation({
+    ...invitation, _draft: false, _lite: true,
+    sections: [{ id: 'cover', enabled: true }],
+    content: { ...invitation.content, guestName: guestName || invitation.content?.guestName },
+  }).replace('data-open-cover', 'data-open-invite') : '';
 
   renderPage(
     `
     <div class="public-invite">
-      <div class="invite-gate" data-gate>
+      <div class="invite-gate ${isSerena ? 'invite-gate--serena' : isAmora ? 'invite-gate--amora' : isNusantara ? 'invite-gate--nusantara' : isLumiere ? 'invite-gate--lumiere' : isElysian ? 'invite-gate--elysian' : isPusaka ? 'invite-gate--pusaka' : isMayura ? 'invite-gate--mayura' : isBlocka ? 'invite-gate--blocka' : isMeadow ? 'invite-gate--meadow' : ''}" data-gate>
+        ${hasDesignGate ? gateCover : `
         <p class="invite-gate__to">${guestName ? `Kepada ${esc(guestName)}` : ''}</p>
         <p class="invite-gate__eyebrow">THE WEDDING OF</p>
         <h1 class="invite-gate__names">${esc(guestNames(invitation))}</h1>
         <p class="invite-gate__date">${esc(shortDate(invitation.content?.weddingDate))}</p>
-        <button type="button" class="btn-inv invite-gate__btn" data-open-invite>${esc(invT(invitation.locale || 'id', 'open'))}</button>
+        <button type="button" class="btn-inv invite-gate__btn" data-open-invite>${esc(invT(invitation.locale || 'id', 'open'))}</button>`}
       </div>
-      <div class="invite-body" data-invite-body aria-hidden="true"></div>
+      <div class="invite-body ${isSerena ? 'invite-body--serena' : isPusaka ? 'invite-body--pusaka' : isMayura ? 'invite-body--mayura' : isBlocka ? 'invite-body--blocka' : isMeadow ? 'invite-body--meadow' : ''}" data-invite-body aria-hidden="true" inert></div>
     </div>
     `,
     (rootEl) => {
@@ -61,13 +78,22 @@ export async function renderPublicInvitation({ id }, query = new URLSearchParams
       hydrateWishes(body, id);
 
       const gate = rootEl.querySelector('[data-gate]');
+      const clearGateMotion = hasDesignGate ? initInvitationMotion(gate) : null;
       const openBtn = rootEl.querySelector('[data-open-invite]');
-      openBtn?.addEventListener('click', () => {
+      openBtn?.addEventListener('click', (event) => {
+        event.preventDefault();
+        if (gate.classList.contains('is-leaving')) return;
         gate.classList.add('is-leaving');
         setTimeout(() => {
+          clearGateMotion?.();
           gate.remove();
           body.removeAttribute('aria-hidden');
-        }, 650);
+          body.inert = false;
+          if (hasDesignGate) {
+            body.querySelector('.inv')?.classList.add('is-opened');
+            body.querySelector('.sec--cover')?.nextElementSibling?.scrollIntoView({ behavior: 'instant', block: 'start' });
+          }
+        }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : isSerena ? 1400 : isMeadow ? 1250 : isBlocka ? 1100 : isMayura ? 1200 : isPusaka ? 1150 : isNusantara ? 900 : isLumiere ? 950 : isElysian ? 1000 : 650);
         document.dispatchEvent(new CustomEvent('env:gate-opened'));
       });
 

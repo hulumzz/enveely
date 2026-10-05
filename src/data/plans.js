@@ -5,6 +5,17 @@ export const EXTENSION_FEE = 15_000;
 export const UNIQUE_CODES = Object.freeze([111, 222, 333, 123, 321]);
 
 const catalog = {
+  'blocka-sky-party': { price: 150_000, tier: 'Premium', featured: true },
+  'blocka-sunshine': { price: 170_000, tier: 'Premium', featured: false },
+  'blocka-cloud-dancer': { price: 185_000, tier: 'Premium', featured: false },
+  // Mayura shares the established Premium package levels.
+  'mayura-jade': { price: 150_000, tier: 'Premium', featured: true },
+  'mayura-garnet': { price: 170_000, tier: 'Premium', featured: false },
+  'mayura-pearl': { price: 185_000, tier: 'Premium', featured: false },
+  // Pusaka uses the existing Heritage package levels.
+  'pusaka-sogan': { price: 135_000, tier: 'Heritage', featured: false },
+  'pusaka-kencana': { price: 155_000, tier: 'Heritage', featured: true },
+  'pusaka-nila': { price: 175_000, tier: 'Heritage', featured: false },
   'serena-paper': { price: 0, tier: 'Gratis', durationDays: 7, featured: false },
   'serena-modern-white': { price: 55_000, tier: 'Essential', featured: false },
   'serena-ink': { price: 65_000, tier: 'Essential', featured: false },
@@ -33,6 +44,15 @@ export const templatePlans = Object.freeze(catalog);
 // Photo allowance scales with the chosen design and package price. Keeping it
 // here makes the editor, checkout, and future entitlement checks share one rule.
 const GALLERY_LIMITS = Object.freeze({
+  'blocka-sky-party': 10,
+  'blocka-sunshine': 12,
+  'blocka-cloud-dancer': 14,
+  'mayura-jade': 10,
+  'mayura-garnet': 12,
+  'mayura-pearl': 14,
+  'pusaka-sogan': 16,
+  'pusaka-kencana': 20,
+  'pusaka-nila': 18,
   'serena-paper': 6,
   'serena-modern-white': 8,
   'serena-ink': 8,
