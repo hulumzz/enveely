@@ -5,14 +5,15 @@ import { listPaymentOrders, getOrderForInvitation, paymentStatusLabel } from '..
 import { templateFamilies } from '../data/templates.js';
 import { getVariantsFor } from '../data/variants.js';
 import { getFamilyPriceRange, formatRupiah } from '../data/plans.js';
-import { logout } from '../services/auth.js';
+import { logout, updateDisplayName, sendVerificationEmail, sendPasswordReset } from '../services/auth.js';
 import { openModal, toast } from '../ui/overlays.js';
 import { navigate } from '../router.js';
-import { listCloudDrafts } from '../services/firestore-data.js';
-import { refreshPaymentOrder } from '../services/payment-api.js';
+import { listCloudDrafts, deleteCloudInvitation, listGuestResponses, moderateWish } from '../services/firestore-data.js';
+import { refreshPaymentOrder, listCloudPaymentOrders } from '../services/payment-api.js';
 
-let cloudHydrated = false;
-let paymentsHydrated = false;
+let cloudHydrated = '';
+let paymentsHydrated = '';
+let invitationFilter = 'all';
 
 const navItems = [
   ['overview', 'Dashboard', '⌂'],
@@ -20,11 +21,12 @@ const navItems = [
   ['templates', 'Template Undangan', '✦'],
   ['payments', 'Pembayaran', '▣'],
   ['profile', 'Profil', '○'],
+  ['guests', 'Tamu & Ucapan', '♡'],
 ];
 
 export function renderDashboard(section = 'overview') {
   const active = navItems.some(([id]) => id === section) ? section : 'overview';
-  return requireAuthenticated((user) => renderDashboardWorkspace(user, active), `/dashboard${active === 'overview' ? '' : `/${active}`}`);
+  return requireAuthenticated((user) => renderDashboardWorkspace(user, active), `/dashboard${active === 'overview' ? '' : `/${active}`}${location.search}`);
 }
 
 function renderDashboardWorkspace(user, section) {
@@ -38,7 +40,7 @@ function renderDashboardWorkspace(user, section) {
           <nav class="account-nav" aria-label="Navigasi dashboard">
             ${navItems.map(([id, label, mark]) => `<a href="${id === 'overview' ? '/dashboard' : `/dashboard/${id}`}" data-link class="${section === id ? 'is-active' : ''}"><span>${mark}</span>${label}</a>`).join('')}
           </nav>
-          <div class="account-sidebar__help"><span>✦</span><strong>Butuh bantuan?</strong><p>Draft kalian aman tersimpan. Tim kami siap membantu sampai undangan tayang.</p><a href="mailto:hello@enveely.id">Hubungi kami</a></div>
+          <div class="account-sidebar__help"><span>✦</span><strong>Butuh bantuan?</strong><p>Draft kalian aman tersimpan. Tim kami siap membantu sampai undangan tayang.</p><a href="mailto:enveely@nalaro.digital">Hubungi kami</a></div>
         </aside>
 
         <main class="account-content">
@@ -51,9 +53,10 @@ function renderDashboardWorkspace(user, section) {
       </div>
     </section>
   `, (root) => {
-    wireDashboard(root);
-    if (!cloudHydrated) {
-      cloudHydrated = true;
+    wireDashboard(root,user,section);
+    if (section === 'guests') hydrateGuestResponses(root,drafts);
+    if (cloudHydrated !== user.uid) {
+      cloudHydrated = user.uid;
       listCloudDrafts().then((cloudDrafts) => {
         let changed = false;
         cloudDrafts.forEach((cloud) => {
@@ -64,19 +67,20 @@ function renderDashboardWorkspace(user, section) {
             changed = true;
           }
         });
-        if (changed) renderDashboard(section);
-      }).catch(() => null);
+        if (changed && location.pathname === `/dashboard${section==='overview'?'':`/${section}`}`) renderDashboard(section);
+      }).catch(() => {cloudHydrated='';toast('Draft cloud belum dapat dimuat. Periksa koneksi lalu buka kembali dashboard.');});
     }
-    if (!paymentsHydrated && orders.some((order) => order.total > 0 && order.status !== 'active')) {
-      paymentsHydrated = true;
-      Promise.all(orders.map((order) => refreshPaymentOrder(order))).then((fresh) => {
-        if (fresh.some((order, index) => order.status !== orders[index]?.status)) renderDashboard(section);
-      }).catch(() => null);
+    if (paymentsHydrated !== user.uid) {
+      paymentsHydrated = user.uid;
+      listCloudPaymentOrders().then(fresh=>{
+        if(location.pathname===`/dashboard${section==='overview'?'':`/${section}`}` && fresh.some(remote=>!orders.some(local=>local.id===remote.id && local.status===remote.status && local.expiresAt===remote.expiresAt)))renderDashboard(section);
+      }).catch(()=>{paymentsHydrated='';toast('Riwayat pembayaran cloud belum dapat dimuat.');});
     }
   });
 }
 
 function renderSection(section, ctx) {
+  if (section === 'guests') return guestsView(ctx);
   if (section === 'invitations') return invitationsView(ctx);
   if (section === 'templates') return templatesView();
   if (section === 'payments') return paymentsView(ctx);
@@ -85,7 +89,7 @@ function renderSection(section, ctx) {
 }
 
 function overviewView({ drafts, orders }) {
-  const active = orders.filter((order) => order.status === 'active' && (!order.expiresAt || order.expiresAt > Date.now())).length;
+  const active = drafts.filter(draft=>isPublished(draft,orders)).length;
   const pending = orders.filter((order) => ['pending_review', 'ai_match', 'uploading'].includes(order.status)).length;
   const latest = drafts.slice(0, 3);
   return `
@@ -109,11 +113,12 @@ function overviewView({ drafts, orders }) {
 }
 
 function invitationsView({ drafts }) {
+  const filtered=drafts.filter(draft=>invitationFilter==='all' || (invitationFilter==='published' ? isPublished(draft) : !isPublished(draft)));
   return `
     <section class="dash-view">
       <header class="dash-page-head"><div><p class="eyebrow">Koleksi Pribadi</p><h2>Undangan Saya</h2><p>Setiap perubahan tersimpan otomatis. Lanjutkan dari tahap terakhir kapan saja.</p></div><a href="/create" data-link class="btn btn--primary">+ Undangan Baru</a></header>
-      <div class="dash-filterbar"><span>${drafts.length} undangan</span><div><button class="is-active">Semua</button><button>Draft</button><button>Tayang</button></div></div>
-      ${drafts.length ? `<div class="dash-invites dash-invites--all">${drafts.map(invitationCard).join('')}</div>` : emptyInvitations()}
+      <div class="dash-filterbar"><span>${filtered.length} undangan</span><div>${[['all','Semua'],['draft','Draft'],['published','Tayang']].map(([id,label])=>`<button type="button" data-invitation-filter="${id}" class="${invitationFilter===id?'is-active':''}" aria-pressed="${invitationFilter===id}">${label}</button>`).join('')}</div></div>
+      ${filtered.length ? `<div class="dash-invites dash-invites--all">${filtered.map(invitationCard).join('')}</div>` : invitationFilter==='all' ? emptyInvitations() : '<p>Belum ada undangan dalam pilihan ini.</p>'}
     </section>`;
 }
 
@@ -134,7 +139,7 @@ function templatesView() {
 function paymentsView({ orders, drafts }) {
   return `
     <section class="dash-view">
-      <header class="dash-page-head"><div><p class="eyebrow">Riwayat Transaksi</p><h2>Pembayaran</h2><p>Pantau checkout, hasil pemeriksaan bukti, dan masa aktif undangan.</p></div></header>
+      <header class="dash-page-head"><div><p class="eyebrow">Riwayat Transaksi</p><h2>Pembayaran</h2><p>Pantau checkout, hasil pemeriksaan bukti, dan masa aktif undangan.</p></div><button type="button" class="btn btn--ghost btn--sm" data-refresh-payments>Segarkan</button></header>
       ${orders.length ? `<div class="payment-list">${orders.map((order) => paymentRow(order, drafts)).join('')}</div>` : `
         <div class="dash-empty dash-empty--payment"><span>▣</span><h3>Belum ada transaksi</h3><p>Pesanan akan muncul otomatis setelah kalian mengaktifkan desain dari editor.</p><a href="/dashboard/invitations" data-link class="btn btn--primary">Lihat Undangan</a></div>`}
       <article class="payment-help"><div><span>i</span><p><strong>Kenapa pembayaran direview?</strong><br/>AI membantu membaca bukti, lalu hasilnya diperiksa agar nominal dan pesanan tidak tertukar.</p></div><p>Kami tidak pernah meminta OTP, PIN, atau password.</p></article>
@@ -146,8 +151,8 @@ function profileView(user) {
     <section class="dash-view">
       <header class="dash-page-head"><div><p class="eyebrow">Akun & Keamanan</p><h2>Profil</h2><p>Identitas akun digunakan untuk menjaga ownership undangan dan riwayat pembayaran.</p></div></header>
       <div class="profile-grid">
-        <article class="profile-card profile-card--identity"><div class="profile-avatar">${escapeHtml(firstName(user.displayName || user.email).charAt(0).toUpperCase())}</div><h3>${escapeHtml(user.displayName || 'Pengguna Enveely')}</h3><p>${escapeHtml(user.email)}</p><span>Akun terverifikasi Firebase</span></article>
-        <article class="profile-card"><p class="eyebrow">Informasi Akun</p><label><span>Nama tampilan</span><input value="${escapeHtml(user.displayName || '')}" disabled/></label><label><span>Email</span><input value="${escapeHtml(user.email || '')}" disabled/></label><p class="profile-hint">Perubahan nama dan email akan tersedia setelah profil cloud diaktifkan.</p></article>
+        <article class="profile-card profile-card--identity"><div class="profile-avatar">${escapeHtml(firstName(user.displayName || user.email).charAt(0).toUpperCase())}</div><h3>${escapeHtml(user.displayName || 'Pengguna Enveely')}</h3><p>${escapeHtml(user.email)}</p><span>${user.emailVerified ? 'Email terverifikasi' : 'Email belum terverifikasi'}</span>${user.emailVerified ? '' : '<button type="button" class="btn btn--ghost btn--sm" data-verify-email>Kirim verifikasi email</button>'}</article>
+        <form class="profile-card" data-profile-form><p class="eyebrow">Informasi Akun</p><label><span>Nama tampilan</span><input name="displayName" value="${escapeHtml(user.displayName || '')}" required maxlength="80"/></label><label><span>Email login</span><input value="${escapeHtml(user.email || '')}" readonly/></label><button type="submit" class="btn btn--primary">Simpan nama</button><button type="button" class="btn btn--ghost" data-reset-password>Kirim tautan reset password</button></form>
         <article class="profile-card profile-card--security"><p class="eyebrow">Keamanan</p><h3>Sesi dan akses</h3><p class="profile-copy">Keluar jika menggunakan perangkat bersama. Draft yang sudah tersinkron tetap terhubung ke akun kalian.</p><div class="profile-security-row"><span class="profile-security-row__state">Sesi aktif</span><button type="button" class="profile-logout" data-logout><span>↗</span> Keluar dari akun</button></div></article>
       </div>
     </section>`;
@@ -156,7 +161,7 @@ function profileView(user) {
 function invitationCard(draft) {
   const names = [draft.content?.groom?.nickname || draft.content?.groom?.name, draft.content?.bride?.nickname || draft.content?.bride?.name].filter(Boolean).join(' & ') || 'Undangan tanpa nama';
   const order = getOrderForInvitation(draft.id);
-  const status = order?.status === 'active' ? 'Tayang aktif' : order ? paymentStatusLabel(order.status) : 'Draft';
+  const status = isPublished(draft) ? 'Sedang tayang' : draft.status==='published' ? 'Masa tayang berakhir' : order ? paymentStatusLabel(order.status) : 'Draft';
   return `<article class="invite-card"><div class="invite-card__cover invite-card__cover--${draft.design?.templateId || 'amora'}"><span>${escapeHtml(names)}</span><i>${escapeHtml((draft.design?.templateId || 'Amora').toUpperCase())}</i></div><div class="invite-card__body"><div class="invite-card__status"><span class="status-dot status-dot--${order?.status || 'draft'}"></span>${escapeHtml(status)}</div><h3>${escapeHtml(names)}</h3><p>${formatUpdated(draft.updatedAt)}</p><div class="invite-card__actions"><a href="/builder/${draft.id}" data-link class="btn btn--primary btn--sm">Lanjut Edit</a>${order?.status !== 'active' ? `<a href="/checkout/${draft.id}" data-link class="btn btn--ghost btn--sm">Aktifkan</a>` : `<a href="/invite/${draft.id}" data-link class="btn btn--ghost btn--sm">Lihat</a>`}<button type="button" data-delete="${draft.id}" aria-label="Hapus undangan">⋯</button></div></div></article>`;
 }
 
@@ -174,11 +179,20 @@ function emptyInvitations() {
   return `<div class="dash-empty"><span>◇</span><h3>Belum ada undangan</h3><p>Pilih desain yang terasa paling kalian, lalu mulai dengan nama dan tanggal.</p><a href="/create" data-link class="btn btn--primary">Buat Undangan Pertama</a></div>`;
 }
 
-function wireDashboard(root) {
+function wireDashboard(root,user,section) {
+  root.querySelector('[data-refresh-payments]')?.addEventListener('click',async event=>{event.currentTarget.disabled=true;try{await listCloudPaymentOrders();renderDashboard('payments');}catch{event.currentTarget.disabled=false;toast('Status belum dapat disegarkan. Periksa koneksi.',{type:'error'});}});
+  root.querySelectorAll('[data-invitation-filter]').forEach(button=>button.addEventListener('click',()=>{invitationFilter=button.dataset.invitationFilter;renderDashboard('invitations');}));
+  root.querySelector('[data-profile-form]')?.addEventListener('submit',async event=>{
+    event.preventDefault();const button=event.currentTarget.querySelector('[type="submit"]');button.disabled=true;
+    try {await updateDisplayName(new FormData(event.currentTarget).get('displayName'));toast('Nama tampilan berhasil disimpan.',{type:'success'});renderDashboard('profile');}
+    catch(error){toast(error.message || 'Nama belum dapat disimpan.',{type:'error'});button.disabled=false;}
+  });
+  root.querySelector('[data-verify-email]')?.addEventListener('click',async event=>{event.currentTarget.disabled=true;try{await sendVerificationEmail();toast('Tautan verifikasi dikirim ke email akun.');}catch{event.currentTarget.disabled=false;toast('Email verifikasi belum dapat dikirim.',{type:'error'});}});
+  root.querySelector('[data-reset-password]')?.addEventListener('click',async()=>{const result=await sendPasswordReset(user.email);toast(result.ok ? 'Tautan reset password dikirim ke email akun.' : result.message,{type:result.ok?'success':'error'});});
   root.querySelectorAll('[data-delete]').forEach((button) => button.addEventListener('click', () => {
-    openModal({ title: 'Hapus draft ini?', body: '<p>Draft akan dihapus permanen dari perangkat ini. Riwayat pembayaran tidak ikut dihapus.</p>', actions: [
+    openModal({ title: 'Hapus undangan ini?', body: '<p>Undangan akan dihapus dari akun dan perangkat ini. Tautan publik berhenti tersedia. Riwayat pembayaran tetap disimpan.</p>', actions: [
       { label: 'Batal' },
-      { label: 'Hapus Draft', kind: 'primary', onClick: () => { deleteDraft(button.dataset.delete); toast('Draft berhasil dihapus.', { type: 'success' }); renderDashboard('invitations'); } },
+      { label: 'Hapus Undangan', kind: 'primary', onClick: async () => { try{await deleteCloudInvitation(button.dataset.delete);deleteDraft(button.dataset.delete);toast('Undangan berhasil dihapus.',{type:'success'});renderDashboard('invitations');}catch{toast('Undangan belum dapat dihapus. Coba kembali saat terhubung.',{type:'error'});} } },
     ] });
   }));
   root.querySelector('[data-logout]')?.addEventListener('click', () => {
@@ -187,6 +201,28 @@ function wireDashboard(root) {
       { label: 'Keluar', kind: 'primary', onClick: async () => { await logout(); navigate('/'); } },
     ] });
   });
+}
+
+function isPublished(draft,orders=listPaymentOrders()) {
+  if(draft.status!=='published')return false;
+  if(draft.design?.variantId==='serena-paper') {const activated=draft.freeActivatedAt?.toMillis?.() || draft.freeActivatedAt?.seconds*1000 || draft.publishedAt?.toMillis?.();return !activated || activated+7*86400000>Date.now();}
+  const order=orders.find(o=>o.invitationId===draft.id && o.variantId===draft.design?.variantId && o.status==='active');
+  return !!order && order.expiresAt>Date.now();
+}
+
+function guestsView({drafts}) {
+  return `<section class="dash-view"><header class="dash-page-head"><div><p class="eyebrow">Tamu & Ucapan</p><h2>Kabar dari orang tersayang</h2><p>Lihat konfirmasi kehadiran dan setujui ucapan untuk ditampilkan di undangan.</p></div></header><label>Undangan <select data-guest-invitation>${drafts.map(d=>`<option value="${escapeHtml(d.id)}">${escapeHtml([d.content?.groom?.name,d.content?.bride?.name].filter(Boolean).join(' & ') || d.id)}</option>`).join('')}</select></label><div data-guest-responses aria-live="polite">${drafts.length ? 'Memuat tanggapan…' : 'Belum ada undangan.'}</div></section>`;
+}
+
+function hydrateGuestResponses(root,drafts) {
+  const picker=root.querySelector('[data-guest-invitation]'),host=root.querySelector('[data-guest-responses]');
+  if(!picker || !drafts.length)return;
+  const paint=async()=>{const id=picker.value;host.textContent='Memuat tanggapan…';try{
+    const {rsvps,wishes}=await listGuestResponses(id);if(!host.isConnected || picker.value!==id)return;
+    host.innerHTML=`<h3>Konfirmasi kehadiran (${rsvps.length})</h3><p>${rsvps.filter(r=>r.attendance==='attending').reduce((total,r)=>total+r.guestCount,0)} tamu menyatakan hadir.</p>${rsvps.map(r=>`<article class="profile-card"><strong>${escapeHtml(r.name)}</strong><p>${r.attendance==='attending'?'Hadir':'Tidak hadir'} · ${r.guestCount} tamu</p><p>${escapeHtml(r.message)}</p></article>`).join('') || '<p>Belum ada konfirmasi.</p>'}<h3>Ucapan (${wishes.length})</h3>${wishes.map(w=>`<article class="profile-card"><strong>${escapeHtml(w.name)}</strong><p>${escapeHtml(w.message)}</p><button type="button" class="btn btn--ghost btn--sm" data-moderate-wish="${escapeHtml(w.id)}" data-approved="${w.approved===true}">${w.approved ? 'Sembunyikan' : 'Setujui & tampilkan'}</button></article>`).join('') || '<p>Belum ada ucapan.</p>'}`;
+    host.querySelectorAll('[data-moderate-wish]').forEach(button=>button.addEventListener('click',async()=>{button.disabled=true;try{await moderateWish(id,button.dataset.moderateWish,button.dataset.approved!=='true');await paint();}catch{button.disabled=false;toast('Ucapan belum dapat diperbarui.',{type:'error'});}}));
+  }catch{host.textContent='Tanggapan belum dapat dimuat. Periksa koneksi dan coba pilih undangan kembali.';}};
+  picker.addEventListener('change',paint);paint();
 }
 
 function greeting() {

@@ -1,5 +1,5 @@
 // Enveely — Client-side router using the History API.
-// Works with Cloudflare Pages `_redirects` SPA fallback so deep links
+// Works with Cloudflare Pages' built-in SPA fallback so deep links
 // like /invite/<id> are served index.html and resolved client-side.
 
 import { setRoute } from './state.js';
@@ -24,7 +24,7 @@ function match(pathname) {
     const params = {};
     let ok = true;
     for (let i = 0; i < patSegs.length; i++) {
-      if (patSegs[i].startsWith(':')) params[patSegs[i].slice(1)] = decodeURIComponent(pathSegs[i]);
+      if (patSegs[i].startsWith(':')) {try{params[patSegs[i].slice(1)] = decodeURIComponent(pathSegs[i]);}catch{return null;}}
       else if (patSegs[i] !== pathSegs[i]) { ok = false; break; }
     }
     if (ok) return { handler, params };
@@ -48,7 +48,9 @@ function resolve() {
   const query = new URLSearchParams(window.location.search);
   document.dispatchEvent(new CustomEvent('env:navigate', { detail: { path: window.location.pathname } }));
   if (found) {
-    found.handler(found.params, query);
+    Promise.resolve(found.handler(found.params, query)).catch(()=>{
+      import('./ui/overlays.js').then(m=>m.toast('Halaman belum dapat dimuat. Periksa koneksi lalu coba kembali.',{type:'error'}));
+    });
   } else {
     // Fallback: unknown URL -> landing (404 page can replace this later)
     setRoute('not-found', {});

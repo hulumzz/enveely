@@ -32,6 +32,7 @@ export function setupRoutes() {
   registerRoute('/dashboard/templates', () => renderDashboard('templates'));
   registerRoute('/dashboard/payments', () => renderDashboard('payments'));
   registerRoute('/dashboard/profile', () => renderDashboard('profile'));
+  registerRoute('/dashboard/guests', () => renderDashboard('guests'));
   registerRoute('/login', (_params, query) => renderLogin(_params, query));
   registerRoute('/help', () => renderInfoPage('help'));
   registerRoute('/privacy', () => renderInfoPage('privacy'));

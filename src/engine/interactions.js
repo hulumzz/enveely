@@ -69,8 +69,14 @@ export function wireRsvpForms(root, { demo = false } = {}) {
   root.querySelectorAll('[data-rsvp-form]').forEach((form) => {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (form.dataset.sending) return;
       const data = Object.fromEntries(new FormData(form).entries());
-      if (!demo && form.getAttribute('invitation-id')) {
+      form.dataset.sending = 'true';
+      const button = form.querySelector('[type="submit"]');
+      if (button) button.disabled = true;
+      try {
+      if (!demo) {
+        if (!form.getAttribute('invitation-id')) throw new Error('Undangan belum tersedia.');
         const { submitRsvp } = await import('../services/firestore-data.js');
         await submitRsvp(form.getAttribute('invitation-id'), data);
       }
@@ -80,6 +86,9 @@ export function wireRsvpForms(root, { demo = false } = {}) {
         setTimeout(() => done.classList.add('sr-only'), 4000);
       }
       form.reset();
+      submissionFeedback(form,demo ? 'Pratinjau: konfirmasi tidak dikirim.' : 'Konfirmasi kehadiran berhasil dikirim.');
+      } catch { submissionFeedback(form,'Konfirmasi belum terkirim. Periksa koneksi, lalu coba kembali.'); }
+      finally {delete form.dataset.sending;if(button)button.disabled=false;}
     });
   });
 }
@@ -89,9 +98,19 @@ export function wireWishesForms(root, { demo = false } = {}) {
   root.querySelectorAll('[data-wishes-form]').forEach((form) => {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (form.dataset.sending) return;
       const data = Object.fromEntries(new FormData(form).entries());
+      form.dataset.sending = 'true';
+      const button = form.querySelector('[type="submit"]');
+      if(button)button.disabled=true;
+      try {
+      if (!demo) {
+        if (!form.getAttribute('invitation-id')) throw new Error('Undangan belum tersedia.');
+        const { submitWish } = await import('../services/firestore-data.js');
+        await submitWish(form.getAttribute('invitation-id'), data);
+      }
       const list = root.querySelector('[data-wishes-list]');
-      if (list) {
+      if (demo && list) {
         const li = document.createElement('li');
         const b = document.createElement('b');
         b.textContent = data.name || '—';
@@ -100,13 +119,18 @@ export function wireWishesForms(root, { demo = false } = {}) {
         li.append(b, p);
         list.prepend(li);
       }
-      if (!demo && form.getAttribute('invitation-id')) {
-        const { submitWish } = await import('../services/firestore-data.js');
-        await submitWish(form.getAttribute('invitation-id'), data);
-      }
       form.reset();
+      submissionFeedback(form,demo ? 'Pratinjau: ucapan tidak dikirim.' : 'Ucapan berhasil dikirim dan menunggu persetujuan pemilik undangan.');
+      } catch { submissionFeedback(form,'Ucapan belum terkirim. Periksa koneksi, lalu coba kembali.'); }
+      finally {delete form.dataset.sending;if(button)button.disabled=false;}
     });
   });
+}
+
+function submissionFeedback(form,message) {
+  let feedback = form.querySelector('[data-submit-feedback]');
+  if(!feedback){feedback=document.createElement('p');feedback.dataset.submitFeedback='';feedback.setAttribute('role','status');feedback.setAttribute('aria-live','polite');form.append(feedback);}
+  feedback.textContent=message;
 }
 
 /**

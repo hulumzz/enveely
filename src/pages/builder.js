@@ -4,7 +4,7 @@
 
 import { renderPage } from '../ui/app-shell.js';
 import { loadDraft, saveDraft } from '../services/draft-store.js';
-import { saveInvitation } from '../services/firestore-data.js';
+import { saveInvitation, resolveOwnedDraft } from '../services/firestore-data.js';
 import { renderInvitation } from '../engine/renderer.js';
 import { startCountdowns, wireCopyButtons } from '../engine/interactions.js';
 import { uploadImage } from '../services/image-service.js';
@@ -18,17 +18,21 @@ import { requireAuthenticated } from '../services/access.js';
 import { getOrderForInvitation } from '../services/payment-store.js';
 import { getGalleryLimit } from '../data/plans.js';
 import { suggestEditorCopy } from '../services/editor-ai.js';
+import { refreshPaymentOrder } from '../services/payment-api.js';
+import { ensurePaymentOrder } from '../services/payment-store.js';
 
 export function renderBuilder(invitationId) {
   return requireAuthenticated(() => renderBuilderWorkspace(invitationId), `/builder/${invitationId}`);
 }
 
-function renderBuilderWorkspace(invitationId) {
-  const draft = loadDraft(invitationId);
+async function renderBuilderWorkspace(invitationId) {
+  let draft;
+  try { draft = await resolveOwnedDraft(invitationId); } catch { toast('Undangan belum dapat dimuat.',{type:'error'}); return; }
   if (!draft) {
     navigate('/templates', { replace: true });
     return;
   }
+  if (!draft.sections.some(s=>s.id==='music'))draft.sections.push({id:'music',enabled:false});
 
   renderPage(
     `
@@ -80,9 +84,11 @@ function renderBuilderWorkspace(invitationId) {
           saveStatus.textContent = ok ? `Tersimpan ${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}` : 'Gagal menyimpan';
         }, 500);
         cloudTimer = setTimeout(async () => {
-          try { await saveInvitation(state.draft); } catch { /* local draft remains authoritative while offline */ }
+          try { const result = await saveInvitation(state.draft); saveStatus.textContent = result.cloud ? 'Tersimpan di akun' : 'Tersimpan di perangkat'; }
+          catch { saveStatus.textContent = 'Tersimpan di perangkat · cloud belum tersinkron'; }
         }, 2200);
       }
+      document.addEventListener('env:navigate',()=>{clearTimeout(saveTimer);clearTimeout(cloudTimer);saveDraft(state.draft);},{once:true});
 
       // ---- rendering ----
       function paintNav() {
@@ -151,7 +157,7 @@ function renderBuilderWorkspace(invitationId) {
         button.disabled = false;
         button.textContent = '✦ Bantu isi';
         state.aiBusy = false;
-        toast(result.source === 'groq' ? 'Draf copy dari Groq siap kamu sesuaikan.' : 'Saran dasar sudah disiapkan. Kamu tetap bisa mengedit semuanya.', { type: 'success' });
+        toast(result.source !== 'local' ? 'Saran teks siap kamu sesuaikan.' : 'Saran dasar sudah disiapkan. Kamu tetap bisa mengedit semuanya.', { type: 'success' });
       });
       rootEl.querySelector('[data-act="publish"]').addEventListener('click', () => publishFlow(state, { persist, saveStatus }));
 
@@ -179,7 +185,7 @@ function escTitle(draft) {
   const g = draft.content.groom?.name || '';
   const b = draft.content.bride?.name || '';
   const t = [g, b].filter(Boolean).join(' & ');
-  return t ? `${t} · ${draft.design.templateId}` : draft.id;
+  return escapeHtml(t ? `${t} · ${draft.design.templateId}` : draft.id);
 }
 
 function propsFor(state) {
@@ -199,6 +205,8 @@ function propsFor(state) {
     case 'music': return musicProps(draft);
     case 'quote': return quoteProps(draft);
     case 'info': return infoSectionProps(draft);
+    case 'map': return panel('Lokasi Acara','<p class="bprops__hint">Peta mengikuti alamat acara pertama. Lengkapi nama tempat dan alamat pada bagian Acara.</p>');
+    case 'wishes': return panel('Ucapan',`<label class="fld-ui fld-ui--check"><input type="checkbox" name="wishesEnabled" ${draft.content.wishesEnabled!==false?'checked':''} data-prop-check/><span>Terima ucapan dari tamu</span></label><p class="bprops__hint">Setujui ucapan dari dashboard Tamu & Ucapan sebelum ditampilkan.</p>`);
     default: return genericProps(draft, selectedSection);
   }
 }
@@ -592,7 +600,7 @@ function wireProps(root, state, { persist, paintCanvas, repaintProps }) {
       setByPath(draft.content, input.name, value);
       persist();
       // Repaint canvas for any field that affects the rendered invitation.
-      if (REPAINT_ON_INPUT.test(input.name)) {
+      if (input.name || REPAINT_ON_INPUT.test(input.name)) {
         paintCanvas();
       }
     });
@@ -611,7 +619,7 @@ function wireProps(root, state, { persist, paintCanvas, repaintProps }) {
         const input = [...root.querySelectorAll('[data-prop-input]')].find((item) => item.name === path);
         if (input) input.value = value;
         persist(); paintCanvas();
-        toast(result.source === 'groq' ? 'Saran Groq sudah diterapkan. Silakan poles sesuai gaya kalian.' : 'Saran dasar diterapkan. Silakan sesuaikan bahasanya.', { type: 'success' });
+        toast(result.source !== 'local' ? 'Saran teks sudah diterapkan. Silakan sesuaikan dengan gaya kalian.' : 'Saran dasar diterapkan. Silakan sesuaikan bahasanya.', { type: 'success' });
       } else {
         toast('Lengkapi nama atau detail acara dulu agar saran lebih relevan.', { type: 'error' });
       }
@@ -625,9 +633,7 @@ function wireProps(root, state, { persist, paintCanvas, repaintProps }) {
     input.addEventListener('change', () => {
       setByPath(draft.content, input.name, input.checked);
       persist();
-      if (input.name.startsWith('musicSettings.') || input.name.startsWith('rsvpSettings.') || input.name.startsWith('giftSettings.')) {
-        paintCanvas();
-      }
+      paintCanvas();
     });
   });
 
@@ -766,7 +772,8 @@ async function uploadWithLocalPreview(file, draft, preset, opts = {}) {
   // trigger a repaint via the caller; here we just record the optimistic state.
 
   try {
-    const hosted = await uploadImage(file, { preset, name: `${draft.id}-${preset}-${Date.now()}` });
+    await saveInvitation(draft);
+    const hosted = await uploadImage(file, { preset, invitationId:draft.id, name: `${draft.id}-${preset}-${Date.now()}` });
     if (opts.setPath && opts.path) {
       setByPath(draft.content, opts.path, hosted.url);
       delete draft.content._pendingUploads?.[opts.path];
@@ -781,6 +788,7 @@ async function uploadWithLocalPreview(file, draft, preset, opts = {}) {
     URL.revokeObjectURL(localUrl);
   } catch (err) {
     console.warn('[upload] gagal, foto tetap tersimpan lokal', err);
+    toast(err.message || 'Foto belum diunggah. Pilih kembali foto sebelum publikasi.',{type:'error'});
     // keep local URL; user sees a toast via caller if desired
     if (opts.setPath && opts.path) {
       delete draft.content._pendingUploads?.[opts.path];
@@ -846,7 +854,10 @@ function publishChecklist(draft) {
 
 async function publishFlow(state, { persist, saveStatus }) {
   const draft = state.draft;
-  const payment = getOrderForInvitation(draft.id);
+  if (JSON.stringify(draft.content).includes('blob:') || Object.values(draft.content._pendingUploads || {}).some(Boolean)) {
+    toast('Tunggu upload selesai atau pilih kembali foto yang gagal sebelum publikasi.',{type:'error'});return;
+  }
+  const payment = await refreshPaymentOrder(getOrderForInvitation(draft.id) || ensurePaymentOrder(draft));
   if (!payment || payment.status !== 'active' || (payment.expiresAt && payment.expiresAt <= Date.now())) {
     openModal({
       title: 'Aktifkan sebelum tayang',
@@ -881,21 +892,23 @@ async function publishFlow(state, { persist, saveStatus }) {
           if (blocking.length) return;
           const btns = document.querySelectorAll('.env-modal__actions .btn');
           btns[btns.length - 1].textContent = 'Menyiapkan...';
-          // Ensure a server-timestamped draft exists before the publish update.
-          try { await saveInvitation({ ...draft, status: 'draft' }); } catch { /* handled by the publish result below */ }
-          draft.status = 'published';
-          persist();
           saveStatus.textContent = 'Menyimpan ke cloud...';
-          let cloud = false;
           try {
-            const res = await saveInvitation(draft);
-            cloud = res.cloud;
-          } catch {
-            cloud = false;
+            await saveInvitation(draft);
+            const res = await saveInvitation({...draft,status:'published'});
+            if (!res.cloud) throw new Error('cloud-unavailable');
+            Object.assign(draft,res.saved || {},{status:'published'});
+            saveDraft(draft);
+            saveStatus.textContent = 'Sudah tayang';
+          } catch(error) {
+            saveStatus.textContent = 'Publikasi belum berhasil';
+            close();
+            toast('Undangan belum dapat dipublikasikan. Periksa koneksi dan aktivasi paket, lalu coba kembali.',{type:'error'});
+            return;
           }
           analyticsEvents.publishInvitation();
           close();
-          showShareModal(state, { cloud });
+          showShareModal(state, { cloud:true });
         },
       },
     ],

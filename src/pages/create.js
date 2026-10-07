@@ -11,6 +11,8 @@ import { analyticsEvents } from '../services/analytics.js';
 import { invitationFrame, hydrateInvitationFrames } from '../ui/invitation-frame.js';
 import { requireAuthenticated } from '../services/access.js';
 import { getTemplatePlan, formatRupiah, planDurationLabel } from '../data/plans.js';
+import { saveInvitation } from '../services/firestore-data.js';
+import { toast } from '../ui/overlays.js';
 
 export function renderCreate(query = new URLSearchParams()) {
   const suffix = query.toString();
@@ -25,7 +27,7 @@ function renderCreateWorkspace(query = new URLSearchParams()) {
   const variantId = query.get('variant') || '';
   const tpl = templateId ? templateFamilies.find((t) => t.id === templateId) : null;
   const variants = tpl ? getVariantsFor(tpl.id) : [];
-  const activeVariant = variantId && getVariant(variantId) ? variantId : variants[0]?.id || '';
+  const activeVariant = variants.some(v=>v.id === variantId) ? variantId : variants[0]?.id || '';
 
   renderPage(
     `
@@ -92,7 +94,7 @@ function renderCreateWorkspace(query = new URLSearchParams()) {
       }
 
       // Basics form submit
-      form?.addEventListener('submit', (e) => {
+      form?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const data = Object.fromEntries(new FormData(form).entries());
         if (!data.groomName || !data.brideName) {
@@ -109,7 +111,11 @@ function renderCreateWorkspace(query = new URLSearchParams()) {
         draft.content.bride.name = String(data.brideName).trim();
         draft.content.bride.nickname = String(data.brideNickname || data.brideName).trim();
         draft.content.weddingDate = data.weddingDate || '';
-        saveDraft(draft);
+        if (!saveDraft(draft)) {toast('Draft belum dapat disimpan di perangkat ini.',{type:'error'});return;}
+        const button = form.querySelector('[type="submit"]');
+        button.disabled = true;
+        try { await saveInvitation(draft); }
+        catch { toast('Draft tersimpan di perangkat. Sinkronisasi akan dicoba lagi dari editor.'); }
         analyticsEvents.createInvitation(tpl.id);
         navigate(`/builder/${draft.id}`);
       });

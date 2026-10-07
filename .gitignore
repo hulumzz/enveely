@@ -18,3 +18,6 @@ QRIS Decoder.md
 .worker-check.js
 .pages-config-scratch/
 .wrangler/
+worker-configuration.d.ts
+firestore-debug.log
+ui-debug.log

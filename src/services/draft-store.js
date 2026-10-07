@@ -1,7 +1,5 @@
-// Enveely — Draft store: local persistence layer for invitations (MVP).
-// localStorage is the fast safety layer; Firestore sync arrives in Phase 3
-// (Blueprint-1.md §23 autosave strategy). All access is defensive — private
-// mode / quota errors must never crash the editor.
+// Enveely — Account-scoped local autosave, synchronized through firestore-data.
+// Private mode / quota errors must never crash the editor.
 
 import { getDeviceId } from '../core/device.js';
 
@@ -9,6 +7,9 @@ const INDEX_KEY = 'env_draft_index';
 const LEGACY_INDEX_KEY = 'ulwed_draft_index';
 const draftKey = (id) => `env_draft_${id}`;
 const legacyDraftKey = (id) => `ulwed_draft_${id}`;
+let activeOwner = '';
+export function setDraftOwner(uid) { activeOwner = String(uid || ''); }
+export function getDraftOwner() { return activeOwner; }
 
 /** Move a draft from the pre-rebrand storage keys to the new ones (one-time). */
 function migrateLegacyDraft(id) {
@@ -72,6 +73,7 @@ export function createDraft(templateId, variantId) {
   const enabledSections = sectionPresetFor(templateId);
   return {
     id: newInvitationId(),
+    ownerUid: activeOwner,
     status: 'draft',
     locale: 'id',
     deviceId: getDeviceId(),
@@ -98,7 +100,7 @@ export function createDraft(templateId, variantId) {
     },
     sections: [
       'cover', 'welcome', 'couple', 'parents', 'quote', 'event', 'countdown', 'story',
-      'gallery', 'map', 'info', 'rsvp', 'gift', 'wishes', 'closing',
+      'gallery', 'map', 'info', 'rsvp', 'gift', 'wishes', 'music', 'closing',
     ].map((id) => ({ id, enabled: enabledSections.has(id) })),
     createdAt: Date.now(),
     updatedAt: Date.now(),
@@ -126,6 +128,8 @@ function sectionPresetFor(templateId) {
 /** Persist a draft locally. Updates index + updatedAt. */
 export function saveDraft(invitation) {
   if (!invitation?.id) return false;
+  if (activeOwner && invitation.ownerUid && invitation.ownerUid !== activeOwner) return false;
+  if (activeOwner && !invitation.ownerUid) invitation.ownerUid = activeOwner;
   invitation.updatedAt = Date.now();
   const ok = safeSet(draftKey(invitation.id), JSON.stringify(invitation));
   if (ok) {
@@ -147,7 +151,8 @@ export function loadDraft(id) {
         try { localStorage.removeItem(legacyDraftKey(id)); } catch { /* ignore */ }
       }
     }
-    return raw ? JSON.parse(raw) : null;
+    const draft = raw ? JSON.parse(raw) : null;
+    return draft?.ownerUid && activeOwner && draft.ownerUid !== activeOwner ? null : draft;
   } catch {
     return null;
   }

@@ -81,6 +81,8 @@ export async function loginWithGoogle() {
 
 /** Associate current device drafts with this user (migration hook). */
 async function linkDeviceOwnership(user) {
+  const { setDraftOwner } = await import('./draft-store.js');
+  setDraftOwner(user.uid);
   try {
     localStorage.setItem('env_user_device_link', JSON.stringify({
       uid: user.uid,
@@ -100,18 +102,23 @@ export async function onAuthChange(callback) {
     return () => {};
   }
   const { onAuthStateChanged } = await import('firebase/auth');
-  return onAuthStateChanged(auth, (user) => callback(user ? publicUser(user) : null));
+  return onAuthStateChanged(auth, async (user) => {
+    const { setDraftOwner } = await import('./draft-store.js');
+    setDraftOwner(user?.uid || '');
+    callback(user ? publicUser(user) : null);
+  });
 }
 
 /** Resolve the current Firebase user once, after the initial auth check. */
 export async function getCurrentUser() {
   const auth = await authOrNull();
   if (!auth) return null;
-  if (auth.currentUser) return publicUser(auth.currentUser);
+  if (auth.currentUser) { await linkDeviceOwnership(auth.currentUser); return publicUser(auth.currentUser); }
   const { onAuthStateChanged } = await import('firebase/auth');
   return new Promise((resolve) => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       unsubscribe();
+      if (user) await linkDeviceOwnership(user);
       resolve(user ? publicUser(user) : null);
     });
   });
@@ -150,5 +157,23 @@ function publicUser(user) {
     email: user.email,
     displayName: user.displayName || (user.email ? user.email.split('@')[0] : ''),
     photoURL: user.photoURL || '',
+    emailVerified: user.emailVerified,
   };
+}
+
+export async function updateDisplayName(displayName) {
+  const auth = await authOrNull();
+  if (!auth?.currentUser) throw new Error('Silakan masuk kembali.');
+  const name = String(displayName || '').trim().slice(0,80);
+  if (!name) throw new Error('Isi nama tampilan terlebih dahulu.');
+  const { updateProfile } = await import('firebase/auth');
+  await updateProfile(auth.currentUser,{displayName:name});
+  return publicUser(auth.currentUser);
+}
+
+export async function sendVerificationEmail() {
+  const auth = await authOrNull();
+  if (!auth?.currentUser) throw new Error('Silakan masuk kembali.');
+  const { sendEmailVerification } = await import('firebase/auth');
+  await sendEmailVerification(auth.currentUser);
 }

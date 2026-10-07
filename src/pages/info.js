@@ -45,7 +45,7 @@ export function renderInfoPage(kind) {
         <div class="info-page__content">
           ${page.sections.map(([title, body], index) => `<article><span>${String(index + 1).padStart(2, '0')}</span><div><h2>${title}</h2><p>${body}</p></div></article>`).join('')}
         </div>
-        <aside class="info-page__contact"><div><p class="eyebrow">Masih Ada Pertanyaan?</p><h2>Ceritakan yang kalian butuhkan.</h2></div><a href="mailto:hello@enveely.id" class="btn btn--primary btn--lg">Email Enveely</a></aside>
+        <aside class="info-page__contact"><div><p class="eyebrow">Masih Ada Pertanyaan?</p><h2>Ceritakan yang kalian butuhkan.</h2></div><a href="mailto:enveely@nalaro.digital" class="btn btn--primary btn--lg">Email Enveely</a></aside>
       </div>
     </section>`);
 }

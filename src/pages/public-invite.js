@@ -5,7 +5,6 @@
 
 import { renderPage } from '../ui/app-shell.js';
 import { getPublishedInvitation, listApprovedWishes } from '../services/firestore-data.js';
-import { loadDraft } from '../services/draft-store.js';
 import { renderInvitation } from '../engine/renderer.js';
 import { attachInvitationInteractions } from '../engine/interactions.js';
 import { initInvitationMusic, stopInvitationMusic } from '../engine/music.js';
@@ -16,18 +15,10 @@ import { stopAllVideos } from '../engine/media.js';
 export async function renderPublicInvitation({ id }, query = new URLSearchParams()) {
   // Resolve: cloud published first; local draft fallback (owner preview /
   // local-only mode when Firebase is not configured yet).
-  let invitation = await getPublishedInvitation(id);
-  let localOnly = false;
-  if (!invitation) {
-    const draft = loadDraft(id);
-    if (draft) {
-      invitation = draft;
-      localOnly = true;
-    }
-  }
-
-  if (!invitation) return renderInviteNotFound();
-  if (invitation.status !== 'published' && !localOnly) return renderInviteNotFound();
+  let invitation;
+  try { invitation = await getPublishedInvitation(id); }
+  catch { return renderInviteNotFound(); }
+  if (!invitation || invitation.status !== 'published') return renderInviteNotFound();
 
   // Dynamic OG tags so WhatsApp/IG previews show the couple's names.
   applyInviteMeta(invitation);

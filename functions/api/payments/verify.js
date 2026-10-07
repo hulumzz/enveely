@@ -1,4 +1,6 @@
 import { calculatePackage } from '../../../src/data/plans.js';
+import { requireFirebaseUser, getOwnedInvitation } from '../../_lib/firebase-admin.js';
+import {consumeQuota} from '../../_lib/request-limit.js';
 
 const MAX_PROOF_BYTES = 8 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
@@ -9,7 +11,7 @@ export async function onRequestPost(context) {
     const length = Number(context.request.headers.get('content-length') || 0);
     if (length > MAX_PROOF_BYTES + 100_000) return json({ message: 'Ukuran bukti maksimal 8 MB.' }, 413);
 
-    const user = await authenticate(context.request, context.env);
+    const user = await requireFirebaseUser(context.request, context.env);
     if (!user) return json({ message: 'Sesi login tidak valid. Silakan masuk kembali.' }, 401);
     if (!context.env.PAYMENT_PROOFS || !context.env.PAYMENTS_DB) {
       return json({ message: 'Penyimpanan pembayaran belum dikonfigurasi.' }, 503);
@@ -31,9 +33,15 @@ export async function onRequestPost(context) {
       return json({ message: 'Data pesanan tidak valid.' }, 400);
     }
     const expectedTotal = pkg.subtotal + uniqueCode;
-    const existing = await context.env.PAYMENTS_DB.prepare('SELECT uid, status FROM payment_orders WHERE id = ? LIMIT 1').bind(orderId).first();
+    const invitation = await getOwnedInvitation(context.request, context.env, invitationId, user);
+    if (!invitation) return json({ message: 'Undangan ini bukan milik akun Anda.' }, 403);
+    if (invitation.design?.mapValue?.fields?.variantId?.stringValue !== variantId) return json({message:'Desain pesanan berbeda dari undangan.'},409);
+    const existing = await context.env.PAYMENTS_DB.prepare('SELECT uid, status, invitation_id, variant_id, duration_months, unique_code, review_token FROM payment_orders WHERE id = ? LIMIT 1').bind(orderId).first();
     if (existing?.uid && existing.uid !== user.localId) return json({ message: 'Pesanan ini bukan milik akun Anda.' }, 403);
     if (existing?.status === 'active') return json({ message: 'Pesanan aktif tidak dapat diubah.' }, 409);
+    if (existing && (existing.status !== 'rejected' || existing.review_token)) return json({message:'Bukti pesanan ini sedang ditinjau. Tunggu hasil review.'},409);
+    if (existing && (existing.invitation_id !== invitationId || existing.variant_id !== variantId || existing.duration_months !== durationMonths || existing.unique_code !== uniqueCode)) return json({message:'Rincian pesanan yang sudah dikirim tidak dapat diubah.'},409);
+    if(!await consumeQuota(context.env,user.localId,'payment-proof',10,86400))return json({message:'Batas pengiriman bukti harian tercapai. Hubungi bantuan untuk melanjutkan.'},429);
     const ext = proof.type === 'image/png' ? 'png' : proof.type === 'image/webp' ? 'webp' : 'jpg';
     const proofKey = `payments/${user.localId}/${orderId}/${crypto.randomUUID()}.${ext}`;
     const bytes = await proof.arrayBuffer();
@@ -53,7 +61,7 @@ export async function onRequestPost(context) {
     const status = amountMatch && verification.paymentSuccessful === true ? 'ai_match' : 'pending_review';
     const now = new Date().toISOString();
 
-    await context.env.PAYMENTS_DB.prepare(`
+    const stored = await context.env.PAYMENTS_DB.prepare(`
       INSERT INTO payment_orders (
         id, uid, invitation_id, variant_id, duration_months, base_price,
         extension_fee, unique_code, expected_total, status, proof_key,
@@ -66,6 +74,7 @@ export async function onRequestPost(context) {
         ai_confidence = excluded.ai_confidence,
         ai_summary = excluded.ai_summary,
         updated_at = excluded.updated_at
+      WHERE payment_orders.status = 'rejected' AND payment_orders.review_token IS NULL
     `).bind(
       orderId,
       user.localId,
@@ -84,6 +93,7 @@ export async function onRequestPost(context) {
       now,
       now,
     ).run();
+    if (!stored.meta.changes) {await context.env.PAYMENT_PROOFS.delete(proofKey);return json({message:'Pesanan telah diproses. Muat ulang status pembayaran.'},409);}
 
     console.log(JSON.stringify({ event: 'payment_proof_received', requestId, orderId, status, amountMatch }));
     return json({
@@ -107,23 +117,9 @@ export function onRequest(context) {
   return json({ message: 'Metode tidak diizinkan.' }, 405);
 }
 
-async function authenticate(request, env) {
-  const bearer = request.headers.get('authorization') || '';
-  const token = bearer.startsWith('Bearer ') ? bearer.slice(7) : '';
-  if (!token || !env.FIREBASE_WEB_API_KEY) return null;
-  const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${encodeURIComponent(env.FIREBASE_WEB_API_KEY)}`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ idToken: token }),
-  });
-  if (!response.ok) return null;
-  const result = await response.json();
-  return result.users?.[0] || null;
-}
-
 async function inspectProof(env, bytes, mimeType, expectedTotal, orderId) {
   if (!env.AI) return { amount: null, confidence: 0, paymentSuccessful: null, summary: 'AI binding belum aktif.' };
-  const image = `data:${mimeType};base64,${arrayBufferToBase64(bytes)}`;
+  const image = Array.from(new Uint8Array(bytes));
   const prompt = [
     'Periksa screenshot bukti pembayaran QRIS Indonesia ini.',
     `Nominal yang diharapkan: ${expectedTotal} IDR. Referensi order: ${orderId}.`,
@@ -147,16 +143,6 @@ function parseModelJson(value) {
   const end = text.lastIndexOf('}');
   if (start < 0 || end <= start) return { amount: null, confidence: 0, summary: 'Detail belum terbaca.' };
   try { return JSON.parse(text.slice(start, end + 1)); } catch { return { amount: null, confidence: 0, summary: 'Detail belum terbaca.' }; }
-}
-
-function arrayBufferToBase64(buffer) {
-  const bytes = new Uint8Array(buffer);
-  let binary = '';
-  const chunk = 0x8000;
-  for (let offset = 0; offset < bytes.length; offset += chunk) {
-    binary += String.fromCharCode(...bytes.subarray(offset, offset + chunk));
-  }
-  return btoa(binary);
 }
 
 function cleanId(value, max) {

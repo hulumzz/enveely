@@ -21,7 +21,7 @@
 .qris-card > small { color: var(--muted); overflow-wrap: anywhere; }
 .proof-drop { min-height: 150px; border: 1.5px dashed #c8b9aa; border-radius: 20px; display: grid; justify-items: center; align-content: center; gap: 5px; padding: 25px; cursor: pointer; background: #fcfaf7; transition: .2s ease; }
 .proof-drop:hover { border-color: var(--accent); background: #faf5ef; transform: translateY(-1px); }
-.proof-drop input { position: absolute; opacity: 0; pointer-events: none; }
+.proof-drop input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); opacity: 0; pointer-events: none; }
 .proof-drop__icon { font-size: 1.7rem; color: var(--accent); }
 .proof-drop small { color: var(--muted); }
 .proof-drop.is-disabled { cursor: not-allowed; opacity: .55; }

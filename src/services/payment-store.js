@@ -1,4 +1,5 @@
 import { calculatePackage, UNIQUE_CODES } from '../data/plans.js';
+import { getDraftOwner } from './draft-store.js';
 
 const INDEX_KEY = 'env_payment_index';
 const keyFor = (id) => `env_payment_${id}`;
@@ -24,7 +25,7 @@ function newOrderId() {
 export function listPaymentOrders() {
   const ids = read(INDEX_KEY, []);
   if (!Array.isArray(ids)) return [];
-  return ids.map((id) => read(keyFor(id))).filter(Boolean).sort((a, b) => b.updatedAt - a.updatedAt);
+  return ids.map((id) => read(keyFor(id))).filter(o=>o && (!o.ownerUid || o.ownerUid === getDraftOwner())).sort((a, b) => b.updatedAt - a.updatedAt);
 }
 
 export function getPaymentOrder(id) {
@@ -37,7 +38,7 @@ export function getOrderForInvitation(invitationId) {
 
 export function savePaymentOrder(order) {
   if (!order?.id) return false;
-  const next = { ...order, updatedAt: Date.now() };
+  const next = { ...order, ownerUid: order.ownerUid || getDraftOwner(), updatedAt: Date.now() };
   const saved = write(keyFor(next.id), next);
   if (saved) {
     const ids = read(INDEX_KEY, []).filter((id) => id !== next.id);
@@ -48,7 +49,15 @@ export function savePaymentOrder(order) {
 
 export function ensurePaymentOrder(invitation, durationMonths = 3) {
   const existing = getOrderForInvitation(invitation.id);
-  if (existing) return existing;
+  if (existing?.variantId === invitation.design?.variantId) {
+    if (existing.total === 0) {
+      const activated = invitation.freeActivatedAt?.toMillis?.() || invitation.freeActivatedAt?.seconds*1000;
+      existing.expiresAt=activated ? activated+7*86400000 : null;
+      existing.status=existing.expiresAt && existing.expiresAt<=Date.now() ? 'expired' : 'active';
+      savePaymentOrder(existing);
+    }
+    return existing;
+  }
   const pkg = calculatePackage(invitation.design?.variantId, durationMonths);
   if (!pkg) return null;
   const uniqueCode = pkg.paid ? UNIQUE_CODES[secureIndex(UNIQUE_CODES.length)] : 0;
@@ -68,7 +77,7 @@ export function ensurePaymentOrder(invitation, durationMonths = 3) {
     verification: pkg.paid ? null : { method: 'free-plan', result: 'activated' },
     createdAt: now,
     updatedAt: now,
-    expiresAt: pkg.paid ? null : now + (7 * 24 * 60 * 60 * 1000),
+    expiresAt: null,
   };
   savePaymentOrder(order);
   return order;

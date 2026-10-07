@@ -11,6 +11,7 @@
 import { compressImage, COMPRESSION_PRESETS } from './image-compression.js';
 import { uploadToImgBB } from './providers/imgbb.js';
 import { uploadToFreeImage } from './providers/freeimage.js';
+import { getAuthToken } from './auth.js';
 
 /** @typedef {{
  *  provider: 'imgbb'|'freeimage',
@@ -48,6 +49,18 @@ export async function uploadImage(file, options = {}) {
 
   const preset = COMPRESSION_PRESETS[options.preset || 'gallery'];
   const compressed = await compressImage(file, preset);
+
+  if (options.invitationId) {
+    const token = await getAuthToken();
+    if (!token) throw new Error('Silakan masuk untuk mengunggah foto.');
+    const body = new FormData();
+    body.set('photo', compressed.blob, 'photo.jpg');
+    body.set('invitationId', options.invitationId);
+    const response = await fetch('/api/media/upload', {method:'POST',headers:{authorization:`Bearer ${token}`},body,signal:AbortSignal.timeout(60_000)});
+    const result = await response.json().catch(()=>({}));
+    if (!response.ok) throw new Error(result.message || 'Foto belum dapat diunggah.');
+    return result;
+  }
 
   const providers = orderedProviders();
   const errors = [];

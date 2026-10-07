@@ -16,19 +16,22 @@ import { formatRupiah } from '../data/plans.js';
 import { getAuthToken } from '../services/auth.js';
 import { navigate } from '../router.js';
 import { toast } from '../ui/overlays.js';
+import { resolveOwnedDraft, saveInvitation } from '../services/firestore-data.js';
+import { refreshPaymentOrder } from '../services/payment-api.js';
 
 export function renderCheckout(invitationId) {
   return requireAuthenticated(() => renderCheckoutWorkspace(invitationId), `/checkout/${invitationId}`);
 }
 
 async function renderCheckoutWorkspace(invitationId) {
-  const invitation = loadDraft(invitationId);
+  const invitation = await resolveOwnedDraft(invitationId);
   if (!invitation) {
     navigate('/dashboard/invitations', { replace: true });
     return;
   }
 
-  let order = ensurePaymentOrder(invitation);
+  await saveInvitation(invitation);
+  let order = await refreshPaymentOrder(ensurePaymentOrder(invitation));
   const template = getTemplate(invitation.design?.templateId);
   const variant = getVariant(invitation.design?.variantId);
   const names = [invitation.content?.groom?.nickname || invitation.content?.groom?.name, invitation.content?.bride?.nickname || invitation.content?.bride?.name]
@@ -177,7 +180,7 @@ function freeActivation(order, invitation) {
       <span class="checkout-success__icon">✓</span>
       <p class="eyebrow">Paket Aktif</p>
       <h2>Gratis untuk 7 hari pertama.</h2>
-      <p>Undangan ini dapat dipublikasikan tanpa pembayaran. Masa tayang dimulai hari ini dan berakhir pada ${formatDate(order.expiresAt)}.</p>
+      <p>Undangan ini dapat dipublikasikan tanpa pembayaran. Masa tayang 7 hari dimulai saat publikasi pertama.</p>
       <div class="checkout-success__actions">
         <a href="/builder/${invitation.id}" data-link class="btn btn--primary btn--lg">Kembali & Publikasikan</a>
         <a href="/dashboard" data-link class="btn btn--ghost btn--lg">Lihat Dashboard</a>
@@ -210,7 +213,7 @@ function paymentPanel(order, submitted) {
           <p>Bayar tepat <strong>${formatRupiah(order.total)}</strong></p>
           <small>Order ${order.id}</small>
         </div>` : `
-        <div class="checkout-config-notice"><strong>QRIS merchant belum aktif.</strong><p>Tambahkan payload statis ke VITE_QRIS_STATIC_PAYLOAD. Draft checkout ini tetap tersimpan.</p></div>`}
+        <div class="checkout-config-notice"><strong>Pembayaran sedang disiapkan.</strong><p>Draft checkout tetap tersimpan. Silakan hubungi kami sebelum melakukan pembayaran.</p></div>`}
 
       <div class="pay-panel__intro pay-panel__intro--proof">
         <p class="pay-panel__step">02</p><div><h2>Unggah Bukti Bayar</h2><p>Gunakan screenshot yang menampilkan nominal, status berhasil, dan waktu transaksi dengan jelas.</p></div>

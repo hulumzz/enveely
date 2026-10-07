@@ -1,14 +1,14 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "enveely",
-  "compatibility_date": "2026-09-02",
+  "compatibility_date": "2026-10-07",
   "compatibility_flags": ["nodejs_compat"],
   "pages_build_output_dir": "./dist",
   "d1_databases": [
     {
       "binding": "PAYMENTS_DB",
       "database_name": "enveely-payments",
-      "database_id": "6fa7675b-73e4-4138-8262-7100d120db83",
+      "database_id": "a15c57f9-3cce-4fee-a7d7-79afb07a9ee1",
       "migrations_dir": "./migrations"
     }
   ],
@@ -16,10 +16,21 @@
     {
       "binding": "PAYMENT_PROOFS",
       "bucket_name": "enveely-payment-proofs"
+    },
+    {
+      "binding": "INVITATION_MEDIA",
+      "bucket_name": "enveely-invitation-media"
     }
   ],
   "ai": { "binding": "AI" },
   "vars": {
     "FIREBASE_PROJECT_ID": "ulwed-d729f"
+  },
+  "env": {
+    "preview": {
+      "d1_databases": [],
+      "r2_buckets": [],
+      "vars": { "FIREBASE_PROJECT_ID": "ulwed-d729f" }
+    }
   }
 }

@@ -1,4 +1,5 @@
 import { requireFirebaseUser, json } from '../../_lib/firebase-admin.js';
+import {consumeQuota} from '../../_lib/request-limit.js';
 
 const MAX_BODY_BYTES = 14_000;
 const FIELD_LIMITS = Object.freeze({
@@ -7,14 +8,14 @@ const FIELD_LIMITS = Object.freeze({
   'infoSettings.dressCode': 220, 'infoSettings.access': 420, 'infoSettings.notes': 420,
 });
 
-// Groq-backed copy assistant. The client sends editorial facts only; payment,
+// Workers AI copy assistant, with an optional Groq override. The client sends editorial facts only; payment,
 // gift, authentication, and image data are deliberately excluded.
 export async function onRequestPost(context) {
   const requestId = crypto.randomUUID();
   try {
     const user = await requireFirebaseUser(context.request, context.env);
     if (!user) return json({ message: 'Sesi login tidak valid.' }, 401);
-    if (!context.env.GROQ_API_KEY) return json({ message: 'Asisten AI belum dikonfigurasi.', code: 'unconfigured' }, 503);
+    if (!context.env.GROQ_API_KEY && !context.env.AI) return json({ message: 'Asisten AI belum dikonfigurasi.', code: 'unconfigured' }, 503);
     const length = Number(context.request.headers.get('content-length') || 0);
     if (length > MAX_BODY_BYTES) return json({ message: 'Konteks editor terlalu besar.' }, 413);
 
@@ -22,18 +23,24 @@ export async function onRequestPost(context) {
     const task = input?.task === 'complete' ? 'complete' : 'field';
     const field = String(input?.field || '');
     if (task === 'field' && !isSupportedField(field)) return json({ message: 'Field copy tidak didukung.' }, 400);
+    if(!await consumeQuota(context.env,user.localId,'editor-ai',30,86400))return json({message:'Batas saran AI harian tercapai. Kamu tetap bisa mengedit teks secara langsung.'},429);
 
     const contextData = sanitiseContext(input?.context);
-    const model = task === 'complete' ? 'openai/gpt-oss-120b' : 'qwen/qwen3.8-27b';
-    const answer = await askGroq(context.env.GROQ_API_KEY, model, task === 'complete' ? completePrompt(contextData) : fieldPrompt(field, contextData));
+    const source = context.env.GROQ_API_KEY ? 'groq' : 'cloudflare';
+    const model = source === 'groq' ? 'openai/gpt-oss-120b' : '@cf/openai/gpt-oss-120b';
+    const messages = task === 'complete' ? completePrompt(contextData) : fieldPrompt(field, contextData);
+    let answer;
+    if (source === 'groq') answer = await askGroq(context.env.GROQ_API_KEY,model,messages);
+    else {const result=await context.env.AI.run(model,{messages,max_tokens:1400,temperature:0.55,response_format:{type:'json_object'}});answer=result.response || result.choices?.[0]?.message?.content || '';}
     const parsed = parseJson(answer);
 
     if (task === 'field') {
       const value = cleanText(parsed?.value, limitFor(field));
       if (!value) return json({ message: 'AI belum dapat memberi saran. Lengkapi nama atau detail acara dulu.' }, 422);
-      return json({ source: 'groq', model, value });
+      return json({ source, model, value });
     }
-    return json({ source: 'groq', model, content: cleanContent(parsed) });
+    if (!parsed) return json({message:'Saran belum dapat dibaca. Coba kembali.'},502);
+    return json({ source, model, content: cleanContent(parsed) });
   } catch (error) {
     console.error(JSON.stringify({ event: 'editor_ai_error', requestId, message: error?.message || 'unknown' }));
     return json({ message: 'Asisten AI sedang tidak tersedia. Coba lagi sebentar.' }, 502);
@@ -50,6 +57,7 @@ async function askGroq(apiKey, model, messages) {
     method: 'POST',
     headers: { authorization: `Bearer ${apiKey}`, 'content-type': 'application/json' },
     body: JSON.stringify({ model, messages, temperature: 0.55, max_completion_tokens: 1_000, response_format: { type: 'json_object' } }),
+    signal: AbortSignal.timeout(45_000),
   });
   if (!response.ok) throw new Error(`groq_${response.status}`);
   const data = await response.json();

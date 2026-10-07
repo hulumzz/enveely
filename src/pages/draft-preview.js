@@ -8,10 +8,11 @@ import { renderInvitation } from '../engine/renderer.js';
 import { attachInvitationInteractions } from '../engine/interactions.js';
 import { initInvitationMusic } from '../engine/music.js';
 import { navigate } from '../router.js';
+import { resolveOwnedDraft } from '../services/firestore-data.js';
 
 export function renderDraftPreview(invitationId) {
-  return requireAuthenticated(() => {
-    const draft = loadDraft(invitationId);
+  return requireAuthenticated(async () => {
+    const draft = await resolveOwnedDraft(invitationId);
     if (!draft) {
       navigate('/dashboard/invitations', { replace: true });
       return;

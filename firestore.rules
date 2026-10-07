@@ -9,16 +9,25 @@ service cloud.firestore {
       allow list: if signedIn() && resource.data.ownerUid == request.auth.uid;
       allow create: if signedIn()
         && request.resource.data.ownerUid == request.auth.uid
+        && !request.resource.data.keys().hasAny(['freeActivatedAt'])
         && request.resource.data.status == 'draft';
       allow update: if ownsExisting()
         && request.resource.data.ownerUid == resource.data.ownerUid
+        && (!resource.data.keys().hasAny(['freeActivatedAt'])
+          || request.resource.data.freeActivatedAt == resource.data.freeActivatedAt)
+        && (resource.data.keys().hasAny(['freeActivatedAt'])
+          || !request.resource.data.keys().hasAny(['freeActivatedAt'])
+          || (request.resource.data.freeActivatedAt == request.time
+            && request.resource.data.status == 'published'
+            && request.resource.data.design.variantId == 'serena-paper'))
         && publishAllowed(invitationId);
       allow delete: if ownsExisting();
 
       match /rsvps/{rsvpId} {
         allow read: if ownsInvitation(invitationId);
         allow create: if invitationPublished(invitationId) && validRsvp();
-        allow update, delete: if false;
+        allow update: if false;
+        allow delete: if ownsInvitation(invitationId);
       }
 
       match /wishes/{wishId} {
@@ -61,7 +70,12 @@ service cloud.firestore {
     }
 
     function invitationPublished(invitationId) {
-      return get(/databases/$(database)/documents/invitations/$(invitationId)).data.status == 'published';
+      let invitation = get(/databases/$(database)/documents/invitations/$(invitationId)).data;
+      return invitation.status == 'published'
+        && ((invitation.design.variantId == 'serena-paper'
+          && invitation.freeActivatedAt is timestamp
+          && request.time < invitation.freeActivatedAt + duration.value(7, 'd'))
+          || validEntitlement(invitationId,invitation.ownerUid,invitation.design.variantId));
     }
 
     function publishAllowed(invitationId) {
@@ -82,7 +96,7 @@ service cloud.firestore {
     }
 
     function paidEntitlement(invitationId) {
-      return validEntitlement(invitationId, request.auth.uid);
+      return validEntitlement(invitationId, request.auth.uid, request.resource.data.design.variantId);
     }
 
     function publiclyAccessible(invitationId) {
@@ -91,14 +105,15 @@ service cloud.firestore {
           (resource.data.design.variantId == 'serena-paper'
             && resource.data.freeActivatedAt is timestamp
             && request.time < resource.data.freeActivatedAt + duration.value(7, 'd'))
-          || validEntitlement(invitationId, resource.data.ownerUid)
+          || validEntitlement(invitationId, resource.data.ownerUid, resource.data.design.variantId)
         );
     }
 
-    function validEntitlement(invitationId, ownerUid) {
+    function validEntitlement(invitationId, ownerUid, variantId) {
       return exists(/databases/$(database)/documents/entitlements/$(invitationId))
         && get(/databases/$(database)/documents/entitlements/$(invitationId)).data.ownerUid == ownerUid
         && get(/databases/$(database)/documents/entitlements/$(invitationId)).data.active == true
+        && get(/databases/$(database)/documents/entitlements/$(invitationId)).data.variantId == variantId
         && get(/databases/$(database)/documents/entitlements/$(invitationId)).data.expiresAt is timestamp
         && get(/databases/$(database)/documents/entitlements/$(invitationId)).data.expiresAt > request.time;
     }
@@ -109,6 +124,7 @@ service cloud.firestore {
         && d.name is string && d.name.size() > 0 && d.name.size() <= 80
         && d.attendance in ['attending', 'not-attending']
         && d.guestCount is int && d.guestCount >= 1 && d.guestCount <= 20
+        && d.createdAt == request.time
         && (!('message' in d) || (d.message is string && d.message.size() <= 500));
     }
 
@@ -117,6 +133,7 @@ service cloud.firestore {
       return d.keys().hasOnly(['name', 'message', 'approved', 'createdAt'])
         && d.name is string && d.name.size() > 0 && d.name.size() <= 80
         && d.message is string && d.message.size() > 0 && d.message.size() <= 500
+        && d.createdAt == request.time
         && (!('approved' in d) || d.approved == false);
     }
   }

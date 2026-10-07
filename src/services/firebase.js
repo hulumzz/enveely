@@ -3,7 +3,6 @@
 // (images go through ImageService -> ImgBB/Freeimage.host; Blueprint-1.md §42).
 
 import { initializeApp } from 'firebase/app';
-import { getAnalytics, isSupported as analyticsSupported } from 'firebase/analytics';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -51,6 +50,7 @@ export async function initAnalytics() {
   try {
     const fbApp = getFirebaseApp();
     if (!fbApp) return null;
+    const {getAnalytics,isSupported:analyticsSupported} = await import('firebase/analytics');
     if (!(await analyticsSupported())) return null;
     analytics = analytics || getAnalytics(fbApp);
     return analytics;

@@ -6,14 +6,15 @@ Platform undangan pernikahan digital yang design-first: enam keluarga template m
 
 - Vanilla JavaScript (ES modules) + Vite
 - Firebase Authentication, Firestore, dan Analytics
-- ImgBB + Freeimage.host untuk aset undangan
-- Cloudflare Pages Functions, D1, R2, dan Workers AI untuk pembayaran
+- Cloudflare R2 untuk foto undangan; ImgBB/Freeimage hanya uploader lama opsional
+- Cloudflare Pages Functions, D1, R2, dan Workers AI untuk pembayaran dan asisten teks
 - QRIS EMV dinamis dengan nominal dan kode unik per order
 
 ## Menjalankan proyek
 
 ```powershell
-npm install
+node --version # Node.js 24 atau lebih baru
+npm.cmd install
 copy .env.example .env.local
 npm.cmd run dev
 ```
@@ -29,11 +30,11 @@ Isi `.env.local` dan jangan commit file tersebut.
 | Variable | Kegunaan |
 |---|---|
 | `VITE_FIREBASE_*` | Firebase Web App + Auth + Firestore |
-| `VITE_IMGBB_API_KEY` | Provider gambar utama |
-| `VITE_FREEIMAGE_API_KEY` | Provider gambar cadangan |
+| `VITE_IMGBB_API_KEY` | Uploader lama opsional; editor memakai R2 |
+| `VITE_FREEIMAGE_API_KEY` | Uploader lama opsional |
 | `VITE_QRIS_STATIC_PAYLOAD` | Payload QRIS statis merchant yang diubah menjadi QRIS dinamis saat checkout |
 
-`GROQ_API_KEY` adalah secret server, bukan environment frontend. Simpan di `.dev.vars` saat lokal dan Pages secret di production.
+Asisten teks memakai Workers AI GPT-OSS 120B. `GROQ_API_KEY` hanya override opsional server; simpan di `.dev.vars`/Pages secret, tanpa awalan `VITE_`.
 
 Payload QRIS asli dan hasil decoder merchant tidak boleh masuk repository. `.gitignore` sudah mencakup `.env.local` dan `QRIS Decoder.md`.
 
@@ -50,12 +51,14 @@ Payload QRIS asli dan hasil decoder merchant tidak boleh masuk repository. `.git
 | `/builder/:id` | Login | Editor dengan autosave lokal + cloud |
 | `/checkout/:id` | Login | QRIS, kode unik, upload bukti, status review |
 | `/dashboard/*` | Login | Ringkasan, undangan, template, pembayaran, profil |
+| `/dashboard/guests` | Pemilik | RSVP dan persetujuan ucapan |
+| `/admin/payments` | Reviewer dengan email terverifikasi | Review bukti privat dan aktivasi |
 | `/invite/:id` | Publik jika aktif | Undangan yang sudah dipublikasikan |
 | `/help`, `/privacy`, `/terms` | Publik | Bantuan dan halaman legal dasar |
 
 ## Paket dan masa tayang
 
-- `Serena Paper`: gratis, aktif 7 hari.
+- `Serena Paper`: gratis, aktif 7 hari sejak publikasi pertama; tidak dapat direset lewat draf.
 - Template berbayar: Rp55.000–Rp220.000, aktif 3 bulan.
 - Opsi 6 bulan: biaya tambahan Rp15.000.
 - Kode unik dipilih secara kriptografis dari `111`, `222`, `333`, `123`, atau `321`.
@@ -75,27 +78,34 @@ Sumber harga tunggal berada di `src/data/plans.js` dan juga dipakai endpoint ver
 
 Build command: `npm run build`. Output directory: `dist`.
 
-Konfigurasikan binding Pages Functions berikut di Cloudflare Dashboard:
+Binding tercatat di `wrangler.jsonc`. Akun tujuan `fa9e4b5cc90250f132b17fb7c067490b`, proyek `enveely`, URL `https://enveely.pages.dev`. Skrip deploy memilih akun tersebut secara eksplisit. Git production mengikuti `hulumzz/enveely`, branch `main`; preview Git dinonaktifkan dan konfigurasi preview tidak membawa D1/R2 production.
 
 | Binding / secret | Tipe | Kegunaan |
 |---|---|---|
 | `PAYMENTS_DB` | D1 | Order dan status review |
 | `PAYMENT_PROOFS` | R2 | Bukti pembayaran privat |
-| `AI` | Workers AI | Pemeriksaan awal screenshot |
-| `GROQ_API_KEY` | Secret | Copy assistant editor (Qwen 3.8 27B dan GPT-OSS 120B) |
+| `INVITATION_MEDIA` | R2 | Foto, dilayani melalui `/media/:key` dengan URL publik acak |
+| `AI` | Workers AI | Pemeriksaan screenshot Llama Vision dan saran teks GPT-OSS 120B |
+| `GROQ_API_KEY` | Secret opsional | Override provider saran teks |
 | `FIREBASE_WEB_API_KEY` | Secret | Verifikasi Firebase ID token di server |
 | `ADMIN_EMAILS` | Secret | Email reviewer, pisahkan dengan koma |
 | `FIREBASE_PROJECT_ID` | Variable | Project ID Firebase untuk entitlement |
 | `FIREBASE_SERVICE_ACCOUNT_EMAIL` | Secret | Email service account Firebase Admin |
 | `FIREBASE_SERVICE_ACCOUNT_PRIVATE_KEY` | Secret | Private key PEM service account Firebase Admin |
 
-Jalankan migration `migrations/0001_payments.sql` pada database D1. Aktifkan model `@cf/meta/llama-3.2-11b-vision-instruct` dan setujui lisensinya sebelum request pertama.
+Terapkan semua migration pada D1 `enveely-payments` (`a15c57f9-3cce-4fee-a7d7-79afb07a9ee1`). Model `@cf/meta/llama-3.2-11b-vision-instruct` membutuhkan persetujuan lisensi. Konfigurasi akun ini telah disiapkan dalam migrasi Oktober 2026.
+
+```powershell
+$env:CLOUDFLARE_ACCOUNT_ID='fa9e4b5cc90250f132b17fb7c067490b'
+npx.cmd wrangler d1 migrations apply enveely-payments --remote
+npm.cmd run deploy:pages
+```
 
 Jangan simpan key server atau payload merchant di `wrangler.jsonc`. Gunakan encrypted variables/secrets di Cloudflare. Untuk lokal Pages Functions, gunakan `.dev.vars` dan jangan commit.
 
 ## Review pembayaran internal
 
-Reviewer yang emailnya tercantum di secret `ADMIN_EMAILS` membuka `/admin/payments` setelah login. Halaman ini menampilkan bukti R2 secara privat, ringkasan AI, dan tombol setujui/tolak.
+Reviewer `uniquefactuhl@gmail.com` membuka `/admin/payments` setelah login dengan email terverifikasi. Cocokkan transaksi asli di merchant sebelum menyetujui; screenshot dan AI tidak membuktikan bahwa dana diterima. Halaman menampilkan bukti R2 privat, ringkasan AI, dan tombol setujui/tolak.
 
 - Setuju: D1 diset `active`, tanggal expired dihitung dari paket, dan server menulis `entitlements/{invitationId}` ke Firestore menggunakan service account.
 - Tolak: order diset `rejected`; pengguna kembali melihat statusnya pada dashboard dan dapat mengunggah bukti baru.
@@ -109,16 +119,28 @@ Untuk service account Firebase, buat key khusus server dengan hak minimum yang d
 2. Deploy `firestore.rules` dan `firestore.indexes.json`.
 3. Tambahkan domain production ke Authorized domains.
 4. Uji rules dengan Firebase Emulator sebelum deploy.
-5. Endpoint reviewer menulis `entitlements/{invitationId}` berisi `ownerUid`, `active: true`, dan `expiresAt` berupa timestamp. Client tidak memiliki izin menulis entitlement.
+5. Endpoint reviewer menulis `entitlements/{invitationId}` berisi `ownerUid`, `variantId`, `active: true`, dan `expiresAt` berupa timestamp. Client tidak memiliki izin menulis entitlement.
 
-Draft Firestore dimiliki oleh `ownerUid == request.auth.uid`. Undangan publik hanya dapat dibaca jika statusnya `published`. RSVP dan wishes memiliki validasi field serta batas panjang di security rules.
+Draft Firestore dimiliki oleh `ownerUid == request.auth.uid`. Undangan publik hanya dapat dibaca jika published dan masa tayangnya aktif. RSVP dan wishes memiliki validasi field, waktu server, serta batas panjang di rules. Hapus undangan menghapus data tamu dan foto R2 yang masih direferensikan; catatan pembayaran dipertahankan untuk audit transaksi.
 
 ## Verifikasi sebelum deploy
 
 ```powershell
+npm.cmd test
+npm.cmd run test:rules # memerlukan Java 21 dan emulator Firestore
 npm.cmd run build
 git diff --check
 ```
+
+Pengujian produk nyata (membuat akun QA dan undangan sementara pada Firebase target):
+
+```powershell
+$env:PLAYWRIGHT_MODULE_PATH='C:\path\to\playwright\index.mjs'
+$env:TEST_BASE_URL='http://127.0.0.1:8788'
+node tests/product-browser.mjs
+```
+
+Jalankan Pages dev dengan `.dev.vars` berisi secret server; D1 lokal juga perlu migration. State QA dan screenshot disimpan di direktori ignored `.pages-config-scratch/browser`, untuk pembersihan akun setelah pengujian. Hasil migrasi dan batas verifikasi dijelaskan di [audit Cloudflare](docs/cloudflare-migration-audit.md).
 
 Lanjutkan dengan smoke test route pada hasil `vite preview`, emulator test untuk Firestore rules, serta QA visual desktop/mobile. Pages Functions perlu diuji melalui `wrangler pages dev dist` atau environment preview Cloudflare karena server Vite biasa tidak menjalankan folder `functions/`.
 

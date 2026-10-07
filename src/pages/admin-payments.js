@@ -16,7 +16,7 @@ async function renderAdminPaymentsWorkspace() {
           <div><a href="/dashboard" data-link class="back-link">← Kembali ke dashboard</a><p class="eyebrow">Ruang Internal</p><h1>Review Pembayaran</h1><p>Aktivasi dilakukan hanya setelah bukti, nominal, dan pesanan diperiksa.</p></div>
           <button type="button" class="btn btn--ghost" data-reload>Segarkan</button>
         </header>
-        <div class="admin-payments__notice"><span>i</span><p><strong>Kontrol dua tahap.</strong> Hasil AI adalah petunjuk, bukan keputusan pembayaran. Menyetujui transaksi membuat entitlement undangan aktif sesuai durasi paket.</p></div>
+        <div class="admin-payments__notice"><span>i</span><p><strong>Cocokkan dengan transaksi merchant.</strong> Periksa bahwa pembayaran benar-benar masuk pada aplikasi merchant atau mutasi sebelum menyetujui. Hasil AI membantu membaca screenshot. Menyetujui transaksi mengaktifkan undangan sesuai paket.</p></div>
         <div data-admin-orders class="admin-payments__list"><div class="admin-loading"><span></span>Memuat antrean pembayaran…</div></div>
       </div>
     </section>

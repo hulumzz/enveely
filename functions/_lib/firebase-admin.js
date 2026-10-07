@@ -9,6 +9,7 @@ export async function requireFirebaseUser(request, env) {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ idToken }),
+    signal: AbortSignal.timeout(10_000),
   });
   if (!response.ok) return null;
   const result = await response.json();
@@ -20,10 +21,20 @@ export function isPaymentAdmin(user, env) {
     .split(',')
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean);
-  return Boolean(user?.email && allowList.includes(String(user.email).toLowerCase()));
+  return Boolean(user?.emailVerified && user?.email && allowList.includes(String(user.email).toLowerCase()));
 }
 
-export async function writeEntitlement(env, { invitationId, ownerUid, expiresAt, orderId }) {
+export async function getOwnedInvitation(request, env, invitationId, user) {
+  const token = (request.headers.get('authorization') || '').slice(7);
+  const response = await fetch(`https://firestore.googleapis.com/v1/projects/${encodeURIComponent(env.FIREBASE_PROJECT_ID)}/databases/(default)/documents/invitations/${encodeURIComponent(invitationId)}`, {
+    headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(10_000),
+  });
+  if (!response.ok) return null;
+  const doc = await response.json();
+  return doc.fields?.ownerUid?.stringValue === user.localId ? doc.fields : null;
+}
+
+export async function writeEntitlement(env, { invitationId, ownerUid, expiresAt, orderId, variantId }) {
   const accessToken = await firebaseServiceAccessToken(env);
   if (!accessToken || !env.FIREBASE_PROJECT_ID) throw new Error('Firebase Admin belum dikonfigurasi.');
   const endpoint = `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(env.FIREBASE_PROJECT_ID)}/databases/(default)/documents/entitlements/${encodeURIComponent(invitationId)}`;
@@ -35,6 +46,7 @@ export async function writeEntitlement(env, { invitationId, ownerUid, expiresAt,
         ownerUid: { stringValue: ownerUid },
         active: { booleanValue: true },
         orderId: { stringValue: orderId },
+        variantId: { stringValue: variantId },
         expiresAt: { timestampValue: expiresAt },
         activatedAt: { timestampValue: new Date().toISOString() },
       },

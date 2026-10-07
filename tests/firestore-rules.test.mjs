@@ -1,0 +1,50 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';
+import {doc,setDoc,updateDoc,getDoc,deleteDoc,Timestamp,serverTimestamp,collection,query,where,orderBy,getDocs} from 'firebase/firestore';
+
+const env=await initializeTestEnvironment({projectId:'demo-enveely',firestore:{host:'127.0.0.1',port:8089,rules:fs.readFileSync('firestore.rules','utf8')}});
+const owner=env.authenticatedContext('owner').firestore(),other=env.authenticatedContext('other').firestore(),guest=env.unauthenticatedContext().firestore();
+const now=Timestamp.now(),expired=Timestamp.fromMillis(Date.now()-8*86400000);
+const draft={id:'free',ownerUid:'owner',status:'draft',design:{variantId:'serena-paper'},content:{}};
+const ref=(db,id)=>doc(db,'invitations',id);
+try {
+  await assertSucceeds(setDoc(ref(owner,'free'),draft));
+  await assertFails(getDoc(ref(guest,'free')));
+  await assertFails(updateDoc(ref(other,'free'),{content:{name:'tampered'}}));
+  await assertFails(setDoc(ref(owner,'fake-clock'),{...draft,freeActivatedAt:Timestamp.fromMillis(Date.now()+86400000)}));
+  await assertFails(updateDoc(ref(owner,'free'),{freeActivatedAt:Timestamp.fromMillis(Date.now()+86400000)}));
+  await assertSucceeds(updateDoc(ref(owner,'free'),{status:'published',freeActivatedAt:serverTimestamp()}));
+  await assertSucceeds(getDoc(ref(guest,'free')));
+  await assertFails(updateDoc(ref(owner,'free'),{status:'draft',freeActivatedAt:serverTimestamp()}));
+  await assertSucceeds(updateDoc(ref(owner,'free'),{status:'draft'}));
+  await assertFails(updateDoc(ref(owner,'free'),{freeActivatedAt:serverTimestamp()}));
+  await assertSucceeds(updateDoc(ref(owner,'free'),{status:'published'}));
+  await assertFails(setDoc(doc(owner,'entitlements','free'),{ownerUid:'owner',active:true}));
+  await env.withSecurityRulesDisabled(async ctx=>{
+    const db=ctx.firestore();
+    await setDoc(ref(db,'expired'),{...draft,status:'published',freeActivatedAt:expired});
+    await setDoc(ref(db,'paid'),{...draft,status:'published',design:{variantId:'amora-garden'}});
+    await setDoc(doc(db,'entitlements','paid'),{ownerUid:'owner',active:true,variantId:'amora-garden',expiresAt:Timestamp.fromMillis(Date.now()+86400000)});
+  });
+  await assertFails(getDoc(ref(guest,'expired')));
+  await assertSucceeds(getDoc(ref(guest,'paid')));
+  await assertFails(updateDoc(ref(owner,'paid'),{design:{variantId:'lumiere-gallery'}}));
+  const rsvp={name:'Tamu',attendance:'attending',guestCount:2,message:'Sampai jumpa',createdAt:serverTimestamp()};
+  await assertSucceeds(setDoc(doc(guest,'invitations','free','rsvps','one'),rsvp));
+  await assertFails(setDoc(doc(guest,'invitations','expired','rsvps','one'),rsvp));
+  await assertFails(setDoc(doc(guest,'invitations','free','rsvps','invalid'),{...rsvp,guestCount:1.5}));
+  await assertFails(getDoc(doc(guest,'invitations','free','rsvps','one')));
+  await assertSucceeds(getDoc(doc(owner,'invitations','free','rsvps','one')));
+  const wish={name:'Tamu',message:'Selamat!',approved:false,createdAt:serverTimestamp()};
+  await assertSucceeds(setDoc(doc(guest,'invitations','free','wishes','one'),wish));
+  await assertFails(setDoc(doc(guest,'invitations','free','wishes','auto'),{...wish,approved:true}));
+  await assertFails(getDoc(doc(guest,'invitations','free','wishes','one')));
+  await assertSucceeds(updateDoc(doc(owner,'invitations','free','wishes','one'),{approved:true}));
+  const wishes=await assertSucceeds(getDocs(query(collection(guest,'invitations','free','wishes'),where('approved','==',true),orderBy('createdAt','desc'))));
+  assert.equal(wishes.size,1);
+  await assertFails(deleteDoc(doc(guest,'invitations','free','rsvps','one')));
+  await assertFails(deleteDoc(doc(other,'invitations','free','rsvps','one')));
+  await assertSucceeds(deleteDoc(doc(owner,'invitations','free','rsvps','one')));
+  console.log('PASS: 27 Firestore access checks: ownership, free expiry/reset, paid variant, RSVP validation/deletion, wish moderation.');
+}finally{await env.cleanup();}

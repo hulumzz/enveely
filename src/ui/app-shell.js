@@ -146,13 +146,13 @@ function wireAuthUI(root) {
       account.innerHTML = `
         <button type="button" class="navbar__avatar" aria-haspopup="menu">
           ${user.photoURL
-            ? `<img src="${user.photoURL}" alt="" referrerpolicy="no-referrer"/>`
-            : `<span>${(user.displayName || 'U').charAt(0).toUpperCase()}</span>`}
+            ? `<img src="${escapeHtml(user.photoURL)}" alt="" referrerpolicy="no-referrer"/>`
+            : `<span>${escapeHtml((user.displayName || 'U').charAt(0).toUpperCase())}</span>`}
         </button>`;
       account.querySelector('button').addEventListener('click', () => {
         openModal({
           title: user.displayName || 'Akun',
-          body: `<p>${user.email || ''}</p>`,
+          body: `<p>${escapeHtml(user.email || '')}</p>`,
           actions: [
             { label: 'Keluar', onClick: async () => { await logout(); toast('Sampai jumpa!', { type: 'success' }); } },
             { label: 'Tutup', kind: 'primary' },
@@ -177,3 +177,4 @@ export function renderPage(html, setup) {
 }
 
 export { t };
+function escapeHtml(value) {return String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));}
