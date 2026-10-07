@@ -43,7 +43,7 @@ Firebase rules lama, konfigurasi Auth, dan konfigurasi Pages dibackup pada direk
 - Emulator Firebase: 27 access checks lulus, mencakup pemilik, free expiry/reset, paid variant, RSVP validation/deletion, dan moderasi ucapan.
 - Browser Chrome desktop/mobile: 18 kombinasi route/viewport awal; registrasi, login, profil, create, upload R2, autosave cloud, publish, pemulihan pada browser kedua, RSVP, ucapan, moderasi, filter, hapus, metadata server, dan HTTP 404 telah lulus.
 - Vite build dan bundling Pages Functions lulus. Peringatan dynamic/static import tidak menggagalkan build.
-- `npm audit --omit=dev`: 0 vulnerability. Audit penuh masih memiliki temuan pada tooling development; tidak dilakukan force downgrade yang merusak toolchain.
+- `npm audit --omit=dev`: 0 vulnerability. Audit penuh mencatat 14 temuan (4 moderate, 10 high) pada dependency tooling Firebase CLI/Wrangler dan turunannya, termasuk Sharp, FTP/proxy, telemetry, dan glob. Tidak dilakukan force downgrade yang merusak toolchain; pembaruan tooling berikutnya perlu ditinjau.
 
 Tes browser lokal lengkap juga lulus untuk Workers AI langsung, penolakan akses admin nonreviewer, gambar QRIS, selisih tambahan durasi Rp15.000, checkout 320/1440 px tanpa overflow, cascade delete, dan HTTP 404 foto yang telah dihapus. Deployment production, cleanup QA, dan hasil smoke production dicatat pada bagian rilis di bawah.
 
@@ -61,7 +61,15 @@ Data contoh pada galeri template adalah demo desain yang disengaja. Draf penggun
 
 ## Rilis
 
-Menunggu catatan deployment dan smoke production final.
+- Perubahan aplikasi: commit `66583140c635e28b177ae06433233603f9a146e6`, sudah dipush ke `hulumzz/enveely/main`.
+- Deploy Wrangler production sukses: `315761d8-e722-40c5-9863-575f60f7073f`, URL `https://315761d8.enveely.pages.dev`.
+- Build Git otomatis untuk commit yang sama juga sukses dan menjadi canonical deployment: `2703f0f9-e0db-49c3-8a80-6b7b18a37aca`, selesai 8 Oktober 2026 sekitar 01.09 WIB. Domain utama `https://enveely.pages.dev` tersedia.
+- Tes produk lengkap terhadap domain production **lulus**: 18 route/viewport checks, registrasi/login/profil nyata, create/upload/cloud/publish, pemulihan lewat browser kedua, RSVP/ucapan/moderasi, Workers AI, otorisasi admin, QRIS/nominal durasi, filter/cascade delete, metadata server dan 404 publik. D1/R2 production dan Firebase asli digunakan; tidak ada pembayaran bank atau approval dana palsu.
+- Kredensial Firebase Admin benar-benar diuji menulis/membaca entitlement sementara, kemudian dokumen tersebut dihapus. Approval transaksi tetap diuji dengan SQLite/mocks; akun reviewer asli belum tersedia untuk uji browser admin.
+- Cleanup: 7 akun QA Firebase dari seluruh percobaan dihapus; 13 dokumen sisa dari percobaan awal dibersihkan. Uji production terakhir menghapus undangan, guest responses, dan foto lewat aplikasi sendiri; cleanup admin tidak menemukan sisa dokumen undangannya. Quota D1 hanya UID QA production dibersihkan.
+- Pemeriksaan terakhir: D1 `payment_orders` = 0; migration 0001/0002 terpasang; kedua bucket R2 berisi 0 objek dan managed public domain disabled. Foto QA yang dihapus memberi HTTP 404.
+- Smoke HTTP: `/`, `/templates`, `/login`, `/help`, `/privacy`, `/terms` memberi 200; `/api/payments` tanpa login memberi 401, `/api/admin/payments` tanpa reviewer memberi 403, undangan/foto yang tidak ada memberi 404.
+- Secret dan payload merchant tidak masuk file staged/commit. Node build Pages dipilih versi 24, sesuai toolchain yang diuji.
 
 ## Referensi operasional
 
