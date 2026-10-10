@@ -45,9 +45,9 @@ export function renderTemplateGallery() {
     <section class="section gallery-page">
       <div class="container">
         <header class="gallery-head reveal">
-          <p class="eyebrow">Koleksi Desain Pilihan</p>
-          <h1 class="section__title">Pilih Desain yang Paling Terasa Seperti Kalian.</h1>
-          <p class="section__subtitle">Tiap keluarga punya tata letak, tipografi, dan cara menampilkan foto yang berbeda. Geser pratinjau di tiap kartu untuk membandingkan variasinya.</p>
+
+          <h1 class="section__title">Temukan desain untuk acaramu.</h1>
+          <p class="section__subtitle">Bandingkan contoh, foto, dan harga. Geser kartu untuk melihat pilihan warna sebelum mulai mengedit.</p>
         </header>
 
         <div class="gallery-filters" role="group" aria-label="Filter template">

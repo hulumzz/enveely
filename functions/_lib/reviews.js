@@ -1,0 +1,3 @@
+export function validReview(body){return body && typeof body.displayName==='string' && body.displayName.trim().length>=2 && body.displayName.trim().length<=80 && typeof body.message==='string' && body.message.trim().length>=12 && body.message.trim().length<=1200 && Number.isInteger(body.rating) && body.rating>=1 && body.rating<=5 && body.publicConsent===true;}
+export function publicReview(row){return {id:row.id,displayName:row.display_name,rating:row.rating,message:row.message};}
+export function privateReview(row){return {...publicReview(row),status:row.status,source:row.source,updatedAt:row.updated_at,createdAt:row.created_at};}

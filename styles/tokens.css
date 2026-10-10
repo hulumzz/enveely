@@ -1,24 +1,24 @@
 /* Enveely — Design tokens (Design-1.md §4–8).
    Product UI palette only; invitation templates define their own palettes.
-   Enhanced with tempwed's luxury wedding palette & typography. */
+   Product palette: ink navy, blue grey and pearl white. */
 
 :root {
   /* Base — Warm cream canvas */
-  --canvas: #FAF7F2;
+  --canvas: #F7F9FA;
   --surface: #FFFFFF;
-  --surface-soft: #F5F0EA;
-  --border: #E8DCC8;
-  --text: #3A2B28;
-  --text-soft: #7E6B65;
-  --muted: #A89484;
+  --surface-soft: #EEF3F5;
+  --border: #DCE5EB;
+  --text: #233C4D;
+  --text-soft: #536977;
+  --muted: #718592;
 
   /* Accent — Warm terracotta/gold */
-  --accent: #A6634B;
-  --accent-light: #C98870;
-  --accent-dark: #7A3F2C;
-  --gold: #D4AF37;
-  --gold-light: #F3E5AB;
-  --accent-soft: #EDE2D8;
+  --accent: #294D65;
+  --accent-light: #5B8097;
+  --accent-dark: #183548;
+  --gold: #879EAD;
+  --gold-light: #E3ECF2;
+  --accent-soft: #E6EEF3;
 
   /* Semantic */
   --success: #427a63;
@@ -65,9 +65,9 @@
   --radius-pill: 999px;
 
   /* Shadows — Warm, soft shadows */
-  --shadow-sm: 0 4px 12px rgba(166, 99, 75, 0.08);
-  --shadow-md: 0 8px 24px rgba(166, 99, 75, 0.12);
-  --shadow-lg: 0 16px 36px rgba(166, 99, 75, 0.18);
+  --shadow-sm: 0 4px 12px rgba(35, 60, 77, 0.08);
+  --shadow-md: 0 8px 24px rgba(35, 60, 77, 0.12);
+  --shadow-lg: 0 16px 36px rgba(35, 60, 77, 0.18);
   --shadow-glass: 0 8px 32px 0 rgba(100, 60, 45, 0.1);
   --shadow-soft: 0 8px 30px rgba(58, 43, 40, 0.06);
   --shadow-floating: 0 15px 50px rgba(58, 43, 40, 0.10);

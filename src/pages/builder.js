@@ -1,4 +1,5 @@
 import {loadDesignAssets} from '../services/design-assets.js';
+import {icon} from '../core/icons.js';
 // Enveely — Builder page (Design-1.md §15–18).
 // Three-area editor: Section Navigator | Live Canvas | Property Panel.
 // All edits mutate the draft object -> autosave (draft-store) -> canvas repaint.
@@ -48,16 +49,16 @@ async function renderBuilderWorkspace(invitationId) {
   renderPage(
     `
     <style>${builderCss}</style>
-    <div class="builder" data-builder>
+    <div class="builder" data-builder data-mobile-pane="edit">
       <header class="builder__top">
         <a href="/" data-link class="builder__logo">ENVEELY</a>
         <span class="builder__title">${escTitle(draft)}</span>
         <span class="builder__save" data-save-status>Tersimpan</span>${pending.length ? '<button type="button" class="btn btn--ghost btn--sm" data-retry-media>Coba unggah lagi</button>' : ''}
         <div class="builder__top-actions">
-          <button type="button" class="btn btn--ai btn--sm" data-act="assist">✦ Bantu isi</button>
-          <button type="button" class="btn btn--ghost btn--sm" data-act="preview">Pratinjau</button>
-          <button type="button" class="btn btn--primary btn--sm" data-act="publish">Publikasikan</button>
-        </div>
+          <button type="button" class="btn btn--ai btn--sm" data-act="assist">${icon('edit',{size:15})} Bantu isi</button>
+          <button type="button" class="btn btn--ghost btn--sm" data-act="preview">${icon('eye',{size:16})} Pratinjau</button>
+          <button type="button" class="btn btn--primary btn--sm" data-act="publish">${icon('send',{size:16})} Publikasikan</button>
+        </div><div class="editor-mobile-switch" role="group" aria-label="Tampilan editor"><button type="button" data-mobile-pane-button="edit" class="is-active" aria-pressed="true">${icon('edit',{size:15})} Edit isi</button><button type="button" data-mobile-pane-button="preview" aria-pressed="false">${icon('eye',{size:15})} Lihat hasil</button></div>
       </header>
 
       <aside class="builder__nav" data-nav></aside>
@@ -78,6 +79,7 @@ async function renderBuilderWorkspace(invitationId) {
       };
 
       const rootEl = document.querySelector('[data-builder]');
+      rootEl.querySelectorAll('[data-mobile-pane-button]').forEach(button=>button.addEventListener('click',()=>{rootEl.dataset.mobilePane=button.dataset.mobilePaneButton;rootEl.querySelectorAll('[data-mobile-pane-button]').forEach(item=>{const active=item===button;item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active));});window.scrollTo({top:0,behavior:'instant'});}));
       const nav = rootEl.querySelector('[data-nav]');
       const canvas = rootEl.querySelector('[data-canvas]');
       const props = rootEl.querySelector('[data-props]');
@@ -130,7 +132,7 @@ async function renderBuilderWorkspace(invitationId) {
             return `
             <button type="button" class="bnav__item ${s.id === state.selectedSection ? 'is-active' : ''} ${s.enabled === false ? 'is-off' : ''}" data-nav-item="${s.id}">
               <span>${def?.labelID || s.id}</span>
-              <span class="bnav__eye" title="${s.enabled === false ? 'Tampilkan' : 'Sembunyikan'}">${s.enabled === false ? '◌' : '◉'}</span>
+              <span class="bnav__eye" title="${s.enabled === false ? 'Tampilkan' : 'Sembunyikan'}">${icon(s.enabled === false ? 'plus' : 'eye',{size:15})}</span>
             </button>`;
           }).join('')}
         `;
@@ -150,7 +152,7 @@ async function renderBuilderWorkspace(invitationId) {
       function paintProps() {
         const def = getSectionDef(state.selectedSection);
         const header = propsHeader(
-          def?.labelID?.charAt(0) || '✦',
+          icon(({cover:'mail',couple:'users',event:'calendar',gallery:'image',rsvp:'chat',gift:'gift',music:'music',story:'edit',closing:'send'})[state.selectedSection] || 'layers',{size:20}),
           def?.labelID || state.selectedSection,
           'Atur konten bagian ini',
         );
@@ -186,7 +188,7 @@ async function renderBuilderWorkspace(invitationId) {
         applyAssistantDraft(state.draft, result.content);
         persist(); paintCanvas(); paintProps();
         button.disabled = false;
-        button.textContent = '✦ Bantu isi';
+        button.innerHTML = icon('edit',{size:15})+' Bantu isi';
         state.aiBusy = false;
         toast(result.source !== 'local' ? 'Saran teks siap kamu sesuaikan.' : 'Saran dasar sudah disiapkan. Kamu tetap bisa mengedit semuanya.', { type: 'success' });
       });
@@ -256,12 +258,12 @@ function panel(title, body, hint = '') {
 function propsHeader(iconChar, title, subtitle) {
   return `
   <header class="builder__props-head">
-    <span class="builder__props-head-icon">${iconChar || '✦'}</span>
+    <span class="builder__props-head-icon">${iconChar || icon('layers',{size:20})}</span>
     <span class="builder__props-head-text">
       <strong>${title}</strong>
       <small>${subtitle}</small>
     </span>
-    <span class="builder__props-ai">✦ Pilih kolom lalu pakai saran</span>
+    <span class="builder__props-ai">Saran tersedia di kolom teks</span>
   </header>`;
 }
 
@@ -284,7 +286,7 @@ function textarea(label, name, value, placeholder = '') {
 }
 
 function aiButton(name) {
-  return isAiField(name) ? `<button type="button" class="field-suggest" data-ai-suggest="${name}">✦ Saran caption</button>` : '';
+  return isAiField(name) ? `<button type="button" class="field-suggest" data-ai-suggest="${name}">Saran teks</button>` : '';
 }
 
 function isAiField(name) {
@@ -325,7 +327,7 @@ function eventsProps(draft) {
         <div class="bevent" data-event-index="${i}">
           <div class="bevent__head">
             <strong>${escapeHtml(ev.title || `Acara ${i + 1}`)}</strong>
-            <button type="button" class="icon-btn" data-del-event="${i}" title="Hapus">✕</button>
+            <button type="button" class="icon-btn" data-del-event="${i}" title="Hapus">${icon('trash',{size:15})}</button>
           </div>
           ${field('Judul', `events.${i}.title`, ev.title)}
           <div class="form-row form-row--2">
@@ -356,7 +358,7 @@ function galleryProps(draft, state) {
         <figure class="bgallery__item">
           <img src="${escapeAttr(p.url)}" alt="" loading="lazy"/>
           ${p._local ? '<span class="bgallery__uploading">Mengunggah</span>' : ''}
-          <button type="button" class="icon-btn icon-btn--danger" data-del-photo="${i}" title="Hapus">✕</button>
+          <button type="button" class="icon-btn icon-btn--danger" data-del-photo="${i}" title="Hapus">${icon('trash',{size:15})}</button>
         </figure>`).join('')}
       <label class="upload-drop ${state.uploading || !remaining ? 'is-busy' : ''}">
         <input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden data-gallery-upload ${remaining ? '' : 'disabled'}/>
@@ -464,7 +466,7 @@ function storyProps(draft, state) {
         <div class="bstory__item" data-story-index="${i}">
           <div class="bstory__head">
             <strong>${escapeHtml(s.title || `Momen ${i + 1}`)}</strong>
-            <button type="button" class="icon-btn" data-del-story="${i}" title="Hapus">✕</button>
+            <button type="button" class="icon-btn" data-del-story="${i}" title="Hapus">${icon('trash',{size:15})}</button>
           </div>
           ${field('Waktu / Tahun', `story.${i}.date`, s.date || '', 'placeholder="cth. 2022"')}
           ${field('Judul', `story.${i}.title`, s.title || '')}
@@ -527,7 +529,7 @@ function giftProps(draft, state) {
         <div class="bgift-account" data-gift-index="${i}">
           <div class="bgift-account__head">
             <strong>${escapeHtml((a.bank || 'Bank') + ' · ' + (a.holder || ''))}</strong>
-            <button type="button" class="icon-btn" data-del-gift="${i}" title="Hapus">✕</button>
+            <button type="button" class="icon-btn" data-del-gift="${i}" title="Hapus">${icon('trash',{size:15})}</button>
           </div>
           ${field('Bank', `giftSettings.accounts.${i}.bank`, a.bank || '')}
           ${field('Nomor rekening', `giftSettings.accounts.${i}.number`, a.number || '')}
@@ -580,7 +582,7 @@ function infoSectionProps(draft) {
     ${textarea('Info akses / parkir / transport', 'infoSettings.access', i.access || '', 'Parkir tersedia di basement, akses dari pintu samping...')}
     ${textarea('Catatan tambahan', 'infoSettings.notes', i.notes || '', 'Info lain yang perlu tamu tahu...')}
     `,
-    'Tamu tidak perlu scroll-balik ke info praktis — semua tampil di satu kartu.',
+    'Tamu bisa melihat info praktis dalam satu kartu.',
   );
 }
 
@@ -655,7 +657,7 @@ function wireProps(root, state, { persist, paintCanvas, repaintProps }) {
         toast('Lengkapi nama atau detail acara dulu agar saran lebih relevan.', { type: 'error' });
       }
       button.disabled = false;
-      button.textContent = '✦ Saran caption';
+      button.textContent = 'Saran teks';
     });
   });
 
@@ -958,9 +960,9 @@ function showShareModal(state, { cloud }) {
   });
 
   openModal({
-    title: 'Undangan Sudah Tayang ✨',
+    title: 'Undangan sudah tayang',
     body: `
-      ${cloud ? '' : '<p class="bprops__hint">Belum pakai Firebase? Tautan hanya jalan di perangkat ini. Aktifkan Firebase biar bisa dishare ke tamu.</p>'}
+      ${cloud ? '' : '<p class="bprops__hint">Undangan belum tersinkron. Coba publikasikan kembali sebelum membagikan tautan.</p>'}
       <div class="share-link-box">
         <input readonly value="${url}" data-share-url/>
         <button type="button" class="btn btn--ghost btn--sm" data-copy-link>Salin</button>
@@ -969,7 +971,7 @@ function showShareModal(state, { cloud }) {
         <a class="btn btn--primary btn--sm" target="_blank" rel="noopener" href="${whatsappUrl(msg)}" data-share-wa>Kirim via WhatsApp</a>
         <button type="button" class="btn btn--ghost btn--sm" data-share-native>Bagikan Lainnya</button>
       </div>
-      <a href="/invite/${draft.id}" data-link class="text-link">Buka undangan →</a>`,
+      <a href="/invite/${draft.id}" data-link class="text-link">Buka undangan ${icon('arrowRight',{size:16})}</a>`,
     actions: [{ label: 'Selesai', kind: 'primary' }],
   });
 
@@ -981,7 +983,7 @@ function showShareModal(state, { cloud }) {
   document.querySelector('[data-share-wa]')?.addEventListener('click', () => analyticsEvents.shareWhatsapp());
   document.querySelector('[data-share-native]')?.addEventListener('click', async () => {
     const res = await nativeShare({ title: `${draft.content.groom?.name || ''} & ${draft.content.bride?.name || ''}`, text: msg, url });
-    if (res === 'unsupported') toast('Share sheet tidak tersedia — pakai tombol Salin saja.');
+    if (res === 'unsupported') toast('Bagikan lewat tombol Salin tautan.');
   });
 }
 

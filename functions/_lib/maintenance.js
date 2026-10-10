@@ -23,6 +23,11 @@ export async function maintenance(env) {
   const proofs=await db.prepare("SELECT id,proof_key FROM payment_orders WHERE proof_key<>'' AND status IN ('active','rejected','refunded') AND updated_at<? LIMIT 3").bind(new Date(now-180*86400000).toISOString()).all();
   for(const proof of proofs.results) {await env.PAYMENT_PROOFS.delete(proof.proof_key);await db.prepare("UPDATE payment_orders SET proof_key='' WHERE id=? AND proof_key=?").bind(proof.id,proof.proof_key).run();proofsRemoved++;}
   await db.prepare('DELETE FROM request_limits WHERE window_start<?').bind(Math.floor(now/1000)-7*86400).run();
+  await db.batch([
+   db.prepare('DELETE FROM analytics_events WHERE day<?').bind(new Date(now-7*86400000).toISOString().slice(0,10)),
+   db.prepare('DELETE FROM analytics_sessions WHERE day<?').bind(new Date(now-31*86400000).toISOString().slice(0,10)),
+   db.prepare('DELETE FROM analytics_daily WHERE day<?').bind(new Date(now-400*86400000).toISOString().slice(0,10)),
+  ]);
   console.log(JSON.stringify({event:'maintenance_complete',...activation,mediaRemoved,proofsRemoved}));
   return {...activation,mediaRemoved,proofsRemoved};
  }finally{await db.prepare("DELETE FROM maintenance_locks WHERE name='maintenance' AND token=?").bind(token).run();}

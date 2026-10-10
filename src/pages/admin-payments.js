@@ -1,112 +1,19 @@
-import { renderPage } from '../ui/app-shell.js';
-import { requireAuthenticated } from '../services/access.js';
-import { getAuthToken } from '../services/auth.js';
-import { formatRupiah } from '../data/plans.js';
-import { toast } from '../ui/overlays.js';
-
-export function renderAdminPayments() {
-  return requireAuthenticated(() => renderAdminPaymentsWorkspace(), '/admin/payments');
-}
-
-async function renderAdminPaymentsWorkspace() {
-  renderPage(`
-    <section class="admin-payments">
-      <div class="container admin-payments__inner">
-        <header class="admin-payments__head">
-          <div><a href="/dashboard" data-link class="back-link">← Kembali ke dashboard</a><p class="eyebrow">Ruang Internal</p><h1>Review Pembayaran</h1><p>Aktivasi dilakukan hanya setelah bukti, nominal, dan pesanan diperiksa.</p></div>
-          <button type="button" class="btn btn--ghost" data-reload>Segarkan</button>
-        </header>
-        <div class="admin-payments__notice"><span>i</span><p><strong>Cocokkan dengan transaksi merchant.</strong> Periksa bahwa pembayaran benar-benar masuk pada aplikasi merchant atau mutasi sebelum menyetujui. Hasil AI membantu membaca screenshot. Menyetujui transaksi mengaktifkan undangan sesuai paket.</p></div>
-        <div data-admin-orders class="admin-payments__list"><div class="admin-loading"><span></span>Memuat antrean pembayaran…</div></div>
-      </div>
-    </section>
-  `, (root) => wireAdminPayments(root));
-}
-
-async function wireAdminPayments(root) {
-  const host = root.querySelector('[data-admin-orders]');
-  const load = async () => {
-    host.innerHTML = '<div class="admin-loading"><span></span>Memuat antrean pembayaran…</div>';
-    try {
-      const token = await getAuthToken();
-      const response = await fetch('/api/admin/payments', { headers: { Authorization: `Bearer ${token}` } });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload.message || 'Antrean belum dapat dimuat.');
-      host.innerHTML = payload.orders?.length ? payload.orders.map(orderCard).join('') : emptyQueue();
-      wireOrderActions(host, load);
-    } catch (error) {
-      host.innerHTML = `<div class="admin-denied"><span>⌁</span><h2>Akses review belum tersedia</h2><p>${escapeHtml(error.message || 'Masuk menggunakan akun admin yang telah diizinkan.')}</p></div>`;
-    }
-  };
-  root.querySelector('[data-reload]').addEventListener('click', load);
-  await load();
-}
-
-function orderCard(order) {
-  const aiResult = order.status === 'ai_match' ? 'Nominal terbaca cocok oleh AI' : 'Perlu pengecekan manual';
-  const date = new Date(order.updated_at || order.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
-  return `
-    <article class="admin-order" data-order="${escapeHtml(order.id)}">
-      <div class="admin-order__top"><div><p class="eyebrow">${escapeHtml(order.variant_id.replaceAll('-', ' '))}</p><h2>${formatRupiah(order.expected_total)}</h2><p>${escapeHtml(order.id)} · ${escapeHtml(date)}</p></div><span class="admin-order__state admin-order__state--${escapeHtml(order.status)}">${escapeHtml(aiResult)}</span></div>
-      <dl class="admin-order__facts"><div><dt>Durasi</dt><dd>${order.duration_months} bulan</dd></div><div><dt>Nominal terbaca</dt><dd>${order.ai_amount ? formatRupiah(order.ai_amount) : 'Tidak terbaca'}</dd></div><div><dt>Keyakinan AI</dt><dd>${Math.round(Number(order.ai_confidence || 0) * 100)}%</dd></div></dl>
-      <p class="admin-order__summary">${escapeHtml(order.ai_summary || 'AI belum memberikan rangkuman.')}</p>
-      <div class="admin-order__proof" data-proof-host><button type="button" class="btn btn--ghost btn--sm" data-view-proof="${escapeHtml(order.id)}">Lihat bukti privat</button></div>
-      <label>Referensi transaksi merchant<input data-transaction-reference="${escapeHtml(order.id)}" maxlength="100" placeholder="Nomor referensi dari catatan merchant" value="${escapeHtml(order.transaction_ref || '')}" /></label><div class="admin-order__actions"><button type="button" class="btn btn--ghost" data-review="reject" data-order-id="${escapeHtml(order.id)}">Tolak & Minta Ulang</button><button type="button" class="btn btn--primary" data-review="approve" data-order-id="${escapeHtml(order.id)}">Setujui & Aktifkan</button></div>
-    </article>`;
-}
-
-function wireOrderActions(host, refresh) {
-  host.querySelectorAll('[data-view-proof]').forEach((button) => button.addEventListener('click', async () => {
-    const card = button.closest('[data-order]');
-    const proofHost = card.querySelector('[data-proof-host]');
-    button.disabled = true;
-    button.textContent = 'Memuat bukti…';
-    try {
-      const token = await getAuthToken();
-      const response = await fetch(`/api/admin/payments/${encodeURIComponent(button.dataset.viewProof)}/proof`, { headers: { Authorization: `Bearer ${token}` } });
-      if (!response.ok) throw new Error('Bukti tidak dapat dimuat.');
-      const url = URL.createObjectURL(await response.blob());
-      proofHost.innerHTML = `<img src="${url}" alt="Bukti pembayaran privat"/><button type="button" class="admin-order__hide-proof">Sembunyikan bukti</button>`;
-      proofHost.querySelector('button').addEventListener('click', () => { URL.revokeObjectURL(url); proofHost.innerHTML = `<button type="button" class="btn btn--ghost btn--sm" data-view-proof="${escapeHtml(button.dataset.viewProof)}">Lihat bukti privat</button>`; proofHost.querySelector('button').addEventListener('click', () => button.click()); });
-    } catch (error) {
-      toast(error.message, { type: 'error' });
-      button.disabled = false;
-      button.textContent = 'Lihat bukti privat';
-    }
-  }));
-
-  host.querySelectorAll('[data-review]').forEach((button) => button.addEventListener('click', async () => {
-    const decision = button.dataset.review;
-    const confirmation = decision === 'approve'
-      ? 'Setujui transaksi ini dan aktifkan masa tayang undangan?'
-      : 'Tolak transaksi ini dan tandai pengguna untuk mengunggah bukti baru?';
-    if (!window.confirm(confirmation)) return;
-    const original = button.textContent;
-    button.disabled = true;
-    button.textContent = 'Memproses…';
-    try {
-      const token = await getAuthToken();
-      const response = await fetch(`/api/admin/payments/${encodeURIComponent(button.dataset.orderId)}/review`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-        body: JSON.stringify({ decision,transactionReference:host.querySelector(`[data-transaction-reference="${button.dataset.orderId}"]`)?.value || '' }),
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload.message || 'Review tidak dapat disimpan.');
-      toast(decision === 'approve' ? 'Pembayaran disetujui dan undangan aktif.' : 'Pembayaran ditolak. Pengguna dapat memperbarui bukti.', { type: 'success' });
-      refresh();
-    } catch (error) {
-      button.disabled = false;
-      button.textContent = original;
-      toast(error.message, { type: 'error' });
-    }
-  }));
-}
-
-function emptyQueue() {
-  return '<div class="admin-denied"><span>✓</span><h2>Antrean sudah bersih.</h2><p>Tidak ada pembayaran yang menunggu review saat ini.</p></div>';
-}
-
-function escapeHtml(value) {
-  return String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
-}
+import {renderPage} from '../ui/app-shell.js';
+import {requireAuthenticated} from '../services/access.js';
+import {getAuthToken} from '../services/auth.js';
+import {formatRupiah} from '../data/plans.js';
+import {paymentStatusLabel} from '../services/payment-store.js';
+import {esc} from '../core/format.js';
+import {icon} from '../core/icons.js';
+import {toast,openModal} from '../ui/overlays.js';
+export function renderAdminPayments(){return requireAuthenticated(()=>workspace(),'/admin/payments'+location.search);}
+function workspace(){renderPage(`<section class="admin-payments admin-workspace"><div class="container"><header class="admin-page-head"><div><h1>Pembayaran</h1><p>Cocokkan bukti dengan transaksi merchant, lalu setujui aktivasi atau minta perbaikan.</p></div><button type="button" class="btn btn--ghost btn--sm" data-reload>${icon('refresh',{size:16})} Segarkan</button></header><div class="admin-payments__notice">${icon('shield',{size:22})}<p><strong>Periksa transaksi merchant sebelum menyetujui.</strong> Pembacaan AI membantu membaca bukti. Nominal dan referensi pembayaran tetap harus dicocokkan dengan transaksi yang benar-benar masuk.</p></div><div class="admin-payment-filters" role="group" aria-label="Filter pembayaran">${[['queue','Perlu tindakan'],['active','Disetujui'],['rejected','Ditolak'],['expired','Kedaluwarsa'],['all','Semua']].map(([id,name])=>`<button type="button" data-payment-filter="${id}" aria-pressed="${id==='queue'}" class="${id==='queue'?'is-active':''}">${name}</button>`).join('')}</div><div data-admin-orders class="admin-payments__list" aria-live="polite"></div><button type="button" data-more-orders class="btn btn--ghost btn--sm" hidden>Muat pembayaran berikutnya</button></div></section>`,root=>{const host=root.querySelector('[data-admin-orders]'),more=root.querySelector('[data-more-orders]'),urls=new Set();let cursor=null,status='queue',disposed=false,generation=0;
+ const cleanupUrls=()=>{for(const url of urls)URL.revokeObjectURL(url);urls.clear();};
+ const load=async append=>{const version=append?generation:++generation;if(!append){cleanupUrls();host.innerHTML='<div class="workspace-loading">Memuat pembayaran…</div>';cursor=null;more.hidden=true;}more.disabled=true;
+ try{const token=await getAuthToken(),response=await fetch(`/api/admin/payments?status=${status}${append && cursor?`&cursor=${encodeURIComponent(cursor)}`:''}`,{headers:{authorization:`Bearer ${token}`}}),data=await response.json();if(!response.ok)throw new Error(data.message);if(disposed || !host.isConnected || version!==generation)return;const markup=data.orders.map(orderCard).join('');if(append)host.insertAdjacentHTML('beforeend',markup);else host.innerHTML=markup || `<div class="admin-chart-empty">${icon('check',{size:26})}<h2>${status==='queue'?'Tidak ada pembayaran yang perlu tindakan.':'Belum ada pembayaran dalam pilihan ini.'}</h2><p>Status akan diperbarui setelah bukti diperiksa dan aktivasi diselesaikan.</p></div>`;cursor=data.cursor;more.hidden=!cursor;}catch(error){if(!disposed && version===generation){if(append)toast(error.message,{type:'error'});else host.innerHTML=`<div class="admin-data-error">${icon('shield',{size:28})}<h2>Pembayaran belum tersedia</h2><p>${esc(error.message || 'Periksa koneksi dan akses admin.')}</p></div>`;}}finally{more.disabled=false;}};
+ const showProof=async(button,card)=>{const id=card.dataset.order,proof=card.querySelector('[data-proof-host]');button.disabled=true;try{const token=await getAuthToken(),response=await fetch(`/api/admin/payments/${encodeURIComponent(id)}/proof`,{headers:{authorization:`Bearer ${token}`}});if(!response.ok)throw new Error('Bukti tidak tersedia atau sudah dibersihkan sesuai retensi.');const url=URL.createObjectURL(await response.blob());if(disposed || !proof.isConnected){URL.revokeObjectURL(url);return;}urls.add(url);proof.dataset.proofUrl=url;proof.innerHTML=`<img src="${url}" alt="Bukti pembayaran privat"><button type="button" class="btn btn--ghost btn--sm" data-hide-proof>Sembunyikan bukti</button>`;}catch(error){toast(error.message,{type:'error'});button.disabled=false;}};
+ host.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;const card=button.closest('[data-order]');if(button.hasAttribute('data-view-proof'))return showProof(button,card);if(button.hasAttribute('data-hide-proof')){const proof=card.querySelector('[data-proof-host]');URL.revokeObjectURL(proof.dataset.proofUrl);urls.delete(proof.dataset.proofUrl);delete proof.dataset.proofUrl;proof.innerHTML=`<button type="button" class="btn btn--ghost btn--sm" data-view-proof>${icon('eye',{size:16})} Lihat bukti privat</button>`;return;}if(!button.dataset.review)return;const decision=button.dataset.review,pending=card.dataset.status==='activation_pending',reference=card.querySelector('[data-transaction-reference]')?.value.trim() || '';if(decision==='approve' && !pending && !/^[A-Z0-9 ._:/-]{6,100}$/i.test(reference)){toast('Isi referensi transaksi merchant yang sudah diperiksa.',{type:'error'});card.querySelector('input')?.focus();return;}
+ openModal({title:decision==='approve'?(pending?'Coba selesaikan aktivasi?':'Setujui pembayaran ini?'):'Tolak bukti pembayaran?',body:decision==='approve'?'<p>Pastikan nominal dan referensi cocok dengan transaksi merchant. Aktivasi memakai masa tayang yang tercatat pada pesanan.</p>':'<p>Pesanan ditolak agar pengguna dapat memperbaiki bukti pembayaran.</p>',actions:[{label:'Batal'},{label:decision==='approve'?'Setujui & aktifkan':'Tolak bukti',kind:'primary',onClick:async()=>{button.disabled=true;try{const token=await getAuthToken(),response=await fetch(`/api/admin/payments/${encodeURIComponent(card.dataset.order)}/review`,{method:'POST',headers:{authorization:`Bearer ${token}`,'content-type':'application/json'},body:JSON.stringify({decision,transactionReference:reference})}),data=await response.json();if(!response.ok)throw new Error(data.message);toast(decision==='approve'?'Pembayaran disetujui dan aktivasi selesai.':'Bukti ditolak. Pengguna dapat memperbaikinya.',{type:'success'});load(false);}catch(error){button.disabled=false;toast(error.message,{type:'error'});}}}]});});
+ root.querySelectorAll('[data-payment-filter]').forEach(button=>button.addEventListener('click',()=>{status=button.dataset.paymentFilter;root.querySelectorAll('[data-payment-filter]').forEach(item=>{const active=item===button;item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active));});load(false);}));root.querySelector('[data-reload]').addEventListener('click',()=>load(false));more.addEventListener('click',()=>load(true));load(false);return()=>{disposed=true;generation++;cleanupUrls();};});}
+function orderCard(order){const pending=order.status==='activation_pending',actionable=['pending_review','ai_match','activation_pending'].includes(order.status),date=new Date(order.updated_at || order.created_at).toLocaleString('id-ID',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Jakarta'}),label=order.status==='active' && Date.parse(order.expires_at)<=Date.now()?'Disetujui, masa tayang berakhir':pending?'Aktivasi sedang diproses':order.status==='ai_match'?'Bukti terbaca cocok':paymentStatusLabel(order.status);
+ return `<article class="admin-order" data-order="${esc(order.id)}" data-status="${esc(order.status)}"><header class="admin-order__top"><div><h2>${formatRupiah(order.expected_total)}</h2><h3>${esc(order.variant_id.replaceAll('-',' '))}</h3><p>${esc(order.id)} · ${date} WIB</p></div><span class="admin-order__state">${esc(label)}</span></header><dl class="admin-order__facts"><div><dt>Masa tayang</dt><dd>${order.duration_months} bulan</dd></div><div><dt>Nominal di bukti</dt><dd>${order.ai_amount?formatRupiah(order.ai_amount):'Belum terbaca'}</dd></div><div><dt>Pembacaan AI</dt><dd>${Math.round(Number(order.ai_confidence || 0)*100)}%</dd></div></dl>${order.ai_summary?`<p class="admin-order__summary">${esc(order.ai_summary)}</p>`:''}${order.activation_error?`<p class="admin-order__error">${esc(order.activation_error)}</p>`:''}<div data-proof-host class="admin-order__proof"><button type="button" class="btn btn--ghost btn--sm" data-view-proof>${icon('eye',{size:16})} Lihat bukti privat</button></div>${actionable?`<label class="admin-reference">Referensi transaksi merchant<input data-transaction-reference maxlength="100" placeholder="Isi referensi dari transaksi merchant" value="${esc(order.transaction_ref || '')}" ${pending?'readonly':''}></label><div class="admin-order__actions">${pending?'':'<button type="button" class="btn btn--ghost btn--sm" data-review="reject">Tolak & minta ulang</button>'}<button type="button" class="btn btn--primary btn--sm" data-review="approve">${pending?'Coba selesaikan aktivasi':'Setujui & aktifkan'} ${icon('check',{size:16})}</button></div>`:`<div class="admin-order__settled"><span>Referensi ${esc(order.transaction_ref || 'belum tersedia')}</span>${order.expires_at?`<span>Masa tayang sampai ${new Date(order.expires_at).toLocaleDateString('id-ID')}</span>`:''}</div>`}</article>`;}

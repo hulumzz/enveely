@@ -1,4 +1,7 @@
 import { renderPage } from '../ui/app-shell.js';
+import {icon} from '../core/icons.js';
+import {invitationFrame,hydrateInvitationFrames} from '../ui/invitation-frame.js';
+import {recordProductEvent} from '../services/analytics.js';
 import { requireAuthenticated } from '../services/access.js';
 import { loadDraft } from '../services/draft-store.js';
 import {
@@ -45,7 +48,9 @@ async function renderCheckoutWorkspace(invitationId) {
     if (order.total > 0) paintQr(order);
   };
 
-  const wire = async (root) => {
+  recordProductEvent('checkout_start',{templateId:invitation.design.templateId});
+  const wire = (root) => {
+    hydrateInvitationFrames(root,[invitation]);
     root.querySelectorAll('[data-duration]').forEach((button) => {
       button.disabled=order.status!=='draft';
       button.addEventListener('click', async () => {
@@ -57,13 +62,9 @@ async function renderCheckoutWorkspace(invitationId) {
     const input = root.querySelector('[data-proof-input]');
     const preview = root.querySelector('[data-proof-preview]');
     const submit = root.querySelector('[data-proof-submit]');
-    let proofFile = null;
-
-    const restored = await getPaymentProofDraft(order.id).catch(() => null);
-    if (restored?.file) {
-      proofFile = restored.file;
-      showProofPreview(preview, proofFile, 'Bukti tersimpan, siap dilanjutkan.');
-    }
+    let proofFile = null,proofUrl=null,disposed=false;
+    const show=(file,note)=>{if(proofUrl)URL.revokeObjectURL(proofUrl);proofUrl=showProofPreview(preview,file,note);};
+    getPaymentProofDraft(order.id).then(restored=>{if(!disposed && preview?.isConnected && restored?.file && !proofFile){proofFile=restored.file;show(proofFile,'Bukti tersimpan, siap dilanjutkan.');}}).catch(()=>{});
 
     input?.addEventListener('change', async () => {
       const file = input.files?.[0];
@@ -75,7 +76,7 @@ async function renderCheckoutWorkspace(invitationId) {
       }
       proofFile = file;
       await savePaymentProofDraft(order.id, file).catch(() => null);
-      showProofPreview(preview, file, 'Aman tersimpan sebagai draft di perangkat ini.');
+      show(file, 'Bukti tersimpan sebagai draf di perangkat ini.');
     });
 
     submit?.addEventListener('click', async () => {
@@ -112,6 +113,7 @@ async function renderCheckoutWorkspace(invitationId) {
         };
         savePaymentOrder(order);
         const {deletePaymentProofDraft}=await import('../services/payment-store.js');await deletePaymentProofDraft(order.id).catch(()=>{});
+        recordProductEvent('proof_submitted');
         toast('Bukti berhasil dikirim dan masuk antrean review.', { type: 'success' });
         paint();
       } catch (error) {
@@ -122,6 +124,7 @@ async function renderCheckoutWorkspace(invitationId) {
         toast(error.message || 'Bukti belum dapat dikirim. Draft tetap tersimpan.', { type: 'error' });
       }
     });
+    return()=>{disposed=true;if(proofUrl)URL.revokeObjectURL(proofUrl);};
   };
 
   paint();
@@ -134,9 +137,9 @@ function checkoutMarkup({ invitation, order, template, variant, names }) {
     <section class="checkout-page">
       <div class="container checkout-shell">
         <header class="checkout-head">
-          <a href="/builder/${invitation.id}" data-link class="back-link">← Kembali ke editor</a>
-          <p class="eyebrow">Aktivasi Undangan</p>
-          <h1>${isFree ? 'Mulai dengan Paket Gratis' : 'Satu langkah lagi untuk tayang'}</h1>
+          <a href="/builder/${invitation.id}" data-link class="back-link">${icon('arrowLeft',{size:16})} Kembali ke editor</a>
+
+          <h1>${isFree ? 'Aktifkan desain gratis' : 'Aktivasi undangan'}</h1>
           <p>Pesanan tersimpan di akun. Bayar sesuai nominal, lalu kirim bukti pembayaran.</p>
         </header>
 
@@ -146,10 +149,10 @@ function checkoutMarkup({ invitation, order, template, variant, names }) {
           </main>
           <aside class="order-card">
             <div class="order-card__art order-card__art--${template?.id || 'amora'}">
-              <span>${escapeHtml(names)}</span>
+              ${invitationFrame({templateId:invitation.design.templateId,variantId:invitation.design.variantId,invitationId:invitation.id,frame:'sheet',fit:'cover'})}
             </div>
             <div class="order-card__body">
-              <p class="eyebrow">Ringkasan Pesanan</p>
+              <h3 class="order-summary-title">Ringkasan pesanan</h3>
               <h2>${template?.name || 'Template'} <small>${variant?.name || ''}</small></h2>
               ${!isFree ? durationPicker(order) : '<p class="order-card__free">Gratis · aktif 7 hari</p>'}
               <dl class="order-summary">
@@ -159,7 +162,7 @@ function checkoutMarkup({ invitation, order, template, variant, names }) {
                 <div class="order-summary__total"><dt>Total</dt><dd>${formatRupiah(order.total)}</dd></div>
               </dl>
               ${order.uniqueCode ? '<p class="order-card__note">Bayar hingga 3 digit terakhir agar transaksi mudah dicocokkan.</p>' : ''}
-              <div class="order-secure"><span>✓</span><p><strong>Draft terlindungi</strong><br/>Editor dan checkout bisa dilanjutkan setelah tab tertutup.</p></div>
+              <div class="order-secure"><span>${icon('shield',{size:19})}</span><p><strong>Draft terlindungi</strong><br/>Editor dan checkout bisa dilanjutkan setelah tab tertutup.</p></div>
             </div>
           </aside>
         </div>
@@ -182,8 +185,8 @@ function durationPicker(order) {
 function freeActivation(order, invitation) {
   return `
     <article class="checkout-success">
-      <span class="checkout-success__icon">✓</span>
-      <p class="eyebrow">Paket Aktif</p>
+      <span class="checkout-success__icon">${icon('check',{size:27})}</span>
+
       <h2>Gratis untuk 7 hari pertama.</h2>
       <p>Undangan ini dapat dipublikasikan tanpa pembayaran. Masa tayang 7 hari dimulai saat publikasi pertama.</p>
       <div class="checkout-success__actions">
@@ -198,7 +201,7 @@ function paymentPanel(order, submitted) {
     return `
       <article class="checkout-success checkout-success--pending">
         <span class="checkout-success__icon">⌁</span>
-        <p class="eyebrow">${paymentStatusLabel(order.status)}</p>
+
         <h2>${order.status==='active' ? 'Undangan sudah aktif.' : order.status==='activation_pending' ? 'Aktivasi sedang diselesaikan.' : 'Bukti pembayaran sudah kami terima.'}</h2>
         <p>AI membantu membaca nominal dan detail transaksi. Aktivasi akhir tetap melalui review agar pembayaran kalian tidak salah cocok.</p>
         ${order.verification?.summary ? `<div class="ai-review"><strong>Hasil pemeriksaan awal</strong><p>${escapeHtml(order.verification.summary)}</p></div>` : ''}
@@ -251,6 +254,7 @@ function showProofPreview(holder, file, note) {
   const url = URL.createObjectURL(file);
   holder.hidden = false;
   holder.innerHTML = `<img src="${url}" alt="Pratinjau bukti pembayaran"/><div><strong>${escapeHtml(file.name || 'Bukti pembayaran')}</strong><p>${note}</p></div>`;
+  return url;
 }
 
 function formatDate(value) {

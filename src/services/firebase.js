@@ -48,12 +48,13 @@ export async function getDb() {
 /** Analytics (lazy, only where supported). Never blocks the app. */
 export async function initAnalytics() {
   try {
-    if(localStorage.getItem('env_analytics_consent')!=='yes' || location.pathname.startsWith('/invite/'))return null;
+    if(localStorage.getItem('env_analytics_consent')!=='yes' || navigator.doNotTrack==='1' || navigator.globalPrivacyControl || /^\/(invite|admin)(\/|$)/.test(location.pathname))return null;
     const fbApp = getFirebaseApp();
     if (!fbApp) return null;
     const {getAnalytics,isSupported:analyticsSupported} = await import('firebase/analytics');
     if (!(await analyticsSupported())) return null;
     analytics = analytics || getAnalytics(fbApp);
+    const {setAnalyticsCollectionEnabled}=await import('firebase/analytics');setAnalyticsCollectionEnabled(analytics,true);
     return analytics;
   } catch {
     return null;
@@ -61,3 +62,9 @@ export async function initAnalytics() {
 }
 
 export { configValid };
+
+export async function setAnalyticsConsent(allowed) {
+  try {localStorage.setItem('env_analytics_consent',allowed?'yes':'no');}catch{}
+  if(analytics){const {setAnalyticsCollectionEnabled}=await import('firebase/analytics');setAnalyticsCollectionEnabled(analytics,allowed && navigator.doNotTrack!=='1' && !navigator.globalPrivacyControl && !/^\/(invite|admin)(\/|$)/.test(location.pathname));}
+  if(allowed)await initAnalytics();
+}

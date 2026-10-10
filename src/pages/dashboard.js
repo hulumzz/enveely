@@ -1,4 +1,9 @@
-import { renderPage } from '../ui/app-shell.js';
+import {isInvitationLive,timestampMillis} from '../core/invitation-status.js';
+import { renderPage,showAnalyticsSettings } from '../ui/app-shell.js';
+import {icon} from '../core/icons.js';
+import {supportUrl} from '../core/brand.js';
+import {invitationFrame,hydrateInvitationFrames} from '../ui/invitation-frame.js';
+import {wireReviewForm,reviewFormMarkup} from '../ui/customer-review.js';
 import { listDrafts, deleteDraft, saveDraft } from '../services/draft-store.js';
 import { requireAuthenticated } from '../services/access.js';
 import { listPaymentOrders, getOrderForInvitation, paymentStatusLabel } from '../services/payment-store.js';
@@ -16,14 +21,7 @@ document.addEventListener('env:navigate',()=>{cloudHydrated='';paymentsHydrated=
 let paymentsHydrated = '';
 let invitationFilter = 'all';
 
-const navItems = [
-  ['overview', 'Dashboard', '⌂'],
-  ['invitations', 'Undangan Saya', '◇'],
-  ['templates', 'Template Undangan', '✦'],
-  ['payments', 'Pembayaran', '▣'],
-  ['profile', 'Profil', '○'],
-  ['guests', 'Tamu & Ucapan', '♡'],
-];
+const navItems = [['overview','Beranda'],['invitations','Undangan saya'],['templates','Koleksi desain'],['payments','Pembayaran'],['profile','Profil & akun'],['guests','Tamu & ucapan']];
 
 export function renderDashboard(section = 'overview') {
   const active = navItems.some(([id]) => id === section) ? section : 'overview';
@@ -36,18 +34,11 @@ function renderDashboardWorkspace(user, section) {
   renderPage(`
     <section class="account-page">
       <div class="container account-shell">
-        <aside class="account-sidebar">
-          <a href="/dashboard" data-link class="account-brand">EN<span>VEELY</span><small>Studio</small></a>
-          <nav class="account-nav" aria-label="Navigasi dashboard">
-            ${navItems.map(([id, label, mark]) => `<a href="${id === 'overview' ? '/dashboard' : `/dashboard/${id}`}" data-link class="${section === id ? 'is-active' : ''}"><span>${mark}</span>${label}</a>`).join('')}
-          </nav>
-          <div class="account-sidebar__help"><span>✦</span><strong>Butuh bantuan?</strong><p>Draft kalian aman tersimpan. Tim kami siap membantu sampai undangan tayang.</p><a href="mailto:enveely@nalaro.digital">Hubungi kami</a></div>
-        </aside>
 
         <main class="account-content">
           <header class="account-topbar">
-            <div><p>${greeting()},</p><h1>${escapeHtml(firstName(user.displayName || user.email))}</h1></div>
-            <div class="account-topbar__actions"><a href="/create" data-link class="btn btn--primary">+ Buat Undangan</a><span class="account-avatar">${escapeHtml(firstName(user.displayName || user.email).charAt(0).toUpperCase())}</span></div>
+            <div><p>${greeting()},</p><h1>Halo, ${escapeHtml(firstName(user.displayName || user.email))}.</h1></div>
+            <div class="account-topbar__actions"><a href="/create" data-link class="btn btn--primary">${icon('plus',{size:17})} Buat undangan</a><span class="account-avatar">${escapeHtml(firstName(user.displayName || user.email).charAt(0).toUpperCase())}</span></div>
           </header>
           ${renderSection(section, { user, drafts, orders })}
         </main>
@@ -55,6 +46,8 @@ function renderDashboardWorkspace(user, section) {
     </section>
   `, (root) => {
     wireDashboard(root,user,section);
+    hydrateInvitationFrames(root,drafts);
+    if(section==='profile')wireReviewForm(root,user);
     if (section === 'guests') hydrateGuestResponses(root,drafts);
     if (cloudHydrated !== user.uid) {
       cloudHydrated = user.uid;
@@ -91,24 +84,20 @@ function renderSection(section, ctx) {
 
 function overviewView({ drafts, orders }) {
   const active = drafts.filter(draft=>isPublished(draft,orders)).length;
-  const pending = orders.filter((order) => ['pending_review', 'ai_match', 'uploading'].includes(order.status)).length;
+  const pending = orders.filter((order) => ['pending_review', 'ai_match', 'activation_pending', 'uploading'].includes(order.status)).length;
   const latest = drafts.slice(0, 3);
   return `
     <section class="dash-view">
-      <div class="dash-welcome">
-        <div><p class="eyebrow">Ruang Karya Kalian</p><h2>Semua cerita, tersusun rapi.</h2><p>Lengkapi undangan, pantau pembayaran, dan lihat masa tayang dari satu tempat.</p></div>
-        <div class="dash-welcome__ornament" aria-hidden="true"><span>e</span></div>
-      </div>
       <div class="dash-stats">
-        ${statCard('Total undangan', drafts.length, 'Draft dan undangan aktif', '01')}
-        ${statCard('Sedang tayang', active, 'Tautan aktif dibuka tamu', '02')}
-        ${statCard('Menunggu review', pending, 'Pemeriksaan pembayaran', '03')}
+        ${statCard('Total undangan', drafts.length, 'Draft dan undangan aktif', 'mail')}
+        ${statCard('Sedang tayang', active, 'Tautan aktif dibuka tamu', 'eye')}
+        ${statCard('Menunggu review', pending, 'Pemeriksaan pembayaran', 'wallet')}
       </div>
-      <div class="dash-section-head"><div><p class="eyebrow">Terakhir Dikerjakan</p><h2>Lanjutkan undanganmu</h2></div><a href="/dashboard/invitations" data-link>Lihat semuanya →</a></div>
+      <div class="dash-section-head"><div><h2>Lanjutkan undanganmu</h2></div><a href="/dashboard/invitations" data-link>Lihat semuanya ${icon('arrowRight',{size:15})}</a></div>
       ${latest.length ? `<div class="dash-invites">${latest.map(invitationCard).join('')}</div>` : emptyInvitations()}
       <div class="dash-two-col">
-        <article class="dash-guide"><p class="eyebrow">Checklist Tayang</p><h3>Pastikan momen pentingnya lengkap.</h3><ul><li><span>1</span>Nama dan foto mempelai</li><li><span>2</span>Detail acara dan lokasi</li><li><span>3</span>Aktivasi paket & publikasi</li></ul></article>
-        <article class="dash-featured"><div><p class="eyebrow">Pilihan Minggu Ini</p><h3>Amora Garden</h3><p>Nuansa floral hangat dengan komposisi potret lengkung.</p><a href="/templates/amora" data-link class="btn btn--ghost btn--sm">Lihat desain</a></div><span class="dash-featured__flower">❀</span></article>
+        <article class="dash-guide"><h3>Siapkan sebelum dibagikan.</h3><ul><li><span>1</span>Nama dan foto mempelai</li><li><span>2</span>Detail acara dan lokasi</li><li><span>3</span>Aktivasi paket dan publikasi</li></ul></article>
+        <article class="dash-featured"><div><h3>Ingin langsung terima jadi?</h3><p>Kirim bahan undanganmu, tim Enveely bisa membantu menyiapkannya.</p><a href="${supportUrl()}" target="_blank" rel="noopener noreferrer" class="btn btn--ghost btn--sm" data-support>Chat lewat WhatsApp</a></div><span class="dash-featured__flower">${icon('chat',{size:62})}</span></article>
       </div>
     </section>`;
 }
@@ -117,7 +106,7 @@ function invitationsView({ drafts }) {
   const filtered=drafts.filter(draft=>invitationFilter==='all' || (invitationFilter==='published' ? isPublished(draft) : !isPublished(draft)));
   return `
     <section class="dash-view">
-      <header class="dash-page-head"><div><p class="eyebrow">Koleksi Pribadi</p><h2>Undangan Saya</h2><p>Setiap perubahan tersimpan otomatis. Lanjutkan dari tahap terakhir kapan saja.</p></div><a href="/create" data-link class="btn btn--primary">+ Undangan Baru</a></header>
+      <header class="dash-page-head"><div><h2>Undangan Saya</h2><p>Setiap perubahan tersimpan otomatis. Lanjutkan dari tahap terakhir kapan saja.</p></div><a href="/create" data-link class="btn btn--primary">${icon('plus',{size:17})} Undangan baru</a></header>
       <div class="dash-filterbar"><span>${filtered.length} undangan</span><div>${[['all','Semua'],['draft','Draft'],['published','Tayang']].map(([id,label])=>`<button type="button" data-invitation-filter="${id}" class="${invitationFilter===id?'is-active':''}" aria-pressed="${invitationFilter===id}">${label}</button>`).join('')}</div></div>
       ${filtered.length ? `<div class="dash-invites dash-invites--all">${filtered.map(invitationCard).join('')}</div>` : invitationFilter==='all' ? emptyInvitations() : '<p>Belum ada undangan dalam pilihan ini.</p>'}
     </section>`;
@@ -126,12 +115,12 @@ function invitationsView({ drafts }) {
 function templatesView() {
   return `
     <section class="dash-view">
-      <header class="dash-page-head"><div><p class="eyebrow">Template Undangan</p><h2>Temukan karakter kalian.</h2><p>Mulai dari desain gratis 7 hari hingga koleksi editorial premium.</p></div><a href="/templates" data-link class="btn btn--ghost">Buka galeri lengkap</a></header>
+      <header class="dash-page-head"><div><h2>Pilih desain undangan.</h2><p>Buka contoh desain, bandingkan tampilannya, lalu pilih untuk undanganmu.</p></div><a href="/templates" data-link class="btn btn--ghost">Buka galeri lengkap</a></header>
       <div class="account-template-grid">
         ${templateFamilies.map((template, index) => {
           const variants = getVariantsFor(template.id);
           const range = getFamilyPriceRange(template.id);
-          return `<article class="account-template account-template--${template.id}"><div class="account-template__visual"><span>${String(index + 1).padStart(2, '0')}</span><strong>${template.name}</strong><i></i></div><div class="account-template__body"><p>${template.moodLabel}</p><h3>${template.name}</h3><div><span>${variants.length} variasi</span><strong>${range?.min === 0 ? 'Mulai gratis' : `Mulai ${formatRupiah(range?.min)}`}</strong></div><a href="/templates/${template.id}" data-link>Jelajahi desain →</a></div></article>`;
+          return `<article class="account-template account-template--${template.id}"><div class="account-template__visual">${invitationFrame({templateId:template.id,variantId:variants[0]?.id,frame:'sheet',fit:'cover'})}</div><div class="account-template__body"><p>${template.moodLabel}</p><h3>${template.name}</h3><div><span>${variants.length} variasi</span><strong>${range?.min === 0 ? 'Mulai gratis' : `Mulai ${formatRupiah(range?.min)}`}</strong></div><div class="account-template__actions"><a href="/create?template=${template.id}&variant=${variants[0]?.id}" data-link class="btn btn--primary btn--sm">Pakai desain</a><a href="/templates/${template.id}" data-link class="btn btn--ghost btn--sm">Lihat contoh</a></div></div></article>`;
         }).join('')}
       </div>
     </section>`;
@@ -140,22 +129,22 @@ function templatesView() {
 function paymentsView({ orders, drafts }) {
   return `
     <section class="dash-view">
-      <header class="dash-page-head"><div><p class="eyebrow">Riwayat Transaksi</p><h2>Pembayaran</h2><p>Pantau checkout, hasil pemeriksaan bukti, dan masa aktif undangan.</p></div><button type="button" class="btn btn--ghost btn--sm" data-refresh-payments>Segarkan</button></header>
+      <header class="dash-page-head"><div><h2>Pembayaran</h2><p>Pantau checkout, hasil pemeriksaan bukti, dan masa aktif undangan.</p></div><button type="button" class="btn btn--ghost btn--sm" data-refresh-payments>Segarkan</button></header>
       ${orders.length ? `<div class="payment-list">${orders.map((order) => paymentRow(order, drafts)).join('')}</div>` : `
-        <div class="dash-empty dash-empty--payment"><span>▣</span><h3>Belum ada transaksi</h3><p>Pesanan akan muncul otomatis setelah kalian mengaktifkan desain dari editor.</p><a href="/dashboard/invitations" data-link class="btn btn--primary">Lihat Undangan</a></div>`}
-      <article class="payment-help"><div><span>i</span><p><strong>Kenapa pembayaran direview?</strong><br/>AI membantu membaca bukti, lalu hasilnya diperiksa agar nominal dan pesanan tidak tertukar.</p></div><p>Kami tidak pernah meminta OTP, PIN, atau password.</p></article>
+        <div class="dash-empty dash-empty--payment"><span>${icon('wallet',{size:38})}</span><h3>Belum ada transaksi</h3><p>Pesanan akan muncul otomatis setelah kalian mengaktifkan desain dari editor.</p><a href="/dashboard/invitations" data-link class="btn btn--primary">Lihat Undangan</a></div>`}
+      <article class="payment-help"><div><span>i</span><p><strong>Kenapa pembayaran direview?</strong><br/>Bukti dicocokkan dengan transaksi merchant sebelum paket diaktifkan. Kamu bisa melihat statusnya di halaman ini.</p></div><p>Kami tidak pernah meminta OTP, PIN, atau password.</p></article>
     </section>`;
 }
 
 function profileView(user) {
   return `
     <section class="dash-view">
-      <header class="dash-page-head"><div><p class="eyebrow">Akun & Keamanan</p><h2>Profil</h2><p>Identitas akun digunakan untuk menjaga ownership undangan dan riwayat pembayaran.</p></div></header>
+      <header class="dash-page-head"><div><h2>Profil</h2><p>Atur nama tampilan, verifikasi email, dan keamanan akunmu.</p></div></header>
       <div class="profile-grid">
         <article class="profile-card profile-card--identity"><div class="profile-avatar">${escapeHtml(firstName(user.displayName || user.email).charAt(0).toUpperCase())}</div><h3>${escapeHtml(user.displayName || 'Pengguna Enveely')}</h3><p>${escapeHtml(user.email)}</p><span>${user.emailVerified ? 'Email terverifikasi' : 'Email belum terverifikasi'}</span>${user.emailVerified ? '' : '<button type="button" class="btn btn--ghost btn--sm" data-verify-email>Kirim verifikasi email</button>'}</article>
-        <form class="profile-card" data-profile-form><p class="eyebrow">Informasi Akun</p><label><span>Nama tampilan</span><input name="displayName" value="${escapeHtml(user.displayName || '')}" required maxlength="80"/></label><label><span>Email login</span><input value="${escapeHtml(user.email || '')}" readonly/></label><button type="submit" class="btn btn--primary">Simpan nama</button><button type="button" class="btn btn--ghost" data-reset-password>Kirim tautan reset password</button></form>
-        <article class="profile-card profile-card--security"><p class="eyebrow">Keamanan</p><h3>Sesi dan akses</h3><p class="profile-copy">Keluar jika menggunakan perangkat bersama. Draft yang sudah tersinkron tetap terhubung ke akun kalian.</p><div class="profile-security-row"><span class="profile-security-row__state">Sesi aktif</span><button type="button" class="profile-logout" data-logout><span>↗</span> Keluar dari akun</button></div></article>
-      </div>
+        <form class="profile-card" data-profile-form><label><span>Nama tampilan</span><input name="displayName" value="${escapeHtml(user.displayName || '')}" required maxlength="80"/></label><label><span>Email login</span><input value="${escapeHtml(user.email || '')}" readonly/></label><button type="submit" class="btn btn--primary">Simpan nama</button><button type="button" class="btn btn--ghost" data-reset-password>Kirim tautan reset password</button></form>
+        <article class="profile-card profile-card--security"><h3>Sesi dan akses</h3><p class="profile-copy">Keluar jika menggunakan perangkat bersama. Draft yang sudah tersinkron tetap terhubung ke akun kalian.</p><div class="profile-security-row"><span class="profile-security-row__state">Sesi aktif</span><button type="button" class="profile-logout" data-logout>${icon('logout',{size:16})} Keluar dari akun</button></div></article>
+      </div><article class="profile-preferences"><div><h3>Preferensi analitik</h3><p>Statistik penggunaan bersifat opsional dan tidak memuat isi undanganmu.</p></div><button type="button" class="btn btn--ghost btn--sm" data-profile-analytics>Atur preferensi</button></article>${reviewFormMarkup()}
     </section>`;
 }
 
@@ -163,24 +152,25 @@ function invitationCard(draft) {
   const names = [draft.content?.groom?.nickname || draft.content?.groom?.name, draft.content?.bride?.nickname || draft.content?.bride?.name].filter(Boolean).join(' & ') || 'Undangan tanpa nama';
   const order = getOrderForInvitation(draft.id);
   const status = isPublished(draft) ? 'Sedang tayang' : draft.status==='published' ? 'Masa tayang berakhir' : order ? paymentStatusLabel(order.status) : 'Draft';
-  return `<article class="invite-card"><div class="invite-card__cover invite-card__cover--${draft.design?.templateId || 'amora'}"><span>${escapeHtml(names)}</span><i>${escapeHtml((draft.design?.templateId || 'Amora').toUpperCase())}</i></div><div class="invite-card__body"><div class="invite-card__status"><span class="status-dot status-dot--${order?.status || 'draft'}"></span>${escapeHtml(status)}</div><h3>${escapeHtml(names)}</h3><p>${formatUpdated(draft.updatedAt)}</p><div class="invite-card__actions"><a href="/builder/${draft.id}" data-link class="btn btn--primary btn--sm">Lanjut Edit</a>${order?.status !== 'active' ? `<a href="/checkout/${draft.id}" data-link class="btn btn--ghost btn--sm">Aktifkan</a>` : `<a href="/invite/${draft.id}" data-link class="btn btn--ghost btn--sm">Lihat</a>`}<button type="button" data-delete="${draft.id}" aria-label="Hapus undangan">⋯</button></div></div></article>`;
+  return `<article class="invite-card"><div class="invite-card__cover">${invitationFrame({templateId:draft.design?.templateId || 'amora',variantId:draft.design?.variantId,invitationId:draft.id,frame:'sheet',fit:'cover'})}</div><div class="invite-card__body"><div class="invite-card__status"><span class="status-dot status-dot--${order?.status || 'draft'}"></span>${escapeHtml(status)}</div><h3>${escapeHtml(names)}</h3><p>${formatUpdated(draft.updatedAt)}</p><div class="invite-card__actions"><a href="/builder/${draft.id}" data-link class="btn btn--primary btn--sm">Lanjut Edit</a>${!isPublished(draft) && !(order?.status==='active' && timestampMillis(order.expiresAt)>Date.now()) ? `<a href="/checkout/${draft.id}" data-link class="btn btn--ghost btn--sm">Aktifkan</a>` : `<a href="${isPublished(draft)?`/invite/${draft.id}`:`/builder/${draft.id}/preview`}" data-link class="btn btn--ghost btn--sm">${isPublished(draft)?'Lihat':'Pratinjau'}</a>`}<button type="button" data-delete="${draft.id}" aria-label="Hapus undangan">${icon('trash',{size:16})}</button></div></div></article>`;
 }
 
 function paymentRow(order, drafts) {
   const draft = drafts.find((item) => item.id === order.invitationId);
   const names = [draft?.content?.groom?.nickname || draft?.content?.groom?.name, draft?.content?.bride?.nickname || draft?.content?.bride?.name].filter(Boolean).join(' & ') || 'Undangan';
-  return `<article class="payment-row"><div class="payment-row__icon">QR</div><div class="payment-row__main"><span>${escapeHtml(names)}</span><h3>${escapeHtml(order.variantId.replaceAll('-', ' '))}</h3><p>${new Date(order.updatedAt).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' })} · ${order.durationMonths ? `${order.durationMonths} bulan` : '7 hari'}</p></div><div class="payment-row__amount"><strong>${formatRupiah(order.total)}</strong><span class="payment-pill payment-pill--${order.status}">${escapeHtml(paymentStatusLabel(order.status))}</span></div>${order.status === 'draft' ? `<a href="/checkout/${order.invitationId}" data-link class="btn btn--ghost btn--sm">Lanjutkan</a>` : ''}</article>`;
+  return `<article class="payment-row"><div class="payment-row__icon">${icon('wallet',{size:23})}</div><div class="payment-row__main"><span>${escapeHtml(names)}</span><h3>${escapeHtml(order.variantId.replaceAll('-', ' '))}</h3><p>${new Date(order.updatedAt).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' })} · ${order.durationMonths ? `${order.durationMonths} bulan` : '7 hari'}</p></div><div class="payment-row__amount"><strong>${formatRupiah(order.total)}</strong><span class="payment-pill payment-pill--${order.status}">${escapeHtml(paymentStatusLabel(order.status))}</span></div>${order.status === 'draft' ? `<a href="/checkout/${order.invitationId}" data-link class="btn btn--ghost btn--sm">Lanjutkan</a>` : ''}</article>`;
 }
 
 function statCard(label, value, hint, num) {
-  return `<article class="dash-stat"><span>${num}</span><p>${label}</p><strong>${value}</strong><small>${hint}</small></article>`;
+  return `<article class="dash-stat"><span>${icon(num,{size:18})}</span><p>${label}</p><strong>${value}</strong><small>${hint}</small></article>`;
 }
 
 function emptyInvitations() {
-  return `<div class="dash-empty"><span>◇</span><h3>Belum ada undangan</h3><p>Pilih desain yang terasa paling kalian, lalu mulai dengan nama dan tanggal.</p><a href="/create" data-link class="btn btn--primary">Buat Undangan Pertama</a></div>`;
+  return `<div class="dash-empty"><span>${icon('mail',{size:40})}</span><h3>Belum ada undangan</h3><p>Mulai dengan memilih desain, lalu isi nama dan detail acaramu.</p><a href="/create" data-link class="btn btn--primary">Buat Undangan Pertama</a></div>`;
 }
 
 function wireDashboard(root,user,section) {
+  root.querySelector('[data-profile-analytics]')?.addEventListener('click',showAnalyticsSettings);
   root.querySelector('[data-refresh-payments]')?.addEventListener('click',async event=>{event.currentTarget.disabled=true;try{await listCloudPaymentOrders();renderDashboard('payments');}catch{event.currentTarget.disabled=false;toast('Status belum dapat disegarkan. Periksa koneksi.',{type:'error'});}});
   root.querySelectorAll('[data-invitation-filter]').forEach(button=>button.addEventListener('click',()=>{invitationFilter=button.dataset.invitationFilter;renderDashboard('invitations');}));
   root.querySelector('[data-profile-form]')?.addEventListener('submit',async event=>{
@@ -204,15 +194,10 @@ function wireDashboard(root,user,section) {
   });
 }
 
-function isPublished(draft,orders=listPaymentOrders()) {
-  if(draft.status!=='published')return false;
-  if(draft.design?.variantId==='serena-paper') {const activated=draft.freeActivatedAt?.toMillis?.() || draft.freeActivatedAt?.seconds*1000 || draft.publishedAt?.toMillis?.();return !activated || activated+7*86400000>Date.now();}
-  const order=orders.find(o=>o.invitationId===draft.id && o.variantId===draft.design?.variantId && o.status==='active');
-  return !!order && order.expiresAt>Date.now();
-}
+function isPublished(draft,orders=listPaymentOrders()) {return isInvitationLive(draft,orders);}
 
 function guestsView({drafts}) {
-  return `<section class="dash-view"><header class="dash-page-head"><div><p class="eyebrow">Tamu & Ucapan</p><h2>Kabar dari orang tersayang</h2><p>Lihat konfirmasi kehadiran dan setujui ucapan untuk ditampilkan di undangan.</p></div></header><label>Undangan <select data-guest-invitation>${drafts.map(d=>`<option value="${escapeHtml(d.id)}">${escapeHtml([d.content?.groom?.name,d.content?.bride?.name].filter(Boolean).join(' & ') || d.id)}</option>`).join('')}</select></label><div data-guest-responses aria-live="polite">${drafts.length ? 'Memuat tanggapan…' : 'Belum ada undangan.'}</div></section>`;
+  return `<section class="dash-view"><header class="dash-page-head"><div><h2>Konfirmasi dan ucapan tamu</h2><p>Lihat konfirmasi kehadiran dan setujui ucapan untuk ditampilkan di undangan.</p></div></header><label class="guest-picker">Pilih undangan <select data-guest-invitation>${drafts.map(d=>`<option value="${escapeHtml(d.id)}">${escapeHtml([d.content?.groom?.name,d.content?.bride?.name].filter(Boolean).join(' & ') || d.id)}</option>`).join('')}</select></label><div data-guest-responses aria-live="polite">${drafts.length ? 'Memuat tanggapan…' : 'Belum ada undangan.'}</div></section>`;
 }
 
 function hydrateGuestResponses(root,drafts) {

@@ -14,22 +14,22 @@ export function renderLogin(_params, query = new URLSearchParams()) {
     <section class="auth">
       <div class="auth__panel">
         <div class="auth__visual" aria-hidden="true">
-          <img src="/demo/melati-pengantin.webp" alt="" loading="lazy"/>
+          <img src="/images/hero-romance-v3.webp" alt="" loading="lazy"/>
           <div class="auth__visual-overlay">
-            <p class="auth__quote">"Undangan yang indah adalah cara pertama menghormati orang-orang yang kita cinta."</p>
+            <div class="auth__workspace-story"><h2>Satu akun.<br>Persiapan lebih rapi.</h2><p>Dari isi undangan sampai tanggapan tamu, lanjutkan semuanya dari dashboard.</p><ul><li>${icon('mail',{size:18})} Undangan tersimpan di akun</li><li>${icon('users',{size:18})} Konfirmasi tamu terkumpul</li><li>${icon('wallet',{size:18})} Status pembayaran jelas</li></ul></div>
           </div>
         </div>
 
         <div class="auth__form-wrap">
           <header class="auth__head">
-            <h1 data-auth-title>Masuk ke Enveely</h1>
-            <p class="muted" data-auth-sub>Lanjutkan merancang undangan kalian.</p>
+            <h1 data-auth-title>${mode==='register'?'Buat akun Enveely':'Selamat datang kembali.'}</h1>
+            <p class="muted" data-auth-sub>${mode==='register'?'Simpan undangan dan kelola persiapan dari satu akun.':'Masuk untuk melanjutkan undangan dan melihat tanggapan tamu.'}</p>
           </header>
 
           ${isFirebaseConfigured() ? '' : `
           <div class="auth-notice">
-            <strong>Konfigurasi akun dibutuhkan.</strong>
-            <p>Firebase Auth belum dikonfigurasi. Isi konfigurasi Firebase untuk mengaktifkan pendaftaran, editor, dashboard, dan pembayaran.</p>
+            <strong>Layanan akun belum tersedia.</strong>
+            <p>Coba kembali nanti atau hubungi tim Enveely untuk bantuan pemesanan.</p>
           </div>`}
 
           <button type="button" class="btn btn--google" data-google>
@@ -51,7 +51,7 @@ export function renderLogin(_params, query = new URLSearchParams()) {
             </label>
             <label class="fld-ui">
               <span>Password</span>
-              <input type="password" name="password" required minlength="6" autocomplete="${mode === 'register' ? 'new-password' : 'current-password'}" placeholder="Minimal 6 karakter"/>
+              <span class="auth-password"><input type="password" name="password" required minlength="6" autocomplete="${mode === 'register' ? 'new-password' : 'current-password'}" placeholder="Minimal 6 karakter"/><button type="button" data-toggle-password aria-label="Tampilkan password" aria-pressed="false">${icon('eye',{size:18})}</button></span>
             </label>
             ${mode === 'login' ? '<button type="button" class="auth-forgot" data-forgot>Lupa password?</button>' : ''}
 
@@ -69,7 +69,7 @@ export function renderLogin(_params, query = new URLSearchParams()) {
             </a>
           </p>
 
-          <p class="auth-fineprint">Dengan melanjutkan, kamu setuju bahwa undangan yang dipublikasikan dapat diakses publik melalui tautannya.</p>
+          <p class="auth-fineprint">Dengan melanjutkan, kamu menyetujui <a href="/terms" data-link>ketentuan layanan</a> dan <a href="/privacy" data-link>kebijakan privasi</a>.</p>
         </div>
       </div>
     </section>
@@ -92,16 +92,18 @@ export function renderLogin(_params, query = new URLSearchParams()) {
           return;
         }
         if (res.reason === 'unconfigured') {
-          errorEl.textContent = 'Autentikasi belum dikonfigurasi. Isi VITE_FIREBASE_* di .env.local lalu muat ulang.';
-          return;
+          errorEl.textContent = 'Layanan akun belum tersedia. Coba lagi nanti atau hubungi bantuan.';
+          setLoading(false,mode==='register'?'Buat akun':'Masuk');return;
         }
         errorEl.textContent = res.message || 'Terjadi kesalahan.';
         setLoading(false, mode === 'register' ? 'Buat Akun' : 'Masuk');
       };
 
+      root.querySelector('[data-toggle-password]')?.addEventListener('click',event=>{const input=form.elements.password,visible=input.type==='password';input.type=visible?'text':'password';event.currentTarget.setAttribute('aria-pressed',String(visible));event.currentTarget.setAttribute('aria-label',visible?'Sembunyikan password':'Tampilkan password');});
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        errorEl.textContent = '';
+        errorEl.textContent = '';errorEl.classList.remove('is-success');
+        if(!form.reportValidity())return;
         const data = Object.fromEntries(new FormData(form).entries());
         if (!data.email || !data.password || data.password.length < 6) {
           errorEl.textContent = 'Lengkapi email dan password (minimal 6 karakter).';

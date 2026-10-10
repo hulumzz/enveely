@@ -9,6 +9,7 @@ import { setupRoutes } from './routes.js';
 import { initAnalytics } from './services/firebase.js';
 import '../styles/main.css';
 import '../styles/product-layout.css';
+import '../styles/platform.css';
 
 function boot() {
   ensureDeviceId();

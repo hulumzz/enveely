@@ -1,3 +1,4 @@
+import {isInvitationLive} from '../src/core/invitation-status.js';
 import assert from 'node:assert/strict';
 import { frameGeometry, frameInvitation, invitationFrame } from '../src/ui/invitation-frame.js';
 import { templateVariants } from '../src/data/variants.js';
@@ -24,8 +25,21 @@ for (const width of [240,288,358,430]) for (const contentHeight of [760,1050,160
   assert.ok(fit.left >= 0 && fit.top >= 0);
   if(contentHeight === 760) assert.ok(fit.scale * 430 > width * .85, 'cover fills over 85% of card width');
 }
+for(const width of [240,288,358,430]) for(const contentHeight of [760,1050,1600]) {
+ const height=width*17.5/9,fit=frameGeometry(width,height,contentHeight,'cover');
+ assert.ok(fit.scale*430>=width-.001 && fit.scale*contentHeight>=height-.001,'cover leaves no device gutters');
+ assert.ok(fit.left<=.001 && fit.top<=.001,'cover crop stays centered');
+}
 assert.equal(frameGeometry(0,0,760),null,'hidden frame is not scaled to 1px');
 
+const now=Date.parse('2026-10-10T00:00:00.000Z'),draft={id:'inv_real',status:'published',design:{variantId:'mayura-pearl'}};
+assert.equal(isInvitationLive(draft,[{invitationId:draft.id,variantId:'mayura-pearl',status:'active',expiresAt:now-1},{invitationId:draft.id,variantId:'mayura-pearl',status:'active',expiresAt:now+1}],now),true,'renewal keeps an invitation live');
+assert.equal(isInvitationLive(draft,[{invitationId:draft.id,variantId:'mayura-jade',status:'active',expiresAt:now+1}],now),false,'other design entitlement cannot activate this design');
+assert.equal(isInvitationLive({...draft,status:'draft'},[{invitationId:draft.id,variantId:'mayura-pearl',status:'active',expiresAt:now+1}],now),false);
+const free={...draft,design:{variantId:'serena-paper'},freeActivatedAt:{seconds:(now-7*86400000)/1000}};
+assert.equal(isInvitationLive(free,[],now),false,'free expiry closes at its boundary');
+assert.equal(isInvitationLive(free,[],now-1),true);
+assert.equal(isInvitationLive({...free,freeActivatedAt:undefined},[],now),false,'missing activation is not assumed live');
 class Element extends EventTarget {
   constructor(){ super(); this.attrs={}; this.classes=new Set(); this.classList={toggle:(name,on)=>on?this.classes.add(name):this.classes.delete(name)}; }
   setAttribute(k,v){this.attrs[k]=v;}
@@ -59,6 +73,6 @@ const cells=Object.fromEntries(['days','hours','minutes','seconds'].map(unit=>[u
 const counter={dataset:{countdownDate:'2099-01-01'},querySelector:selector=>cells[selector.match(/"(.*?)"/)[1]]};
 const clean=startCountdowns({querySelectorAll:()=>[counter]});assert.equal(intervals.size,1);clean();assert.equal(intervals.size,0);
 startCountdowns({querySelectorAll:()=>[counter]});document.dispatchEvent(new Event('env:navigate'));assert.equal(intervals.size,0);
-for(const file of ['styles/product-layout.css','styles/landing.css','styles/pusaka.css','styles/mayura.css','styles/blocka.css','styles/meadow.css','styles/serena.css']) postcss.parse(await readFile(new URL('../'+file,import.meta.url),'utf8'));
+for(const file of ['styles/platform.css','styles/landing-editorial.css','styles/product-layout.css','styles/landing.css','styles/pusaka.css','styles/mayura.css','styles/blocka.css','styles/meadow.css','styles/serena.css']) postcss.parse(await readFile(new URL('../'+file,import.meta.url),'utf8'));
 postcss.parse(builderCss);
 console.log(`PASS: ${templateVariants.length * 5} section previews, thumbnail geometry, slide click/swipe/keyboard/resize/reduced motion, editor timer cleanup, CSS parsing`);

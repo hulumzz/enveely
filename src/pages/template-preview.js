@@ -1,3 +1,4 @@
+import {icon} from '../core/icons.js';
 // Enveely — Template preview page (Design-1.md §13).
 // Real section previews and full-size variant covers.
 
@@ -29,11 +30,11 @@ export function renderTemplatePreview(templateId) {
     `
     <section class="section preview-page">
       <div class="container">
-        <a href="/templates" data-link class="back-link">← ${t('common.back')}</a>
+        <a href="/templates" data-link class="back-link">${icon('arrowLeft',{size:17})} ${t('common.back')}</a>
         <div class="preview-overview">
         <div class="preview-intro">
         <header class="preview-head">
-          <p class="eyebrow">Keluarga Desain</p>
+
           <h1>${tpl.name}</h1>
           <p class="preview-head__sub">${tpl.moodLabel} &middot; ${tpl.densityLabel} &middot; ${variants.length} variasi</p>
           <p class="preview-head__price">${defaultPlan?.price ? `Mulai ${formatRupiah(defaultPlan.price)}` : 'Mulai gratis'} <span>${planDurationLabel(defaultPlan)}</span></p>
@@ -117,7 +118,7 @@ export function renderTemplatePreview(templateId) {
 }
 
 function previewSlide({ tpl, variantId, kind, label, sub }) {
-  return `<div class="preview-slide preview-slide--mock" data-caption="${label} — ${sub}">
+  return `<div class="preview-slide preview-slide--mock" data-caption="${label}. ${sub}">
     ${invitationFrame({ templateId: tpl.id, variantId, frame: 'editorial', section: kind })}
   </div>`;
 }
@@ -152,8 +153,8 @@ function variantDescription(variantId) {
     'meadow-garden': 'Paviliun biru kabut, jendela taman, kartu lengkung, dan panel linen.',
     'meadow-film': 'Arsip malam bernuansa kopi, lentera hangat, frame film, dan foto nostalgia.',
     'botanica-dusty-rose': 'Botanical watercolor, ranting lembut, nuansa dusty rose dan kanvas gading.',
-    'botanica-mauve-intimate': 'Aksen mauve dan burgundy dalam — intim, hangat, dan editorial.',
-    'botanica-blush-cream': 'Blush lembut di atas krem hangat — romantis, tenang, dan bersahaja.',
+    'botanica-mauve-intimate': 'Aksen mauve dan burgundy dalam, intim, hangat, dan editorial.',
+    'botanica-blush-cream': 'Blush lembut di atas krem hangat, romantis, tenang, dan bersahaja.',
     'tempwed-classic': 'Paviliun floral dengan potret lengkung dan bingkai berlapis.',
     'tempwed-golden-hour': 'Medali bundar, cahaya senja, dan detail keemasan.',
     'tempwed-midnight-garden': 'Taman malam dengan potret tinggi dan cahaya lembut.',

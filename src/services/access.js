@@ -1,6 +1,6 @@
 import { getCurrentUser } from './auth.js';
 import { navigate } from '../router.js';
-import { renderPage } from '../ui/app-shell.js';
+import { renderPage, setShellUser } from '../ui/app-shell.js';
 
 function safeReturnPath(path) {
   const value = String(path || '');
@@ -12,7 +12,7 @@ export async function requireAuthenticated(render, returnTo = `${location.pathna
   renderPage(`
     <section class="auth-gate" aria-live="polite">
       <span class="auth-gate__mark">E</span>
-      <p>Menyiapkan ruang kerja kalian&hellip;</p>
+      <p>Memuat akunmu&hellip;</p>
     </section>
   `);
   const user = await getCurrentUser();
@@ -22,6 +22,7 @@ export async function requireAuthenticated(render, returnTo = `${location.pathna
     navigate(`/login?mode=register&next=${next}`, { replace: true });
     return null;
   }
+  setShellUser(user);
   await render(user);
   return user;
 }

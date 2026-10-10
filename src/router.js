@@ -49,7 +49,12 @@ function resolve() {
   const query = new URLSearchParams(window.location.search);
   document.dispatchEvent(new CustomEvent('env:navigate', { detail: { path: window.location.pathname } }));
   if (found) {
-    Promise.resolve(found.handler(found.params, query)).catch(()=>{
+    const expectedUrl=location.pathname+location.search+location.hash;
+    Promise.resolve(found.handler(found.params, query)).then(()=>{
+      if(location.pathname+location.search+location.hash!==expectedUrl || !location.hash)return;
+      let id;try{id=decodeURIComponent(location.hash.slice(1));}catch{return;}
+      requestAnimationFrame(()=>document.getElementById(id)?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'}));
+    }).catch(()=>{
       toast('Halaman belum dapat dimuat. Periksa koneksi lalu coba kembali.',{type:'error'});
     });
   } else {

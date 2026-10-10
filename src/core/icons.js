@@ -2,6 +2,21 @@
 // Replaces emoji icons; consistent 1.5px stroke, currentColor, 24px grid.
 
 const I = {
+  home: `<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>`,
+  wallet: `<path d="M20 8V6a2 2 0 0 0-2-2H6a3 3 0 0 0 0 6h14v10H6a3 3 0 0 1-3-3V7"/><path d="M20 12h-5v4h5"/>`,
+  user: `<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>`,
+  chart: `<path d="M4 3v17h17M8 15v-4m5 4V7m5 8V5"/>`,
+  shield: `<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="m8 12 3 3 5-6"/>`,
+  logout: `<path d="M9 4H4v16h5M9 12h12m-4-4 4 4-4 4"/>`,
+  plus: `<path d="M12 5v14M5 12h14"/>`,
+  arrowLeft: `<path d="M20 12H4m6-6-6 6 6 6"/>`,
+  external: `<path d="M14 4h6v6M20 4l-9 9M10 4H4v16h16v-6"/>`,
+  edit: `<path d="m15 4 5 5M4 20l5-1L20 8a2 2 0 0 0-4-4L5 15z"/>`,
+  trash: `<path d="M3 6h18M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7"/>`,
+  refresh: `<path d="M20 8a8 8 0 1 0 0 8M20 3v5h-5"/>`,
+  download: `<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>`,
+  whatsapp: `<path d="M21 11.5a9 9 0 0 1-13.4 7.8L3 21l1.6-4.6A9 9 0 1 1 21 11.5z"/><path d="M8 7c-1.2 1.3-.7 3.5 1.8 6s4.7 3 6 1.8l-2-2-1.3.6a8.5 8.5 0 0 1-2.9-2.9l.6-1.3z"/>`,
+  star: `<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z"/>`,
   heart: `<path d="M12 20s-7-4.35-9.33-8.11C.9 8.98 2.24 5.5 5.5 5.5c1.94 0 3.28 1.06 4 2.13h5c.72-1.07 2.06-2.13 4-2.13 3.26 0 4.6 3.48 2.83 6.39C19 15.65 12 20 12 20z"/>`,
   rings: `<circle cx="9" cy="14" r="5.5"/><circle cx="15" cy="14" r="5.5"/><path d="M12 8.5 10.5 5h3L12 8.5z"/>`,
   calendar: `<rect x="4" y="6" width="16" height="15" rx="2.5"/><path d="M4 10.5h16M8.5 3.5v4M15.5 3.5v4"/>`,

@@ -16,6 +16,7 @@ const renderNotFound = (...args) => {const path=location.pathname;return import(
 const renderCheckout = (...args) => {const path=location.pathname;return import('./pages/checkout.js').then(module=>{if(location.pathname===path)return module.renderCheckout(...args);});};
 const renderInfoPage = (...args) => {const path=location.pathname;return import('./pages/info.js').then(module=>{if(location.pathname===path)return module.renderInfoPage(...args);});};
 const renderAdminPayments = (...args) => {const path=location.pathname;return import('./pages/admin-payments.js').then(module=>{if(location.pathname===path)return module.renderAdminPayments(...args);});};
+const renderAdminDashboard = (...args) => {const path=location.pathname;return import('./pages/admin-dashboard.js').then(module=>{if(location.pathname===path)return module.renderAdminDashboard(...args);});};
 
 export function setupRoutes() {
   registerRoute('/', () => renderLanding());
@@ -38,6 +39,9 @@ export function setupRoutes() {
   registerRoute('/privacy', () => renderInfoPage('privacy'));
   registerRoute('/terms', () => renderInfoPage('terms'));
   registerRoute('/admin/payments', () => renderAdminPayments());
+  registerRoute('/admin', () => renderAdminDashboard());
+  registerRoute('/admin/analytics', () => renderAdminDashboard('analytics'));
+  registerRoute('/admin/reviews', () => renderAdminDashboard('reviews'));
   registerRoute('/invite/:id', (params, query) => renderPublicInvitation(params, query));
 
   // Keep a direct reference so bundlers do not tree-shake the fallback import.

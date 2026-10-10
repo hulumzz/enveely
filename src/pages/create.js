@@ -1,3 +1,4 @@
+import {icon} from '../core/icons.js';
 // Enveely — Creation wizard (Design-1.md §14).
 // Step 1: design (template+variant via query or picker)
 // Step 2: couple basics (names + date) -> creates draft -> opens builder.
@@ -39,9 +40,9 @@ function renderCreateWorkspace(query = new URLSearchParams()) {
             <span class="create-head__bar"></span>
             <span class="create-head__dot ${tpl ? 'is-done' : 'is-active'}"></span>
           </div>
-          <p class="eyebrow">Langkah ${tpl ? '2' : '1'} dari 2 — ${tpl ? 'Hampir selesai' : 'Mulai dari sini'}</p>
+
           <h1>${tpl ? 'Isi Data Mempelai' : 'Pilih Desain Favorit'}</h1>
-          <p class="muted">${tpl ? 'Ceritakan sedikit tentang kalian. Semuanya bisa diubah lagi di editor nanti.' : 'Setiap keluarga punya karakter visual sendiri — pilih yang paling terasa seperti kalian.'}</p>
+          <p class="muted">${tpl ? 'Isi nama dan tanggal acara. Detail lain bisa dilengkapi di editor.' : 'Lihat contoh dan pilih desain. Kamu bisa mengatur foto serta detail acara setelahnya.'}</p>
           <p class="create-head__save-note">Draft tersimpan otomatis di akun dan perangkat ini.</p>
         </header>
 
@@ -148,7 +149,7 @@ function designPicker() {
             <span class="pick-card__variants-count">${variants.length} variasi</span>
           </div>
           <p class="pick-card__price">${startingPrice === 0 ? 'Mulai gratis' : `Mulai ${formatRupiah(startingPrice)}`}</p>
-          <span class="pick-card__cta">Pilih Desain Ini →</span>
+          <span class="pick-card__cta">Pilih desain ${icon('arrowRight',{size:16})}</span>
         </div>
       </article>`;
     }).join('')}
@@ -162,8 +163,8 @@ function basicsForm(tpl, variantId) {
   <div class="basics-layout">
     <form id="create-basics" class="basics-form" novalidate>
       <div class="basics-form__header">
-        <p class="eyebrow">Tentang Mempelai</p>
-        <h2 class="basics-form__title">Mari Mulai dengan Cerita Kalian.</h2>
+
+        <h2 class="basics-form__title">Isi detail awal undangan.</h2>
         <p class="muted">Isi nama dan tanggal terlebih dahulu. Sisanya bisa dilengkapi nanti di editor.</p>
       </div>
 
@@ -203,7 +204,7 @@ function basicsForm(tpl, variantId) {
 
       <div class="basics-form__step">
         <div class="basics-form__step-tag">03</div>
-        <h3 class="basics-form__step-title">Tanggal Bahagia</h3>
+        <h3 class="basics-form__step-title">Tanggal acara</h3>
         <label class="fld-ui fld-ui--date">
           <span>Kapan Hari Pernikahannya?</span>
           <input type="date" name="weddingDate"/>
@@ -213,18 +214,18 @@ function basicsForm(tpl, variantId) {
 
       <div class="basics-form__footer">
         <p class="basics-form__assurance">
-          <span class="basics-form__check">✓</span> Belum siap sekalian? Simpan dulu dan lanjutkan kapan saja dari dashboard.
+          <span class="basics-form__check">${icon('check',{size:17})}</span> Belum siap sekalian? Simpan dulu dan lanjutkan kapan saja dari dashboard.
         </p>
         <button type="submit" class="btn btn--primary btn--lg basics-form__submit">
           Lanjut ke Editor
-          <span aria-hidden="true">→</span>
+          ${icon('arrowRight',{size:18})}
         </button>
       </div>
     </form>
 
     <aside class="basics-preview">
-      <p class="eyebrow">Pratinjau</p>
-      <h3 class="basics-preview__title">${tpl.name}${variantId ? ` &mdash; ${getVariant(variantId)?.name || ''}` : ''}</h3>
+
+      <h3 class="basics-preview__title">${tpl.name}${variantId ? ` · ${getVariant(variantId)?.name || ''}` : ''}</h3>
 
       <div class="basics-preview__switch" role="tablist" aria-label="Pilih varian ${tpl.name}">
         ${variants.map((v) => `
@@ -255,7 +256,7 @@ function basicsForm(tpl, variantId) {
 
       <ul class="basics-preview__tips">
         <li><span>●</span> Foto, acara, dan galeri bisa dilengkapin di editor setelah ini.</li>
-        <li><span>●</span> Tidak ada deadline &mdash; simpan draft kapan saja.</li>
+        <li><span>●</span> Tidak ada deadline · simpan draft kapan saja.</li>
         <li><span>●</span> Paket berbayar aktif 3 bulan, atau 6 bulan dengan tambahan Rp15.000.</li>
       </ul>
     </aside>
