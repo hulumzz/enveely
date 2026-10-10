@@ -42,7 +42,7 @@ export function mountAppShell(root) {
     <footer class="footer">
       <div class="container">
         <div class="footer__brand">Enveely</div>
-        <p class="footer__tagline">Undangan yang terasa seperti kalian.</p>
+        <p class="footer__tagline">Undangan pernikahan digital.</p>
         <div class="footer__grid">
           <div class="footer__col">
             <h4>Produk</h4>
@@ -69,8 +69,7 @@ export function mountAppShell(root) {
           </div>
         </div>
         <div class="footer__base">
-          <span>&copy; ${new Date().getFullYear()} Enveely. Dibuat dengan penuh perhatian.</span>
-          <span>Setiap cerita layak diundang dengan indah.</span>
+          <span>&copy; ${new Date().getFullYear()} Enveely.</span>
         </div>
       </div>
     </footer>
