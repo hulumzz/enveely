@@ -2,6 +2,7 @@
 // Works with Cloudflare Pages' built-in SPA fallback so deep links
 // like /invite/<id> are served index.html and resolved client-side.
 
+import {toast} from './ui/overlays.js';
 import { setRoute } from './state.js';
 
 const routes = new Map();
@@ -49,7 +50,7 @@ function resolve() {
   document.dispatchEvent(new CustomEvent('env:navigate', { detail: { path: window.location.pathname } }));
   if (found) {
     Promise.resolve(found.handler(found.params, query)).catch(()=>{
-      import('./ui/overlays.js').then(m=>m.toast('Halaman belum dapat dimuat. Periksa koneksi lalu coba kembali.',{type:'error'}));
+      toast('Halaman belum dapat dimuat. Periksa koneksi lalu coba kembali.',{type:'error'});
     });
   } else {
     // Fallback: unknown URL -> landing (404 page can replace this later)

@@ -8,17 +8,7 @@ import { mountAppShell } from './ui/app-shell.js';
 import { setupRoutes } from './routes.js';
 import { initAnalytics } from './services/firebase.js';
 import '../styles/main.css';
-import '../styles/atelier.css';
 import '../styles/product-layout.css';
-import '../styles/amora.css';
-import '../styles/nusantara.css';
-import '../styles/lumiere.css';
-import '../styles/elysian.css';
-import '../styles/pusaka.css';
-import '../styles/mayura.css';
-import '../styles/blocka.css';
-import '../styles/meadow.css';
-import '../styles/serena.css';
 
 function boot() {
   ensureDeviceId();

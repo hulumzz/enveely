@@ -44,6 +44,7 @@ export async function registerWithEmail(email, password, displayName = '') {
       await updateProfile(cred.user, { displayName: String(displayName).trim().slice(0, 80) });
     }
     await linkDeviceOwnership(cred.user);
+    if(!cred.user.emailVerified) {const {sendEmailVerification}=await import('firebase/auth');await sendEmailVerification(cred.user).catch(()=>{});}
     return { ok: true, user: publicUser(cred.user) };
   } catch (err) {
     return { ok: false, message: humanize(err) };
@@ -101,10 +102,12 @@ export async function onAuthChange(callback) {
     callback(null);
     return () => {};
   }
-  const { onAuthStateChanged } = await import('firebase/auth');
-  return onAuthStateChanged(auth, async (user) => {
+  const { onIdTokenChanged } = await import('firebase/auth');
+  return onIdTokenChanged(auth, async (user) => {
     const { setDraftOwner } = await import('./draft-store.js');
     setDraftOwner(user?.uid || '');
+    if(user)await syncMediaSession(await user.getIdToken()).catch(()=>{});
+    else await fetch('/api/session',{method:'DELETE'}).catch(()=>{});
     callback(user ? publicUser(user) : null);
   });
 }
@@ -128,7 +131,8 @@ export async function getCurrentUser() {
 export async function getAuthToken() {
   const auth = await authOrNull();
   if (!auth?.currentUser) return '';
-  return auth.currentUser.getIdToken();
+  const token=await auth.currentUser.getIdToken();
+  await syncMediaSession(token).catch(()=>{});return token;
 }
 
 export async function sendPasswordReset(email) {
@@ -148,7 +152,7 @@ export async function logout() {
   const auth = await authOrNull();
   if (!auth) return;
   const { signOut } = await import('firebase/auth');
-  await signOut(auth);
+  await fetch('/api/session',{method:'DELETE'});lastMediaToken='';await signOut(auth);
 }
 
 function publicUser(user) {
@@ -177,3 +181,6 @@ export async function sendVerificationEmail() {
   const { sendEmailVerification } = await import('firebase/auth');
   await sendEmailVerification(auth.currentUser);
 }
+
+let lastMediaToken='';
+async function syncMediaSession(token){if(token===lastMediaToken)return;const response=await fetch('/api/session',{method:'POST',headers:{authorization:`Bearer ${token}`}});if(response.ok)lastMediaToken=token;}

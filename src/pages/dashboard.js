@@ -12,6 +12,7 @@ import { listCloudDrafts, deleteCloudInvitation, listGuestResponses, moderateWis
 import { refreshPaymentOrder, listCloudPaymentOrders } from '../services/payment-api.js';
 
 let cloudHydrated = '';
+document.addEventListener('env:navigate',()=>{cloudHydrated='';paymentsHydrated='';});
 let paymentsHydrated = '';
 let invitationFilter = 'all';
 
@@ -63,7 +64,7 @@ function renderDashboardWorkspace(user, section) {
           const local = drafts.find((item) => item.id === cloud.id);
           const cloudTime = cloud.updatedAt?.toMillis?.() || Number(cloud.updatedAt) || 0;
           if (!local || cloudTime > Number(local.updatedAt || 0)) {
-            saveDraft({ ...cloud, updatedAt: cloudTime || Date.now() });
+            if (!local?._dirty) saveDraft({ ...cloud, updatedAt: cloudTime || 0 },{synced:true});
             changed = true;
           }
         });
@@ -219,7 +220,12 @@ function hydrateGuestResponses(root,drafts) {
   if(!picker || !drafts.length)return;
   const paint=async()=>{const id=picker.value;host.textContent='Memuat tanggapan…';try{
     const {rsvps,wishes}=await listGuestResponses(id);if(!host.isConnected || picker.value!==id)return;
-    host.innerHTML=`<h3>Konfirmasi kehadiran (${rsvps.length})</h3><p>${rsvps.filter(r=>r.attendance==='attending').reduce((total,r)=>total+r.guestCount,0)} tamu menyatakan hadir.</p>${rsvps.map(r=>`<article class="profile-card"><strong>${escapeHtml(r.name)}</strong><p>${r.attendance==='attending'?'Hadir':'Tidak hadir'} · ${r.guestCount} tamu</p><p>${escapeHtml(r.message)}</p></article>`).join('') || '<p>Belum ada konfirmasi.</p>'}<h3>Ucapan (${wishes.length})</h3>${wishes.map(w=>`<article class="profile-card"><strong>${escapeHtml(w.name)}</strong><p>${escapeHtml(w.message)}</p><button type="button" class="btn btn--ghost btn--sm" data-moderate-wish="${escapeHtml(w.id)}" data-approved="${w.approved===true}">${w.approved ? 'Sembunyikan' : 'Setujui & tampilkan'}</button></article>`).join('') || '<p>Belum ada ucapan.</p>'}`;
+    host.innerHTML=`<button type="button" class="btn btn--ghost btn--sm" data-export-guests>Unduh CSV</button><h3>Konfirmasi kehadiran (${rsvps.length})</h3><p>${rsvps.filter(r=>r.attendance==='attending').reduce((total,r)=>total+r.guestCount,0)} tamu menyatakan hadir.</p>${rsvps.map(r=>`<article class="profile-card"><strong>${escapeHtml(r.name)}</strong><p>${r.attendance==='attending'?'Hadir':'Tidak hadir'} · ${r.guestCount} tamu</p><p>${escapeHtml(r.message)}</p></article>`).join('') || '<p>Belum ada konfirmasi.</p>'}<h3>Ucapan (${wishes.length})</h3>${wishes.map(w=>`<article class="profile-card"><strong>${escapeHtml(w.name)}</strong><p>${escapeHtml(w.message)}</p><button type="button" class="btn btn--ghost btn--sm" data-moderate-wish="${escapeHtml(w.id)}" data-approved="${w.approved===true}">${w.approved ? 'Sembunyikan' : 'Setujui & tampilkan'}</button></article>`).join('') || '<p>Belum ada ucapan.</p>'}`;
+    host.querySelector('[data-export-guests]')?.addEventListener('click',()=>{
+      const cell=value=>'"'+String(value ?? '').replace(/^\s*[=+@-]/,"'$&").replaceAll('"','""')+'"';
+      const rows=[['Jenis','Nama','Kehadiran','Jumlah tamu','Pesan'],...rsvps.map(r=>['RSVP',r.name,r.attendance,r.guestCount,r.message]),...wishes.map(w=>['Ucapan',w.name,'','',w.message])];
+      const url=URL.createObjectURL(new Blob(['\ufeff'+rows.map(row=>row.map(cell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=`tamu-${id}.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    });
     host.querySelectorAll('[data-moderate-wish]').forEach(button=>button.addEventListener('click',async()=>{button.disabled=true;try{await moderateWish(id,button.dataset.moderateWish,button.dataset.approved!=='true');await paint();}catch{button.disabled=false;toast('Ucapan belum dapat diperbarui.',{type:'error'});}}));
   }catch{host.textContent='Tanggapan belum dapat dimuat. Periksa koneksi dan coba pilih undangan kembali.';}};
   picker.addEventListener('change',paint);paint();

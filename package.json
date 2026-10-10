@@ -3,16 +3,20 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "engines": { "node": ">=24" },
-  "description": "Enveely — Invite Your Beloved People. Digital wedding invitation platform.",
+  "engines": {
+    "node": ">=24"
+  },
+  "description": "Enveely \u2014 Invite Your Beloved People. Digital wedding invitation platform.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "preview:pages": "wrangler pages dev dist",
-    "test": "node tests/atelier.test.mjs && node tests/preview-layout.test.mjs && node tests/payment-functions.test.mjs",
+    "test": "node tests/atelier.test.mjs && node tests/preview-layout.test.mjs && node tests/payment-functions.test.mjs && node tests/guest-functions.test.mjs",
     "test:rules": "firebase emulators:exec --only firestore --project demo-enveely \"node tests/firestore-rules.test.mjs\"",
-    "deploy:pages": "node scripts/deploy-pages.mjs"
+    "deploy:pages": "node scripts/deploy-pages.mjs",
+    "prebuild": "node scripts/build-policy.mjs && node scripts/build-sitemap.mjs",
+    "test:functions": "wrangler pages functions build functions --outdir=/tmp/enveely-functions-check"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^5.0.2",
@@ -24,5 +28,7 @@
     "firebase": "^12.19.0",
     "qrcode": "^1.5.4"
   },
-  "overrides": { "@grpc/grpc-js": "^1.14.5" }
+  "overrides": {
+    "@grpc/grpc-js": "^1.14.5"
+  }
 }

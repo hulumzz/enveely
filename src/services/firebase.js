@@ -48,6 +48,7 @@ export async function getDb() {
 /** Analytics (lazy, only where supported). Never blocks the app. */
 export async function initAnalytics() {
   try {
+    if(localStorage.getItem('env_analytics_consent')!=='yes' || location.pathname.startsWith('/invite/'))return null;
     const fbApp = getFirebaseApp();
     if (!fbApp) return null;
     const {getAnalytics,isSupported:analyticsSupported} = await import('firebase/analytics');

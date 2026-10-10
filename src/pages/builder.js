@@ -1,7 +1,9 @@
+import {loadDesignAssets} from '../services/design-assets.js';
 // Enveely — Builder page (Design-1.md §15–18).
 // Three-area editor: Section Navigator | Live Canvas | Property Panel.
 // All edits mutate the draft object -> autosave (draft-store) -> canvas repaint.
 
+import {savePendingMedia,deletePendingMedia,listPendingMedia} from '../services/pending-media.js';
 import { renderPage } from '../ui/app-shell.js';
 import { loadDraft, saveDraft } from '../services/draft-store.js';
 import { saveInvitation, resolveOwnedDraft } from '../services/firestore-data.js';
@@ -18,7 +20,7 @@ import { requireAuthenticated } from '../services/access.js';
 import { getOrderForInvitation } from '../services/payment-store.js';
 import { getGalleryLimit } from '../data/plans.js';
 import { suggestEditorCopy } from '../services/editor-ai.js';
-import { refreshPaymentOrder } from '../services/payment-api.js';
+import { refreshPaymentOrder,resolvePaymentOrder } from '../services/payment-api.js';
 import { ensurePaymentOrder } from '../services/payment-store.js';
 
 export function renderBuilder(invitationId) {
@@ -32,6 +34,15 @@ async function renderBuilderWorkspace(invitationId) {
     navigate('/templates', { replace: true });
     return;
   }
+  if (draft._conflict) {
+    openModal({title:'Ada perubahan dari perangkat lain',body:'<p>Draf di perangkat ini belum tersinkron. Versi akun sudah berubah. Simpan salinan lokal sebelum memuat versi akun.</p>',actions:[{label:'Unduh salinan lokal',onClick:()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(draft,null,2)],{type:'application/json'}));a.download=`${draft.id}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);},closeOnClick:false},{label:'Muat versi akun',kind:'primary',onClick:async()=>{const {getInvitationForEdit}=await import('../services/firestore-data.js');const cloud=await getInvitationForEdit(invitationId);saveDraft(cloud,{synced:true});renderBuilder(invitationId);}}]});
+    return;
+  }
+  await loadDesignAssets(draft.design.templateId);
+  if(location.pathname!==`/builder/${invitationId}`)return;
+  const pending=await listPendingMedia(draft.id).catch(()=>[]);
+  for(const upload of pending){const url=URL.createObjectURL(upload.file);if(upload.path.startsWith('gallery.')){const i=Number(upload.path.split('.')[1]);if(draft.content.gallery[i]?._local)draft.content.gallery[i].url=url;}else setByPath(draft.content,upload.path,url);}
+  if(pending.length) toast(`${pending.length} foto belum terunggah. Gunakan tombol Coba unggah lagi.`);
   if (!draft.sections.some(s=>s.id==='music'))draft.sections.push({id:'music',enabled:false});
 
   renderPage(
@@ -41,7 +52,7 @@ async function renderBuilderWorkspace(invitationId) {
       <header class="builder__top">
         <a href="/" data-link class="builder__logo">ENVEELY</a>
         <span class="builder__title">${escTitle(draft)}</span>
-        <span class="builder__save" data-save-status>Tersimpan</span>
+        <span class="builder__save" data-save-status>Tersimpan</span>${pending.length ? '<button type="button" class="btn btn--ghost btn--sm" data-retry-media>Coba unggah lagi</button>' : ''}
         <div class="builder__top-actions">
           <button type="button" class="btn btn--ai btn--sm" data-act="assist">✦ Bantu isi</button>
           <button type="button" class="btn btn--ghost btn--sm" data-act="preview">Pratinjau</button>
@@ -72,6 +83,18 @@ async function renderBuilderWorkspace(invitationId) {
       const props = rootEl.querySelector('[data-props]');
       const saveStatus = rootEl.querySelector('[data-save-status]');
 
+      rootEl.querySelector('[data-retry-media]')?.addEventListener('click',async event=>{
+        const button=event.currentTarget;button.disabled=true;
+        for(const upload of await listPendingMedia(draft.id)) {
+          try {
+            await saveInvitation(draft);
+            const hosted=await uploadImage(upload.file,{preset:upload.preset,invitationId:draft.id});
+            if(upload.path.startsWith('gallery.'))setByPath(draft.content,upload.path,hosted);else setByPath(draft.content,upload.path,hosted.url);
+            await deletePendingMedia(draft.id,upload.path);delete draft.content._pendingUploads?.[upload.path];
+          }catch(error){toast(error.message,{type:'error'});}
+        }
+        persist();paintCanvas();paintProps();button.disabled=false;
+      });
       // ---- persistence ----
       let saveTimer = null;
       let cloudTimer = null;
@@ -85,10 +108,13 @@ async function renderBuilderWorkspace(invitationId) {
         }, 500);
         cloudTimer = setTimeout(async () => {
           try { const result = await saveInvitation(state.draft); saveStatus.textContent = result.cloud ? 'Tersimpan di akun' : 'Tersimpan di perangkat'; }
-          catch { saveStatus.textContent = 'Tersimpan di perangkat · cloud belum tersinkron'; }
+          catch(error) { saveStatus.textContent = error.code === 'draft-conflict' ? error.message : 'Tersimpan di perangkat. Menunggu sinkronisasi.'; }
         }, 2200);
       }
-      document.addEventListener('env:navigate',()=>{clearTimeout(saveTimer);clearTimeout(cloudTimer);saveDraft(state.draft);},{once:true});
+      const retrySave = () => { if(state.draft._dirty) saveInvitation(state.draft).then(()=>{saveStatus.textContent='Tersimpan di akun';}).catch(error=>{saveStatus.textContent=error.message;}); };
+      window.addEventListener('online',retrySave);
+      const pageHide = () => saveDraft(state.draft); window.addEventListener('pagehide',pageHide);
+      document.addEventListener('env:navigate',()=>{clearTimeout(saveTimer);clearTimeout(cloudTimer);if(state.draft._dirty || saveTimer) {saveDraft(state.draft);retrySave();}window.removeEventListener('online',retrySave);window.removeEventListener('pagehide',pageHide);},{once:true});
 
       // ---- rendering ----
       function paintNav() {
@@ -769,7 +795,9 @@ async function uploadWithLocalPreview(file, draft, preset, opts = {}) {
     draft.content._pendingUploads[`gallery.${idx}`] = true;
   }
 
-  // trigger a repaint via the caller; here we just record the optimistic state.
+  const pendingPath=opts.setPath ? opts.path : `gallery.${draft.content.gallery.length-1}`;
+  try {await savePendingMedia(draft.id,pendingPath,file,preset);}catch{toast('Penyimpanan foto lokal penuh. Biarkan halaman terbuka sampai upload selesai.',{type:'error'});}
+  saveDraft(draft);
 
   try {
     await saveInvitation(draft);
@@ -785,14 +813,13 @@ async function uploadWithLocalPreview(file, draft, preset, opts = {}) {
         delete draft.content._pendingUploads?.[`gallery.${i}`];
       }
     }
+    await deletePendingMedia(draft.id,pendingPath).catch(()=>{});
     URL.revokeObjectURL(localUrl);
   } catch (err) {
     console.warn('[upload] gagal, foto tetap tersimpan lokal', err);
-    toast(err.message || 'Foto belum diunggah. Pilih kembali foto sebelum publikasi.',{type:'error'});
+    toast(err.message || 'Foto belum diunggah. Salinan tersimpan di perangkat untuk dicoba kembali.',{type:'error'});
     // keep local URL; user sees a toast via caller if desired
-    if (opts.setPath && opts.path) {
-      delete draft.content._pendingUploads?.[opts.path];
-    }
+
   }
 }
 
@@ -857,7 +884,8 @@ async function publishFlow(state, { persist, saveStatus }) {
   if (JSON.stringify(draft.content).includes('blob:') || Object.values(draft.content._pendingUploads || {}).some(Boolean)) {
     toast('Tunggu upload selesai atau pilih kembali foto yang gagal sebelum publikasi.',{type:'error'});return;
   }
-  const payment = await refreshPaymentOrder(getOrderForInvitation(draft.id) || ensurePaymentOrder(draft));
+  let payment;
+  try { payment = await resolvePaymentOrder(draft); } catch(error) { toast(error.message,{type:'error'});return; }
   if (!payment || payment.status !== 'active' || (payment.expiresAt && payment.expiresAt <= Date.now())) {
     openModal({
       title: 'Aktifkan sebelum tayang',
@@ -898,7 +926,7 @@ async function publishFlow(state, { persist, saveStatus }) {
             const res = await saveInvitation({...draft,status:'published'});
             if (!res.cloud) throw new Error('cloud-unavailable');
             Object.assign(draft,res.saved || {},{status:'published'});
-            saveDraft(draft);
+            saveDraft(draft,{synced:true});
             saveStatus.textContent = 'Sudah tayang';
           } catch(error) {
             saveStatus.textContent = 'Publikasi belum berhasil';

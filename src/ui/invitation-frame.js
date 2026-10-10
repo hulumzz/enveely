@@ -1,6 +1,7 @@
 // A thumbnail renders one real section on a 430px canvas, never the full page.
 import { sampleInvitation } from '../data/sample-invitation.js';
 import { renderInvitation } from '../engine/renderer.js';
+import {loadDesignAssets} from '../services/design-assets.js';
 import { esc } from '../core/format.js';
 const DESIGN_W = 430;
 const sessions = new WeakMap();
@@ -43,10 +44,12 @@ export function hydrateInvitationFrames(root) {
     };
     const schedule = () => { if (!scheduled) scheduled = requestAnimationFrame(measure); };
     const resize = typeof ResizeObserver === 'function' ? new ResizeObserver(schedule) : null;
-    const paint = el => {
+    const paint = async el => {
       if (el.dataset.hydrated) return;
       el.dataset.hydrated = 'true';
       try {
+        await loadDesignAssets(el.dataset.template);
+        if(!el.isConnected)return;
         const inner = document.createElement('div');
         inner.className = 'inv-frame__inner';
         inner.innerHTML = '<div class="inv-frame__content">' + renderInvitation(frameInvitation(el.dataset.template, el.dataset.variant, el.dataset.previewSection)) + '</div>';

@@ -1,6 +1,7 @@
+import {requireFirebaseUser} from '../../../_lib/firebase-admin.js';
 export async function onRequestGet(context) {
   try {
-    const user = await authenticate(context.request, context.env);
+    const user = await requireFirebaseUser(context.request, context.env);
     if (!user) return json({ message: 'Sesi login tidak valid.' }, 401);
     if (!context.env.PAYMENTS_DB) return json({ message: 'Penyimpanan pembayaran belum dikonfigurasi.' }, 503);
     const orderId = String(context.params.id || '');
@@ -12,7 +13,7 @@ export async function onRequestGet(context) {
     if (!row) return json({ message: 'Pesanan tidak ditemukan.' }, 404);
     return json({
       id: row.id,
-      status: row.status,
+      status: row.status==='active' && Date.parse(row.expires_at)<=Date.now() ? 'expired' : row.status,
       expiresAt: row.expires_at ? Date.parse(row.expires_at) : null,
       reviewedAt: row.reviewed_at ? Date.parse(row.reviewed_at) : null,
       verification: { confidence: row.ai_confidence || 0, summary: row.ai_summary || '' },
@@ -20,20 +21,6 @@ export async function onRequestGet(context) {
   } catch {
     return json({ message: 'Status pembayaran belum dapat dimuat.' }, 500);
   }
-}
-
-async function authenticate(request, env) {
-  const bearer = request.headers.get('authorization') || '';
-  const token = bearer.startsWith('Bearer ') ? bearer.slice(7) : '';
-  if (!token || !env.FIREBASE_WEB_API_KEY) return null;
-  const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${encodeURIComponent(env.FIREBASE_WEB_API_KEY)}`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ idToken: token }),
-  });
-  if (!response.ok) return null;
-  const result = await response.json();
-  return result.users?.[0] || null;
 }
 
 function json(body, status = 200) {

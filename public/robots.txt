@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /builder/
+Disallow: /checkout/
+Disallow: /dashboard
+Disallow: /admin/
+Disallow: /api/
+Disallow: /invite/
+Disallow: /media/
+Sitemap: https://enveely.pages.dev/sitemap.xml

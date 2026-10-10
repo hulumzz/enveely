@@ -3,6 +3,7 @@
 //   Invitation JSON + Template DNA + Variant DNA -> resolveDesign -> sections -> DOM
 // The renderer never touches Firestore directly.
 
+import {validDesign} from '../data/plans.js';
 import { resolveDesign } from '../data/variants.js';
 import * as S from './sections.js';
 import { atelierDecoration } from '../data/atelier-art.js';
@@ -47,6 +48,7 @@ export const DEFAULT_SECTIONS = [
 export function renderInvitation(invitation) {
   const content = invitation.content || {};
   const designRef = invitation.design || {};
+  if(invitation.status==='published' && !validDesign(designRef))return '<p class="muted-inv">Desain undangan tidak valid.</p>';
   const design = resolveDesign(designRef.templateId, designRef.variantId);
   if (!design) return `<p class="muted-inv">Template not found.</p>`;
 

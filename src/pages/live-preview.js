@@ -1,3 +1,4 @@
+import {loadDesignAssets} from '../services/design-assets.js';
 // Enveely — Live template preview page.
 // Renders a sample invitation through the real renderer so users see the
 // actual Design DNA (not a mockup). Supports variant switching and
@@ -12,12 +13,13 @@ import { attachInvitationInteractions } from '../engine/interactions.js';
 import { initInvitationMusic } from '../engine/music.js';
 import { navigate } from '../router.js';
 
-export function renderLivePreview(templateId, variantId) {
+export async function renderLivePreview(templateId, variantId) {
   const tpl = getTemplate(templateId);
   if (!tpl) {
     navigate('/templates', { replace: true });
     return;
   }
+  const route=location.pathname;await loadDesignAssets(templateId);if(location.pathname!==route)return;
   const variants = getVariantsFor(templateId);
   const activeVariant = variants.some((v) => v.id === variantId) ? variantId : variants[0]?.id;
 

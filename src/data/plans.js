@@ -5,6 +5,9 @@ export const EXTENSION_FEE = 15_000;
 export const UNIQUE_CODES = Object.freeze([111, 222, 333, 123, 321]);
 
 const catalog = {
+  'tempwed-classic': { price: 145_000, tier: 'Signature', featured: true },
+  'tempwed-golden-hour': { price: 160_000, tier: 'Premium', featured: false },
+  'tempwed-midnight-garden': { price: 175_000, tier: 'Premium', featured: false },
   'blocka-sky-party': { price: 150_000, tier: 'Premium', featured: true },
   'blocka-sunshine': { price: 170_000, tier: 'Premium', featured: false },
   'blocka-cloud-dancer': { price: 185_000, tier: 'Premium', featured: false },
@@ -44,6 +47,7 @@ export const templatePlans = Object.freeze(catalog);
 // Photo allowance scales with the chosen design and package price. Keeping it
 // here makes the editor, checkout, and future entitlement checks share one rule.
 const GALLERY_LIMITS = Object.freeze({
+  'tempwed-classic': 18, 'tempwed-golden-hour': 20, 'tempwed-midnight-garden': 20,
   'blocka-sky-party': 10,
   'blocka-sunshine': 12,
   'blocka-cloud-dancer': 14,
@@ -128,4 +132,8 @@ export function formatRupiah(value) {
 export function planDurationLabel(plan) {
   if (!plan) return '';
   return plan.paid ? `${plan.durationMonths || 3} bulan tayang` : 'Gratis 7 hari';
+}
+
+export function validDesign(design) {
+  return Boolean(design && templatePlans[design.variantId] && design.variantId.startsWith(`${design.templateId}-`));
 }

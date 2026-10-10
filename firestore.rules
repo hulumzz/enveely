@@ -5,27 +5,31 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /invitations/{invitationId} {
-      allow get: if publiclyAccessible(invitationId) || ownsExisting();
+      allow get: if (signedIn() && !exists(/databases/$(database)/documents/invitations/$(invitationId))) || publiclyAccessible(invitationId) || ownsExisting();
       allow list: if signedIn() && resource.data.ownerUid == request.auth.uid;
       allow create: if signedIn()
         && request.resource.data.ownerUid == request.auth.uid
         && !request.resource.data.keys().hasAny(['freeActivatedAt'])
-        && request.resource.data.status == 'draft';
+        && request.resource.data.status == 'draft'
+        && request.resource.data.revision == 1
+        && validInvitation();
       allow update: if ownsExisting()
         && request.resource.data.ownerUid == resource.data.ownerUid
         && (!resource.data.keys().hasAny(['freeActivatedAt'])
           || request.resource.data.freeActivatedAt == resource.data.freeActivatedAt)
         && (resource.data.keys().hasAny(['freeActivatedAt'])
           || !request.resource.data.keys().hasAny(['freeActivatedAt'])
-          || (request.resource.data.freeActivatedAt == request.time
+          || (request.resource.data.freeActivatedAt == getAfter(/databases/$(database)/documents/activationLedger/$(invitationId)).data.startedAt
             && request.resource.data.status == 'published'
             && request.resource.data.design.variantId == 'serena-paper'))
-        && publishAllowed(invitationId);
-      allow delete: if ownsExisting();
+        && validInvitation()
+        && revisionAllowed()
+        && (publishAllowed(invitationId) || unchangedExpiredPublication());
+      allow delete: if false;
 
       match /rsvps/{rsvpId} {
         allow read: if ownsInvitation(invitationId);
-        allow create: if invitationPublished(invitationId) && validRsvp();
+        allow create: if false;
         allow update: if false;
         allow delete: if ownsInvitation(invitationId);
       }
@@ -33,8 +37,9 @@ service cloud.firestore {
       match /wishes/{wishId} {
         allow read: if ownsInvitation(invitationId)
           || (invitationPublished(invitationId) && resource.data.approved == true);
-        allow create: if invitationPublished(invitationId) && validWish();
-        allow update, delete: if ownsInvitation(invitationId);
+        allow create: if false;
+        allow update: if ownsInvitation(invitationId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['approved']) && request.resource.data.approved is bool;
+        allow delete: if ownsInvitation(invitationId);
       }
     }
 
@@ -51,11 +56,50 @@ service cloud.firestore {
       allow list, create, update, delete: if false;
     }
 
+    match /activationLedger/{invitationId} {
+      allow get: if signedIn() && (!exists(/databases/$(database)/documents/activationLedger/$(invitationId)) || resource.data.ownerUid == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.keys().hasOnly(['ownerUid','startedAt'])
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.startedAt == request.time
+        && getAfter(/databases/$(database)/documents/invitations/$(invitationId)).data.ownerUid == request.auth.uid;
+      allow list, update, delete: if false;
+    }
+
     match /templates/{templateId} {
       allow read: if true;
       allow write: if false;
     }
 
+    function validDesign(d) {
+      return (d.templateId == 'tempwed' && d.variantId in ['tempwed-classic','tempwed-golden-hour','tempwed-midnight-garden'])
+          || (d.templateId == 'blocka' && d.variantId in ['blocka-sky-party','blocka-sunshine','blocka-cloud-dancer'])
+          || (d.templateId == 'mayura' && d.variantId in ['mayura-jade','mayura-garnet','mayura-pearl'])
+          || (d.templateId == 'pusaka' && d.variantId in ['pusaka-sogan','pusaka-kencana','pusaka-nila'])
+          || (d.templateId == 'serena' && d.variantId in ['serena-paper','serena-modern-white','serena-ink'])
+          || (d.templateId == 'meadow' && d.variantId in ['meadow-picnic','meadow-garden','meadow-film'])
+          || (d.templateId == 'amora' && d.variantId in ['amora-garden','amora-moonlit','amora-vintage-rose'])
+          || (d.templateId == 'nusantara' && d.variantId in ['nusantara-sagara','nusantara-puspa','nusantara-terra'])
+          || (d.templateId == 'elysian' && d.variantId in ['elysian-ivory','elysian-noir','elysian-champagne'])
+          || (d.templateId == 'lumiere' && d.variantId in ['lumiere-gallery','lumiere-film','lumiere-clean'])
+          || (d.templateId == 'botanica' && d.variantId in ['botanica-dusty-rose','botanica-mauve-intimate','botanica-blush-cream']);
+    }
+    function galleryLimit(variantId) { return {'tempwed-classic':18,'tempwed-golden-hour':20,'tempwed-midnight-garden':20,'blocka-sky-party':10,'blocka-sunshine':12,'blocka-cloud-dancer':14,'mayura-jade':10,'mayura-garnet':12,'mayura-pearl':14,'pusaka-sogan':16,'pusaka-kencana':20,'pusaka-nila':18,'serena-paper':6,'serena-modern-white':8,'serena-ink':8,'meadow-picnic':14,'meadow-garden':18,'meadow-film':18,'amora-garden':14,'amora-moonlit':14,'amora-vintage-rose':16,'nusantara-sagara':16,'elysian-ivory':10,'nusantara-puspa':20,'elysian-noir':12,'nusantara-terra':18,'elysian-champagne':14,'lumiere-gallery':24,'lumiere-film':24,'lumiere-clean':16,'botanica-dusty-rose':20,'botanica-mauve-intimate':18,'botanica-blush-cream':18}[variantId]; }
+    function validInvitation() {
+      let d = request.resource.data;
+      return d.status in ['draft','published'] && validDesign(d.design)
+        && d.content is map && d.sections is list && d.sections.size() <= 20
+        && d.content.gallery is list && d.content.gallery.size() <= galleryLimit(d.design.variantId)
+        && d.content.events is list && d.content.events.size() <= 10
+        && d.content.story is list && d.content.story.size() <= 30;
+    }
+    function revisionAllowed() {
+      return request.resource.data.revision is int
+        && request.resource.data.revision == resource.data.get('revision', 0) + 1;
+    }
+    function unchangedExpiredPublication() {
+      return resource.data.status == 'published' && validDesign(resource.data.design) && request.resource.data.status == 'published'
+        && request.resource.data.design == resource.data.design;
+    }
     function signedIn() {
       return request.auth != null;
     }
@@ -71,7 +115,7 @@ service cloud.firestore {
 
     function invitationPublished(invitationId) {
       let invitation = get(/databases/$(database)/documents/invitations/$(invitationId)).data;
-      return invitation.status == 'published'
+      return invitation.status == 'published' && validDesign(invitation.design)
         && ((invitation.design.variantId == 'serena-paper'
           && invitation.freeActivatedAt is timestamp
           && request.time < invitation.freeActivatedAt + duration.value(7, 'd'))
@@ -80,18 +124,19 @@ service cloud.firestore {
 
     function publishAllowed(invitationId) {
       return request.resource.data.status != 'published'
-        || freePlanWindow()
+        || freePlanWindow(invitationId)
         || paidEntitlement(invitationId);
     }
 
-    function freePlanWindow() {
+    function freePlanWindow(invitationId) {
       return request.resource.data.design.variantId == 'serena-paper'
         && (
-          (resource.data.freeActivatedAt is timestamp
+          (resource.data.get('freeActivatedAt', null) is timestamp
             && request.resource.data.freeActivatedAt == resource.data.freeActivatedAt
             && request.time < resource.data.freeActivatedAt + duration.value(7, 'd'))
           || (!resource.data.keys().hasAny(['freeActivatedAt'])
-            && request.resource.data.freeActivatedAt == request.time)
+            && request.resource.data.freeActivatedAt == getAfter(/databases/$(database)/documents/activationLedger/$(invitationId)).data.startedAt
+            && request.time < request.resource.data.freeActivatedAt + duration.value(7, 'd'))
         );
     }
 
@@ -100,10 +145,10 @@ service cloud.firestore {
     }
 
     function publiclyAccessible(invitationId) {
-      return resource.data.status == 'published'
+      return resource.data.status == 'published' && validDesign(resource.data.design)
         && (
           (resource.data.design.variantId == 'serena-paper'
-            && resource.data.freeActivatedAt is timestamp
+            && resource.data.get('freeActivatedAt', null) is timestamp
             && request.time < resource.data.freeActivatedAt + duration.value(7, 'd'))
           || validEntitlement(invitationId, resource.data.ownerUid, resource.data.design.variantId)
         );

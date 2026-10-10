@@ -1,3 +1,4 @@
+import {boundedJson} from '../../_lib/body.js';
 import { requireFirebaseUser, json } from '../../_lib/firebase-admin.js';
 import {consumeQuota} from '../../_lib/request-limit.js';
 
@@ -19,7 +20,8 @@ export async function onRequestPost(context) {
     const length = Number(context.request.headers.get('content-length') || 0);
     if (length > MAX_BODY_BYTES) return json({ message: 'Konteks editor terlalu besar.' }, 413);
 
-    const input = await context.request.json();
+    if(!user.emailVerified)return json({message:'Verifikasi email sebelum memakai asisten.'},403);
+    const input = await boundedJson(context.request,MAX_BODY_BYTES);
     const task = input?.task === 'complete' ? 'complete' : 'field';
     const field = String(input?.field || '');
     if (task === 'field' && !isSupportedField(field)) return json({ message: 'Field copy tidak didukung.' }, 400);
@@ -31,7 +33,7 @@ export async function onRequestPost(context) {
     const messages = task === 'complete' ? completePrompt(contextData) : fieldPrompt(field, contextData);
     let answer;
     if (source === 'groq') answer = await askGroq(context.env.GROQ_API_KEY,model,messages);
-    else {const result=await context.env.AI.run(model,{messages,max_tokens:1400,temperature:0.55,response_format:{type:'json_object'}});answer=result.response || result.choices?.[0]?.message?.content || '';}
+    else {let timer;try {const result=await Promise.race([context.env.AI.run(model,{messages,max_tokens:1400,temperature:0.55,response_format:{type:'json_object'}}),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('AI timeout')),20_000);})]);answer=result.response || result.choices?.[0]?.message?.content || '';}finally{clearTimeout(timer);}}
     const parsed = parseJson(answer);
 
     if (task === 'field') {

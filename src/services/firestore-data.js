@@ -31,51 +31,58 @@ function stripPrivate(invitation) {
  * @param {object} invitation full invitation object
  * @returns {Promise<{id: string, cloud: boolean}>}
  */
-export async function saveInvitation(invitation) {
+const saveQueues = new Map();
+export function saveInvitation(invitation) {
+  const previous = saveQueues.get(invitation.id) || Promise.resolve();
+  const task = previous.catch(()=>{}).then(()=>saveInvitationNow(invitation));
+  saveQueues.set(invitation.id, task);
+  task.finally(()=>{ if(saveQueues.get(invitation.id) === task) saveQueues.delete(invitation.id); }).catch(()=>{});
+  return task;
+}
+async function saveInvitationNow(invitation) {
   const id = invitation.id || `inv_${crypto.randomUUID().slice(0, 12)}`;
   const db = await dbOrNull();
   if (!db) return { id, cloud: false };
   const user = await getCurrentUser();
   if (!user) throw new Error('authentication-required');
 
-  const { doc, getDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
-  const invitationRef = doc(db, 'invitations', id);
-  let existing;
-  try { existing = await getDoc(invitationRef); }
-  catch(error) {
-    // Rules cannot reveal a nonexistent document's owner. A create is still
-    // checked by Firestore; updates to another owner's document remain denied.
-    if(error.code !== 'permission-denied')throw error;
-    existing = {exists:()=>false,data:()=>undefined};
-  }
-  if (existing.exists() && existing.data().ownerUid !== user.uid) throw new Error('Undangan ini bukan milik akun Anda.');
-  const payload = {
-    ...stripPrivate(invitation),
-    id,
-    ownerUid: user.uid,
-    updatedAt: serverTimestamp(),
-  };
-  if (!existing.exists()) payload.cloudCreatedAt = serverTimestamp();
-  if (
-    invitation.status === 'published'
-    && invitation.design?.variantId === 'serena-paper'
-    && !existing.data()?.freeActivatedAt
-  ) {
-    payload.freeActivatedAt = serverTimestamp();
-  }
-  if (invitation.status === 'published' && !existing.data()?.publishedAt) {
-    payload.publishedAt = serverTimestamp();
-  }
-  await setDoc(invitationRef, payload, { merge: true });
-
-  // Mirror control doc (ownership metadata; Blueprint-1.md §41).
-  await setDoc(
-    doc(db, 'invitationControl', id),
-    { ownerUid: user.uid, updatedAt: serverTimestamp() },
-    { merge: true },
-  );
-  const saved = invitation.status === 'published' ? (await getDoc(invitationRef)).data() : null;
+  const { doc, runTransaction, serverTimestamp } = await import('firebase/firestore');
+  const { validDesign } = await import('../data/plans.js');
+  if (!validDesign(invitation.design)) throw new Error('Desain undangan tidak valid.');
+  const snapshot = structuredClone(invitation);
+  const editVersion = invitation._editVersion || 0;
+  const ref = doc(db, 'invitations', id);
+  const revision = await runTransaction(db, async tx => {
+    const existing = await tx.get(ref);
+    const remote = existing.data();
+    if (remote && remote.ownerUid !== user.uid) throw new Error('Undangan ini bukan milik akun Anda.');
+    const expected = snapshot._cloudRevision ?? snapshot.revision ?? 0;
+    if ((remote?.revision || 0) !== expected) {
+      const error = new Error('Ada perubahan dari perangkat lain. Muat versi akun sebelum melanjutkan.');
+      error.code = 'draft-conflict'; throw error;
+    }
+    const revision = (remote?.revision || 0) + 1;
+    const payload = { ...stripPrivate(snapshot), id, ownerUid: user.uid, revision, updatedAt: serverTimestamp() };
+    if (!remote) payload.cloudCreatedAt = serverTimestamp();
+    if (snapshot.status === 'published' && !remote?.publishedAt) payload.publishedAt = serverTimestamp();
+    if (snapshot.status === 'published' && snapshot.design.variantId === 'serena-paper' && !remote?.freeActivatedAt) {
+      const ledgerRef = doc(db, 'activationLedger', id);
+      const ledger = await tx.get(ledgerRef);
+      payload.freeActivatedAt = ledger.data()?.startedAt || serverTimestamp();
+      if (!ledger.exists()) tx.set(ledgerRef, { ownerUid: user.uid, startedAt: serverTimestamp() });
+    }
+    tx.set(ref, payload, { merge: true });
+    tx.set(doc(db, 'invitationControl', id), { ownerUid: user.uid, updatedAt: serverTimestamp() }, { merge: true });
+    return revision;
+  });
+  invitation._cloudRevision = revision; invitation.revision = revision;
+  const { saveDraft } = await import('./draft-store.js');
+  if ((invitation._editVersion || 0) === editVersion) saveDraft(invitation, { synced: true });
+  else { invitation._dirty = true; saveDraft(invitation); }
+  const { getDoc } = await import('firebase/firestore');
+  const saved = snapshot.status === 'published' ? (await getDoc(ref)).data() : null;
   return { id, cloud: true, saved };
+
 }
 
 /** Fetch an invitation for editing — requires account ownership when configured. */
@@ -116,40 +123,23 @@ export async function listCloudDrafts() {
     collection(db, 'invitations'),
     where('ownerUid', '==', user.uid),
     orderBy('updatedAt', 'desc'),
-    limit(30),
+    limit(100),
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const result = snap.docs.map(d=>({id:d.id,...d.data()}));
+  const {startAfter} = await import('firebase/firestore');
+  let page = snap;
+  while(page.size === 100) { page = await getDocs(query(collection(db,'invitations'),where('ownerUid','==',user.uid),orderBy('updatedAt','desc'),startAfter(page.docs.at(-1)),limit(100))); result.push(...page.docs.map(d=>({id:d.id,...d.data()}))); }
+  return result;
 }
 
 /** Submit an RSVP into invitations/{id}/rsvps with field validation. */
-export async function submitRsvp(invitationId, data) {
-  const db = await dbOrNull();
-  if (!db) throw new Error('Penyimpanan RSVP belum tersedia.');
-  const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
-  await addDoc(collection(db, 'invitations', invitationId, 'rsvps'), {
-    name: String(data.name || '').slice(0, 80),
-    attendance: data.attendance === 'not-attending' ? 'not-attending' : 'attending',
-    guestCount: Math.min(Math.max(Math.floor(Number(data.guestCount)) || 1, 1), 20),
-    message: String(data.message || '').slice(0, 500),
-    createdAt: serverTimestamp(),
-  });
-  return { cloud: true };
+async function submitGuest(invitationId,kind,data) {
+ const response=await fetch(`/api/guests/${encodeURIComponent(invitationId)}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({kind,data,token:data._token,requestId:data._requestId})});
+ const result=await response.json();if(!response.ok)throw new Error(result.message);return result;
 }
-
-/** Submit a wish into invitations/{id}/wishes. */
-export async function submitWish(invitationId, data) {
-  const db = await dbOrNull();
-  if (!db) throw new Error('Penyimpanan ucapan belum tersedia.');
-  const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
-  await addDoc(collection(db, 'invitations', invitationId, 'wishes'), {
-    name: String(data.name || '').slice(0, 80),
-    message: String(data.message || '').slice(0, 500),
-    approved: false,
-    createdAt: serverTimestamp(),
-  });
-  return { cloud: true };
-}
+export function submitRsvp(invitationId,data) {return submitGuest(invitationId,'rsvp',data);}
+export function submitWish(invitationId,data) {return submitGuest(invitationId,'wish',data);}
 
 /** List approved wishes for a public invitation. */
 export async function listApprovedWishes(invitationId, max = 50) {
@@ -171,25 +161,41 @@ export async function deleteCloudInvitation(id) {
   const token = await getAuthToken();
   const response = await fetch(`/api/invitations/${encodeURIComponent(id)}`, {method:'DELETE',headers:{authorization:`Bearer ${token}`}});
   const result = await response.json().catch(()=>({}));
-  if(!response.ok)throw new Error(result.message || 'Undangan belum dapat dihapus.');
+  if(!response.ok || result.deleted!==true)throw new Error(result.message || 'Penghapusan sedang dilanjutkan. Coba kembali untuk menyelesaikannya.');
 }
 
 export async function resolveOwnedDraft(id) {
   const {loadDraft,saveDraft} = await import('./draft-store.js');
   const local = loadDraft(id);
-  if (local) return local;
-  const cloud = await getInvitationForEdit(id);
-  if (cloud) saveDraft({...cloud,updatedAt:cloud.updatedAt?.toMillis?.() || Date.now()});
-  return cloud;
+  let cloud;
+  try { cloud = await getInvitationForEdit(id); } catch(error) { if(local) return local; throw error; }
+  if (!cloud) return local;
+  const cloudTime=cloud.updatedAt?.toMillis?.() || 0;
+  if(local && local._dirty===undefined && Number(local.updatedAt)>cloudTime){local._dirty=true;local._conflict=true;return local;}
+  if (local?._dirty) {
+    if ((local._cloudRevision ?? local.revision ?? 0) !== (cloud.revision || 0)) { local._conflict = true; }
+    return local;
+  }
+  const hydrated = {...cloud, updatedAt:cloud.updatedAt?.toMillis?.() || 0};
+  saveDraft(hydrated, {synced:true});
+  return hydrated;
 }
 
 export async function listGuestResponses(id) {
   const db = await dbOrNull();
   if (!db) throw new Error('Penyimpanan tamu belum tersedia.');
-  const {collection,getDocs,query,orderBy,limit} = await import('firebase/firestore');
-  const [rsvps,wishes] = await Promise.all(['rsvps','wishes'].map(name=>getDocs(query(collection(db,'invitations',id,name),orderBy('createdAt','desc'),limit(200)))));
-  const map = snap=>snap.docs.map(d=>({id:d.id,...d.data()}));
-  return {rsvps:map(rsvps),wishes:map(wishes)};
+  const {collection,getDocs,query,orderBy,limit,startAfter} = await import('firebase/firestore');
+  const all = async name => {
+    const rows=[]; let cursor;
+    do {
+      const constraints=[orderBy('createdAt','desc'),limit(200)]; if(cursor) constraints.push(startAfter(cursor));
+      const snap=await getDocs(query(collection(db,'invitations',id,name),...constraints));
+      rows.push(...snap.docs.map(d=>({id:d.id,...d.data()}))); cursor=snap.size===200 ? snap.docs.at(-1) : null;
+    } while(cursor);
+    return rows;
+  };
+  const [rsvps,wishes]=await Promise.all([all('rsvps'),all('wishes')]);
+  return {rsvps,wishes};
 }
 
 export async function moderateWish(invitationId,wishId,approved) {

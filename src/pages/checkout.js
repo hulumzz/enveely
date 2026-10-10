@@ -17,7 +17,7 @@ import { getAuthToken } from '../services/auth.js';
 import { navigate } from '../router.js';
 import { toast } from '../ui/overlays.js';
 import { resolveOwnedDraft, saveInvitation } from '../services/firestore-data.js';
-import { refreshPaymentOrder } from '../services/payment-api.js';
+import { refreshPaymentOrder,resolvePaymentOrder } from '../services/payment-api.js';
 
 export function renderCheckout(invitationId) {
   return requireAuthenticated(() => renderCheckoutWorkspace(invitationId), `/checkout/${invitationId}`);
@@ -31,7 +31,10 @@ async function renderCheckoutWorkspace(invitationId) {
   }
 
   await saveInvitation(invitation);
-  let order = await refreshPaymentOrder(ensurePaymentOrder(invitation));
+  let order;
+  try {order=await resolvePaymentOrder(invitation);}catch(error){toast(error.message,{type:'error'});return;}
+  if(!order){toast('Paket desain belum tersedia.',{type:'error'});return;}
+  if(location.pathname!==`/checkout/${invitationId}`)return;
   const template = getTemplate(invitation.design?.templateId);
   const variant = getVariant(invitation.design?.variantId);
   const names = [invitation.content?.groom?.nickname || invitation.content?.groom?.name, invitation.content?.bride?.nickname || invitation.content?.bride?.name]
@@ -44,9 +47,10 @@ async function renderCheckoutWorkspace(invitationId) {
 
   const wire = async (root) => {
     root.querySelectorAll('[data-duration]').forEach((button) => {
-      button.addEventListener('click', () => {
-        order = updatePaymentDuration(order, Number(button.dataset.duration));
-        paint();
+      button.disabled=order.status!=='draft';
+      button.addEventListener('click', async () => {
+        button.disabled=true;
+        try {order=await resolvePaymentOrder(invitation,Number(button.dataset.duration));paint();}catch(error){button.disabled=false;toast(error.message,{type:'error'});}
       });
     });
 
@@ -107,6 +111,7 @@ async function renderCheckoutWorkspace(invitationId) {
           proofUploadedAt: Date.now(),
         };
         savePaymentOrder(order);
+        const {deletePaymentProofDraft}=await import('../services/payment-store.js');await deletePaymentProofDraft(order.id).catch(()=>{});
         toast('Bukti berhasil dikirim dan masuk antrean review.', { type: 'success' });
         paint();
       } catch (error) {
@@ -124,7 +129,7 @@ async function renderCheckoutWorkspace(invitationId) {
 
 function checkoutMarkup({ invitation, order, template, variant, names }) {
   const isFree = order.total === 0;
-  const isSubmitted = ['pending_review', 'ai_match', 'active'].includes(order.status);
+  const isSubmitted = ['pending_review', 'ai_match', 'activation_pending', 'active'].includes(order.status);
   return `
     <section class="checkout-page">
       <div class="container checkout-shell">
@@ -132,7 +137,7 @@ function checkoutMarkup({ invitation, order, template, variant, names }) {
           <a href="/builder/${invitation.id}" data-link class="back-link">← Kembali ke editor</a>
           <p class="eyebrow">Aktivasi Undangan</p>
           <h1>${isFree ? 'Mulai dengan Paket Gratis' : 'Satu langkah lagi untuk tayang'}</h1>
-          <p>Checkout dibuat tenang dan transparan. Draft pembayaran otomatis disimpan di perangkat ini.</p>
+          <p>Pesanan tersimpan di akun. Bayar sesuai nominal, lalu kirim bukti pembayaran.</p>
         </header>
 
         <div class="checkout-grid">
@@ -194,7 +199,7 @@ function paymentPanel(order, submitted) {
       <article class="checkout-success checkout-success--pending">
         <span class="checkout-success__icon">⌁</span>
         <p class="eyebrow">${paymentStatusLabel(order.status)}</p>
-        <h2>Bukti pembayaran sudah kami terima.</h2>
+        <h2>${order.status==='active' ? 'Undangan sudah aktif.' : order.status==='activation_pending' ? 'Aktivasi sedang diselesaikan.' : 'Bukti pembayaran sudah kami terima.'}</h2>
         <p>AI membantu membaca nominal dan detail transaksi. Aktivasi akhir tetap melalui review agar pembayaran kalian tidak salah cocok.</p>
         ${order.verification?.summary ? `<div class="ai-review"><strong>Hasil pemeriksaan awal</strong><p>${escapeHtml(order.verification.summary)}</p></div>` : ''}
         <div class="checkout-success__actions"><a href="/dashboard/payments" data-link class="btn btn--primary btn--lg">Pantau di Dashboard</a></div>

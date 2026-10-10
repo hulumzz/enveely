@@ -1,3 +1,4 @@
+import {loadDesignAssets} from '../services/design-assets.js';
 // Enveely — Public invitation page (Phase 5).
 // Route /invite/:id — renders a PUBLISHED invitation with an opening gate
 // (classic digital-invitation UX), guest name personalization via ?to=,
@@ -20,6 +21,8 @@ export async function renderPublicInvitation({ id }, query = new URLSearchParams
   catch { return renderInviteNotFound(); }
   if (!invitation || invitation.status !== 'published') return renderInviteNotFound();
 
+  await loadDesignAssets(invitation.design.templateId);
+  if(location.pathname!==`/invite/${id}`)return;
   // Dynamic OG tags so WhatsApp/IG previews show the couple's names.
   applyInviteMeta(invitation);
 

@@ -51,7 +51,7 @@ function orderCard(order) {
       <dl class="admin-order__facts"><div><dt>Durasi</dt><dd>${order.duration_months} bulan</dd></div><div><dt>Nominal terbaca</dt><dd>${order.ai_amount ? formatRupiah(order.ai_amount) : 'Tidak terbaca'}</dd></div><div><dt>Keyakinan AI</dt><dd>${Math.round(Number(order.ai_confidence || 0) * 100)}%</dd></div></dl>
       <p class="admin-order__summary">${escapeHtml(order.ai_summary || 'AI belum memberikan rangkuman.')}</p>
       <div class="admin-order__proof" data-proof-host><button type="button" class="btn btn--ghost btn--sm" data-view-proof="${escapeHtml(order.id)}">Lihat bukti privat</button></div>
-      <div class="admin-order__actions"><button type="button" class="btn btn--ghost" data-review="reject" data-order-id="${escapeHtml(order.id)}">Tolak & Minta Ulang</button><button type="button" class="btn btn--primary" data-review="approve" data-order-id="${escapeHtml(order.id)}">Setujui & Aktifkan</button></div>
+      <label>Referensi transaksi merchant<input data-transaction-reference="${escapeHtml(order.id)}" maxlength="100" placeholder="Nomor referensi dari catatan merchant" value="${escapeHtml(order.transaction_ref || '')}" /></label><div class="admin-order__actions"><button type="button" class="btn btn--ghost" data-review="reject" data-order-id="${escapeHtml(order.id)}">Tolak & Minta Ulang</button><button type="button" class="btn btn--primary" data-review="approve" data-order-id="${escapeHtml(order.id)}">Setujui & Aktifkan</button></div>
     </article>`;
 }
 
@@ -89,11 +89,11 @@ function wireOrderActions(host, refresh) {
       const response = await fetch(`/api/admin/payments/${encodeURIComponent(button.dataset.orderId)}/review`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-        body: JSON.stringify({ decision }),
+        body: JSON.stringify({ decision,transactionReference:host.querySelector(`[data-transaction-reference="${button.dataset.orderId}"]`)?.value || '' }),
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.message || 'Review tidak dapat disimpan.');
-      toast(decision === 'approve' ? 'Pembayaran disetujui dan entitlement aktif.' : 'Pembayaran ditolak. Pengguna dapat memperbarui bukti.', { type: 'success' });
+      toast(decision === 'approve' ? 'Pembayaran disetujui dan undangan aktif.' : 'Pembayaran ditolak. Pengguna dapat memperbarui bukti.', { type: 'success' });
       refresh();
     } catch (error) {
       button.disabled = false;

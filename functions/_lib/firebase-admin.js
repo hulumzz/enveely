@@ -34,35 +34,30 @@ export async function getOwnedInvitation(request, env, invitationId, user) {
   return doc.fields?.ownerUid?.stringValue === user.localId ? doc.fields : null;
 }
 
-export async function writeEntitlement(env, { invitationId, ownerUid, expiresAt, orderId, variantId }) {
+export async function writeEntitlement(env, { invitationId, ownerUid, expiresAt, orderId, variantId, invitationDocument }) {
   const accessToken = await firebaseServiceAccessToken(env);
-  if (!accessToken || !env.FIREBASE_PROJECT_ID) throw new Error('Firebase Admin belum dikonfigurasi.');
-  const endpoint = `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(env.FIREBASE_PROJECT_ID)}/databases/(default)/documents/entitlements/${encodeURIComponent(invitationId)}`;
-  const response = await fetch(endpoint, {
-    method: 'PATCH',
-    headers: { authorization: `Bearer ${accessToken}`, 'content-type': 'application/json' },
-    body: JSON.stringify({
-      fields: {
-        ownerUid: { stringValue: ownerUid },
-        active: { booleanValue: true },
-        orderId: { stringValue: orderId },
-        variantId: { stringValue: variantId },
-        expiresAt: { timestampValue: expiresAt },
-        activatedAt: { timestampValue: new Date().toISOString() },
-      },
-    }),
-  });
-  if (!response.ok) throw new Error('Entitlement Firestore belum dapat disimpan.');
+  if (!accessToken) throw new Error('Firebase Admin belum dikonfigurasi.');
+  const existing = await adminDocument(env, `entitlements/${invitationId}`, accessToken);
+  if (existing?.fields?.orderId?.stringValue === orderId) return;
+  const invitation = invitationDocument || await adminDocument(env, `invitations/${invitationId}`, accessToken);
+  if(!invitation || invitation.fields?.status?.stringValue==='deleting')throw new Error('Undangan tidak tersedia.');
+  const root=firestoreRoot(env).split('/v1/')[1];
+  await adminCommit(env,[
+    {verify:`${root}/invitations/${invitationId}`,currentDocument:{updateTime:invitation.updateTime}},
+    {update:{name:`${root}/entitlements/${invitationId}`,fields:{
+      ownerUid:{stringValue:ownerUid},active:{booleanValue:true},orderId:{stringValue:orderId},variantId:{stringValue:variantId},expiresAt:{timestampValue:expiresAt},activatedAt:{timestampValue:new Date().toISOString()},
+    }},currentDocument:existing ? {updateTime:existing.updateTime} : {exists:false}},
+  ],accessToken);
 }
 
-async function firebaseServiceAccessToken(env) {
+export async function firebaseServiceAccessToken(env, scope = 'https://www.googleapis.com/auth/datastore') {
   const serviceEmail = String(env.FIREBASE_SERVICE_ACCOUNT_EMAIL || '');
   const privateKey = String(env.FIREBASE_SERVICE_ACCOUNT_PRIVATE_KEY || '').replace(/\\n/g, '\n');
   if (!serviceEmail || !privateKey) return '';
   const issuedAt = Math.floor(Date.now() / 1000);
   const assertion = await signedJwt({
     iss: serviceEmail,
-    scope: 'https://www.googleapis.com/auth/datastore',
+    scope,
     aud: 'https://oauth2.googleapis.com/token',
     iat: issuedAt,
     exp: issuedAt + 3600,
@@ -70,6 +65,7 @@ async function firebaseServiceAccessToken(env) {
   const response = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    signal: AbortSignal.timeout(12_000),
     body: new URLSearchParams({
       grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
       assertion,
@@ -122,4 +118,28 @@ export function json(body, status = 200) {
       'referrer-policy': 'no-referrer',
     },
   });
+}
+
+export function firestoreRoot(env) {
+  if(!/^[a-z0-9-]+$/.test(env.FIREBASE_PROJECT_ID || '')) throw new Error('Firebase project tidak valid.');
+  return `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents`;
+}
+export async function adminDocument(env, path, token) {
+  const response=await fetch(`${firestoreRoot(env)}/${path}`,{headers:{authorization:`Bearer ${token || await firebaseServiceAccessToken(env)}`},signal:AbortSignal.timeout(12_000)});
+  if(response.status===404) return null;
+  if(!response.ok) throw new Error(`Firestore read ${response.status}`);
+  return response.json();
+}
+export async function adminCommit(env,writes,token) {
+  const response=await fetch(`${firestoreRoot(env)}:commit`,{method:'POST',headers:{authorization:`Bearer ${token || await firebaseServiceAccessToken(env)}`,'content-type':'application/json'},body:JSON.stringify({writes}),signal:AbortSignal.timeout(15_000)});
+  if(!response.ok) throw new Error(`Firestore commit ${response.status}`);
+  return response.json();
+}
+export function decodeFields(fields={}) {
+  const value=v=>v.stringValue ?? v.booleanValue ?? (v.integerValue!==undefined ? Number(v.integerValue) : undefined) ?? v.doubleValue ?? v.timestampValue ?? (v.mapValue ? decodeFields(v.mapValue.fields) : undefined) ?? (v.arrayValue ? (v.arrayValue.values || []).map(value) : undefined) ?? null;
+  return Object.fromEntries(Object.entries(fields).map(([key,v])=>[key,value(v)]));
+}
+export function encodeFields(object) {
+  const value=v=> typeof v==='string' ? {stringValue:v} : typeof v==='boolean' ? {booleanValue:v} : typeof v==='number' ? (Number.isInteger(v)?{integerValue:String(v)}:{doubleValue:v}) : Array.isArray(v) ? {arrayValue:{values:v.map(value)}} : v===null ? {nullValue:null} : {mapValue:{fields:encodeFields(v)}};
+  return Object.fromEntries(Object.entries(object).map(([key,v])=>[key,value(v)]));
 }

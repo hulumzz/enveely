@@ -42,7 +42,7 @@ export function savePaymentOrder(order) {
   const saved = write(keyFor(next.id), next);
   if (saved) {
     const ids = read(INDEX_KEY, []).filter((id) => id !== next.id);
-    write(INDEX_KEY, [next.id, ...ids].slice(0, 50));
+    write(INDEX_KEY, [next.id, ...ids]);
   }
   return saved;
 }
@@ -108,6 +108,7 @@ export function paymentStatusLabel(status) {
     active: 'Aktif',
     rejected: 'Perlu diperbaiki',
     expired: 'Kedaluwarsa',
+    activation_pending:'Menyelesaikan aktivasi',
   })[status] || status;
 }
 
@@ -140,4 +141,9 @@ export async function getPaymentProofDraft(orderId) {
     request.onsuccess = () => resolve(request.result || null);
     request.onerror = () => reject(request.error);
   });
+}
+
+export async function deletePaymentProofDraft(orderId) {
+ const db=await openProofDb();return new Promise((resolve,reject)=>{const tx=db.transaction(PROOF_STORE,'readwrite');tx.objectStore(PROOF_STORE).delete(orderId);tx.oncomplete=()=>{db.close();resolve(true);};tx.onerror=()=>{db.close();reject(tx.error);};});
+
 }

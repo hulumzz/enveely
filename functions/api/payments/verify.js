@@ -1,5 +1,6 @@
 import { calculatePackage } from '../../../src/data/plans.js';
 import { requireFirebaseUser, getOwnedInvitation } from '../../_lib/firebase-admin.js';
+import {validImageBytes,sha256} from '../../_lib/image-validation.js';
 import {consumeQuota} from '../../_lib/request-limit.js';
 
 const MAX_PROOF_BYTES = 8 * 1024 * 1024;
@@ -36,79 +37,47 @@ export async function onRequestPost(context) {
     const invitation = await getOwnedInvitation(context.request, context.env, invitationId, user);
     if (!invitation) return json({ message: 'Undangan ini bukan milik akun Anda.' }, 403);
     if (invitation.design?.mapValue?.fields?.variantId?.stringValue !== variantId) return json({message:'Desain pesanan berbeda dari undangan.'},409);
-    const existing = await context.env.PAYMENTS_DB.prepare('SELECT uid, status, invitation_id, variant_id, duration_months, unique_code, review_token FROM payment_orders WHERE id = ? LIMIT 1').bind(orderId).first();
+    const existing = await context.env.PAYMENTS_DB.prepare('SELECT uid, status, invitation_id, variant_id, duration_months, unique_code, review_token,proof_key FROM payment_orders WHERE id = ? LIMIT 1').bind(orderId).first();
     if (existing?.uid && existing.uid !== user.localId) return json({ message: 'Pesanan ini bukan milik akun Anda.' }, 403);
     if (existing?.status === 'active') return json({ message: 'Pesanan aktif tidak dapat diubah.' }, 409);
-    if (existing && (existing.status !== 'rejected' || existing.review_token)) return json({message:'Bukti pesanan ini sedang ditinjau. Tunggu hasil review.'},409);
+    if (!existing) return json({message:'Buat pesanan di checkout sebelum mengirim bukti.'},409);
+    if (existing && (!['draft','rejected'].includes(existing.status) || existing.review_token)) return json({message:'Bukti pesanan ini sedang ditinjau. Tunggu hasil review.'},409);
     if (existing && (existing.invitation_id !== invitationId || existing.variant_id !== variantId || existing.duration_months !== durationMonths || existing.unique_code !== uniqueCode)) return json({message:'Rincian pesanan yang sudah dikirim tidak dapat diubah.'},409);
     if(!await consumeQuota(context.env,user.localId,'payment-proof',10,86400))return json({message:'Batas pengiriman bukti harian tercapai. Hubungi bantuan untuk melanjutkan.'},429);
     const ext = proof.type === 'image/png' ? 'png' : proof.type === 'image/webp' ? 'webp' : 'jpg';
     const proofKey = `payments/${user.localId}/${orderId}/${crypto.randomUUID()}.${ext}`;
     const bytes = await proof.arrayBuffer();
+    if(!validImageBytes(bytes,proof.type))return json({message:'Isi berkas bukan gambar yang valid.'},400);
+    const proofHash=await sha256(bytes);
+    if(await context.env.PAYMENTS_DB.prepare("SELECT id FROM payment_orders WHERE proof_hash=? AND id<>? AND status<>'rejected' LIMIT 1").bind(proofHash,orderId).first())return json({message:'Bukti ini telah digunakan pada pesanan lain.'},409);
     await context.env.PAYMENT_PROOFS.put(proofKey, bytes, {
       httpMetadata: { contentType: proof.type },
       customMetadata: { orderId, invitationId, uid: user.localId },
     });
 
-    let verification;
-    try {
-      verification = await inspectProof(context.env, bytes, proof.type, expectedTotal, orderId);
-    } catch (error) {
-      console.warn(JSON.stringify({ event: 'payment_ai_fallback', requestId, orderId, message: error?.message || 'unknown' }));
-      verification = { amount: null, confidence: 0, paymentSuccessful: null, summary: 'Pemeriksaan AI belum tersedia; perlu review manual.' };
-    }
-    const amountMatch = Number(verification.amount) === expectedTotal;
-    const status = amountMatch && verification.paymentSuccessful === true ? 'ai_match' : 'pending_review';
     const now = new Date().toISOString();
-
-    const stored = await context.env.PAYMENTS_DB.prepare(`
-      INSERT INTO payment_orders (
-        id, uid, invitation_id, variant_id, duration_months, base_price,
-        extension_fee, unique_code, expected_total, status, proof_key,
-        ai_amount, ai_confidence, ai_summary, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(id) DO UPDATE SET
-        status = excluded.status,
-        proof_key = excluded.proof_key,
-        ai_amount = excluded.ai_amount,
-        ai_confidence = excluded.ai_confidence,
-        ai_summary = excluded.ai_summary,
-        updated_at = excluded.updated_at
-      WHERE payment_orders.status = 'rejected' AND payment_orders.review_token IS NULL
-    `).bind(
-      orderId,
-      user.localId,
-      invitationId,
-      variantId,
-      durationMonths,
-      pkg.basePrice,
-      pkg.extensionFee,
-      uniqueCode,
-      expectedTotal,
-      status,
-      proofKey,
-      Number(verification.amount) || null,
-      Number(verification.confidence) || 0,
-      String(verification.summary || '').slice(0, 500),
-      now,
-      now,
-    ).run();
-    if (!stored.meta.changes) {await context.env.PAYMENT_PROOFS.delete(proofKey);return json({message:'Pesanan telah diproses. Muat ulang status pembayaran.'},409);}
-
-    console.log(JSON.stringify({ event: 'payment_proof_received', requestId, orderId, status, amountMatch }));
-    return json({
-      status,
-      verification: {
-        result: amountMatch ? 'amount_match' : 'manual_review',
-        confidence: Number(verification.confidence) || 0,
-        summary: amountMatch
-          ? `Nominal ${rupiah(expectedTotal)} terbaca cocok. Menunggu aktivasi akhir.`
-          : 'Nominal belum terbaca dengan yakin. Tim akan memeriksa bukti secara manual.',
-      },
-    });
+    let stored;
+    try {
+      stored = await context.env.PAYMENTS_DB.prepare("UPDATE payment_orders SET status='pending_review',proof_key=?,proof_hash=?,ai_amount=NULL,ai_confidence=0,ai_summary='Menunggu pemeriksaan bukti.',updated_at=? WHERE id=? AND uid=? AND status IN ('draft','rejected') AND review_token IS NULL")
+        .bind(proofKey,proofHash,now,orderId,user.localId).run();
+      if(!stored.meta.changes) {await context.env.PAYMENT_PROOFS.delete(proofKey);return json({message:'Pesanan telah diproses. Muat ulang status.'},409);}
+    } catch(error) {await context.env.PAYMENT_PROOFS.delete(proofKey);throw error;}
+    if(existing.proof_key && existing.proof_key!==proofKey)await context.env.PAYMENT_PROOFS.delete(existing.proof_key).catch(()=>{});
+    const enrich=async()=>{
+      let timer;
+      try {
+        const verification=await Promise.race([inspectProof(context.env,bytes,proof.type,expectedTotal,orderId),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('AI timeout')),12_000);})]);
+        const match=Number(verification.amount)===expectedTotal && verification.paymentSuccessful===true;
+        await context.env.PAYMENTS_DB.prepare("UPDATE payment_orders SET status=?,ai_amount=?,ai_confidence=?,ai_summary=?,ai_transaction_ref=?,updated_at=? WHERE id=? AND proof_key=? AND status='pending_review' AND review_token IS NULL")
+          .bind(match?'ai_match':'pending_review',Number(verification.amount)||null,Number(verification.confidence)||0,String(verification.summary||'Perlu review manual.').slice(0,500),String(verification.transactionReference||'').slice(0,100),new Date().toISOString(),orderId,proofKey).run();
+      }catch(error){console.warn(JSON.stringify({event:'payment_ai_fallback',orderId,message:error.message}));}finally{clearTimeout(timer);}
+    };
+    context.waitUntil(enrich());
+    console.log(JSON.stringify({event:'payment_proof_received',orderId,requestId}));
+    return json({status:'pending_review',verification:{summary:'Bukti berhasil diterima. Menunggu pemeriksaan dan persetujuan.'}});
   } catch (error) {
     console.error(JSON.stringify({ event: 'payment_verification_error', requestId, message: error?.message || 'unknown' }));
-    return json({ message: 'Bukti tersimpan sebagai draft, tetapi belum dapat diperiksa. Coba lagi beberapa saat.' }, 500);
+    return json({ message: 'Bukti belum berhasil dikirim. Periksa status pesanan sebelum mencoba kembali.' }, 500);
   }
 }
 
@@ -118,6 +87,7 @@ export function onRequest(context) {
 }
 
 async function inspectProof(env, bytes, mimeType, expectedTotal, orderId) {
+  if (bytes.byteLength > 2*1024*1024) return {amount:null,confidence:0,paymentSuccessful:null,summary:'Bukti resolusi tinggi diperiksa manual.'};
   if (!env.AI) return { amount: null, confidence: 0, paymentSuccessful: null, summary: 'AI binding belum aktif.' };
   const image = Array.from(new Uint8Array(bytes));
   const prompt = [

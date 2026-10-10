@@ -1,3 +1,4 @@
+import {loadDesignAssets} from '../services/design-assets.js';
 // Authenticated preview for an in-progress invitation. This always renders the
 // local draft, rather than the sample invitation used by the public template demo.
 
@@ -18,6 +19,8 @@ export function renderDraftPreview(invitationId) {
       return;
     }
 
+    await loadDesignAssets(draft.design.templateId);
+    if(location.pathname!==`/builder/${invitationId}/preview`)return;
     renderPage(`
       <section class="livepreview livepreview--draft">
         <div class="livepreview__bar">

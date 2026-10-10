@@ -2,20 +2,20 @@
 // Maps URL patterns to page renderers (History API; SPA fallback via _redirects).
 
 import { registerRoute } from './router.js';
-import { renderLanding } from './pages/landing.js';
-import { renderTemplateGallery } from './pages/template-gallery.js';
-import { renderTemplatePreview } from './pages/template-preview.js';
-import { renderLivePreview } from './pages/live-preview.js';
-import { renderDraftPreview } from './pages/draft-preview.js';
-import { renderCreate } from './pages/create.js';
-import { renderBuilder } from './pages/builder.js';
-import { renderDashboard } from './pages/dashboard.js';
-import { renderLogin } from './pages/login.js';
-import { renderPublicInvitation } from './pages/public-invite.js';
-import { renderNotFound } from './pages/not-found.js';
-import { renderCheckout } from './pages/checkout.js';
-import { renderInfoPage } from './pages/info.js';
-import { renderAdminPayments } from './pages/admin-payments.js';
+const renderLanding = (...args) => {const path=location.pathname;return import('./pages/landing.js').then(module=>{if(location.pathname===path)return module.renderLanding(...args);});};
+const renderTemplateGallery = (...args) => {const path=location.pathname;return import('./pages/template-gallery.js').then(module=>{if(location.pathname===path)return module.renderTemplateGallery(...args);});};
+const renderTemplatePreview = (...args) => {const path=location.pathname;return import('./pages/template-preview.js').then(module=>{if(location.pathname===path)return module.renderTemplatePreview(...args);});};
+const renderLivePreview = (...args) => {const path=location.pathname;return import('./pages/live-preview.js').then(module=>{if(location.pathname===path)return module.renderLivePreview(...args);});};
+const renderDraftPreview = (...args) => {const path=location.pathname;return import('./pages/draft-preview.js').then(module=>{if(location.pathname===path)return module.renderDraftPreview(...args);});};
+const renderCreate = (...args) => {const path=location.pathname;return import('./pages/create.js').then(module=>{if(location.pathname===path)return module.renderCreate(...args);});};
+const renderBuilder = (...args) => {const path=location.pathname;return import('./pages/builder.js').then(module=>{if(location.pathname===path)return module.renderBuilder(...args);});};
+const renderDashboard = (...args) => {const path=location.pathname;return import('./pages/dashboard.js').then(module=>{if(location.pathname===path)return module.renderDashboard(...args);});};
+const renderLogin = (...args) => {const path=location.pathname;return import('./pages/login.js').then(module=>{if(location.pathname===path)return module.renderLogin(...args);});};
+const renderPublicInvitation = (...args) => {const path=location.pathname;return import('./pages/public-invite.js').then(module=>{if(location.pathname===path)return module.renderPublicInvitation(...args);});};
+const renderNotFound = (...args) => {const path=location.pathname;return import('./pages/not-found.js').then(module=>{if(location.pathname===path)return module.renderNotFound(...args);});};
+const renderCheckout = (...args) => {const path=location.pathname;return import('./pages/checkout.js').then(module=>{if(location.pathname===path)return module.renderCheckout(...args);});};
+const renderInfoPage = (...args) => {const path=location.pathname;return import('./pages/info.js').then(module=>{if(location.pathname===path)return module.renderInfoPage(...args);});};
+const renderAdminPayments = (...args) => {const path=location.pathname;return import('./pages/admin-payments.js').then(module=>{if(location.pathname===path)return module.renderAdminPayments(...args);});};
 
 export function setupRoutes() {
   registerRoute('/', () => renderLanding());

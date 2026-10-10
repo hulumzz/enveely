@@ -77,6 +77,8 @@ export function wireRsvpForms(root, { demo = false } = {}) {
       try {
       if (!demo) {
         if (!form.getAttribute('invitation-id')) throw new Error('Undangan belum tersedia.');
+        const {guestChallenge}=await import('../services/guest-challenge.js');
+        data._token=await guestChallenge(form,'rsvp');data._requestId=form.dataset.requestId ||= crypto.randomUUID();
         const { submitRsvp } = await import('../services/firestore-data.js');
         await submitRsvp(form.getAttribute('invitation-id'), data);
       }
@@ -85,9 +87,9 @@ export function wireRsvpForms(root, { demo = false } = {}) {
         done.classList.remove('sr-only');
         setTimeout(() => done.classList.add('sr-only'), 4000);
       }
-      form.reset();
+      form.reset();delete form.dataset.requestId;
       submissionFeedback(form,demo ? 'Pratinjau: konfirmasi tidak dikirim.' : 'Konfirmasi kehadiran berhasil dikirim.');
-      } catch { submissionFeedback(form,'Konfirmasi belum terkirim. Periksa koneksi, lalu coba kembali.'); }
+      } catch(error) { submissionFeedback(form,error.message || 'Konfirmasi belum terkirim.'); }
       finally {delete form.dataset.sending;if(button)button.disabled=false;}
     });
   });
@@ -106,6 +108,8 @@ export function wireWishesForms(root, { demo = false } = {}) {
       try {
       if (!demo) {
         if (!form.getAttribute('invitation-id')) throw new Error('Undangan belum tersedia.');
+        const {guestChallenge}=await import('../services/guest-challenge.js');
+        data._token=await guestChallenge(form,'wish');data._requestId=form.dataset.requestId ||= crypto.randomUUID();
         const { submitWish } = await import('../services/firestore-data.js');
         await submitWish(form.getAttribute('invitation-id'), data);
       }
@@ -119,9 +123,9 @@ export function wireWishesForms(root, { demo = false } = {}) {
         li.append(b, p);
         list.prepend(li);
       }
-      form.reset();
+      form.reset();delete form.dataset.requestId;
       submissionFeedback(form,demo ? 'Pratinjau: ucapan tidak dikirim.' : 'Ucapan berhasil dikirim dan menunggu persetujuan pemilik undangan.');
-      } catch { submissionFeedback(form,'Ucapan belum terkirim. Periksa koneksi, lalu coba kembali.'); }
+      } catch(error) { submissionFeedback(form,error.message || 'Ucapan belum terkirim.'); }
       finally {delete form.dataset.sending;if(button)button.disabled=false;}
     });
   });

@@ -65,7 +65,7 @@ function safeSet(key, value) {
 
 export function newInvitationId() {
   const rand = () => Math.random().toString(36).slice(2, 8);
-  return `inv_${Date.now().toString(36)}${rand()}`;
+  return `inv_${crypto.randomUUID().replace(/-/g, "")}`;
 }
 
 /** Create a fresh invitation skeleton for a template+variant. */
@@ -126,16 +126,18 @@ function sectionPresetFor(templateId) {
 }
 
 /** Persist a draft locally. Updates index + updatedAt. */
-export function saveDraft(invitation) {
+export function saveDraft(invitation, { synced = false } = {}) {
   if (!invitation?.id) return false;
   if (activeOwner && invitation.ownerUid && invitation.ownerUid !== activeOwner) return false;
   if (activeOwner && !invitation.ownerUid) invitation.ownerUid = activeOwner;
-  invitation.updatedAt = Date.now();
+  if (!synced) { invitation.updatedAt = Date.now(); invitation._dirty = true; invitation._editVersion = (invitation._editVersion || 0) + 1; }
+  else { invitation._dirty = false; invitation._cloudRevision = invitation.revision || 0; }
+  invitation._localSavedAt = Date.now();
   const ok = safeSet(draftKey(invitation.id), JSON.stringify(invitation));
   if (ok) {
     const index = listDraftIds().filter((id) => id !== invitation.id);
     index.unshift(invitation.id);
-    safeSet(INDEX_KEY, JSON.stringify(index.slice(0, 30)));
+    safeSet(INDEX_KEY, JSON.stringify(index));
   }
   return ok;
 }

@@ -1,51 +1,29 @@
-import { renderPage } from '../ui/app-shell.js';
-
-const pages = {
-  help: {
-    eyebrow: 'Pusat Bantuan',
-    title: 'Kami bantu sampai undangan tayang.',
-    intro: 'Jawaban singkat untuk hal yang paling sering ditanyakan saat membuat undangan di Enveely.',
-    sections: [
-      ['Apakah bisa melihat desain tanpa akun?', 'Bisa. Landing, galeri, detail, dan pratinjau template dapat dilihat bebas. Akun baru dibutuhkan ketika mulai membuat undangan.'],
-      ['Apakah draft aman jika browser tertutup?', 'Ya. Editor dan proses pembayaran menyimpan draft di perangkat secara otomatis. Saat Firebase aktif, draft undangan juga disinkronkan ke akun.'],
-      ['Berapa lama undangan aktif?', 'Template polos gratis aktif 7 hari. Template berbayar aktif 3 bulan, atau 6 bulan dengan tambahan Rp15.000.'],
-      ['Bagaimana pembayaran diverifikasi?', 'Bayar lewat QRIS sesuai nominal unik, lalu unggah screenshot. AI membantu membaca detail, sementara aktivasi akhir tetap direview agar tidak salah cocok.'],
-    ],
-  },
-  privacy: {
-    eyebrow: 'Privasi',
-    title: 'Cerita kalian tetap milik kalian.',
-    intro: 'Ringkasan ini menjelaskan data yang diperlukan Enveely untuk menjalankan undangan digital dengan aman.',
-    sections: [
-      ['Data akun', 'Email, nama tampilan, dan identitas Firebase digunakan untuk menjaga kepemilikan draft, undangan, dan transaksi.'],
-      ['Konten undangan', 'Nama, foto, detail acara, RSVP, dan ucapan diproses untuk merender undangan. Undangan yang dipublikasikan dapat dibuka oleh siapa pun yang memiliki tautannya.'],
-      ['Bukti pembayaran', 'Bukti disimpan secara privat dan hanya digunakan untuk pencocokan transaksi. Jangan pernah menyertakan PIN, OTP, password, atau data saldo yang tidak diperlukan.'],
-      ['Penyimpanan lokal', 'Browser menyimpan draft editor dan checkout agar pekerjaan tidak hilang saat tab tertutup. Data lokal dapat dihapus melalui pengaturan situs di browser.'],
-    ],
-  },
-  terms: {
-    eyebrow: 'Ketentuan Layanan',
-    title: 'Ketentuan yang dibuat agar semuanya jelas.',
-    intro: 'Dengan membuat dan mempublikasikan undangan, pengguna menyetujui ketentuan dasar penggunaan Enveely berikut.',
-    sections: [
-      ['Masa tayang', 'Paket gratis berlaku 7 hari. Paket berbayar berlaku 3 bulan; opsi 6 bulan dikenai tambahan Rp15.000. Masa tayang dimulai setelah paket diaktifkan.'],
-      ['Konten pengguna', 'Pengguna bertanggung jawab memastikan hak penggunaan foto, musik, nama, dan informasi acara yang dimasukkan ke undangan.'],
-      ['Pembayaran', 'Pembayaran harus dilakukan sesuai nominal pada QRIS dinamis, termasuk kode unik. Aktivasi diproses setelah bukti berhasil dicocokkan.'],
-      ['Penggunaan wajar', 'Layanan tidak boleh digunakan untuk penipuan, spam, konten ilegal, atau aktivitas yang melanggar hak pihak lain.'],
-    ],
-  },
+import {renderPage} from '../ui/app-shell.js';
+const pages={
+ help:{title:'Bantuan',intro:'Membuat, mengaktifkan, dan mengelola undangan di Enveely.',sections:[
+  ['Memilih desain','Semua contoh desain dapat dibuka tanpa akun. Buat akun untuk menyimpan undangan. Verifikasi email diperlukan untuk mengunggah foto dan melakukan pembayaran.'],
+  ['Menyimpan perubahan','Editor menyimpan draf di perangkat dan menyinkronkannya ke akun saat tersambung. Perhatikan status penyimpanan sebelum menutup browser. Jika dua perangkat mengubah draf yang sama, editor meminta kalian memuat versi akun dan menyediakan unduhan salinan lokal.'],
+  ['Foto belum terunggah','Foto yang gagal diunggah disimpan sementara di browser ini. Buka kembali editor dan pilih Coba unggah lagi. Jangan hapus data situs sebelum upload selesai.'],
+  ['Masa tayang','Serena Paper gratis selama 7 hari sejak publikasi pertama. Paket berbayar menggunakan masa 92 hari atau 183 hari sejak pembayaran disetujui. Perpanjangan menambahkan durasi mulai dari akhir masa aktif yang ada, atau dari waktu persetujuan jika sudah berakhir.'],
+  ['Pembayaran','Pesanan dan nominal QRIS disimpan di akun. Bayar sesuai total termasuk kode unik, lalu unggah screenshot. Pembacaan AI membantu pemeriksaan awal; reviewer mencocokkan referensi transaksi merchant sebelum menyetujui. Bukti diterima tidak berarti paket sudah aktif.'],
+  ['Undangan kedaluwarsa','Detail undangan tetap bisa diedit oleh pemilik. Tautan tamu berhenti tersedia. Untuk desain berbayar, buka checkout dari editor untuk membuat pesanan baru.'],
+ ]},
+ privacy:{title:'Kebijakan privasi',intro:'Data yang diproses oleh Enveely dan pilihan yang tersedia untuk kalian.',sections:[
+  ['Akun dan penyedia layanan','Email, nama tampilan, dan identitas akun dikelola melalui Firebase Authentication. Draf, detail acara, serta tanggapan tamu disimpan di Firestore. Cloudflare menyediakan hosting, penyimpanan foto, bukti pembayaran, dan database transaksi. Data diproses melalui infrastruktur penyedia tersebut dan dapat berada di luar Indonesia.'],
+  ['Undangan publik','Nama, foto, acara, lokasi, cerita, dan informasi hadiah yang kalian publikasikan dapat dilihat siapa pun yang memiliki tautan selama undangan aktif. Tautan bukan kata sandi. Jangan masukkan informasi yang tidak ingin dibagikan. RSVP hanya terlihat oleh pemilik. Ucapan ditampilkan setelah disetujui.'],
+  ['Foto dan retensi','Foto undangan tersimpan sampai kalian menghapus undangannya. Foto yang tidak lagi dirujuk draf dibersihkan setelah 7 hari oleh proses pemeliharaan. Foto tidak tersedia untuk tamu ketika undangan tidak aktif; pemilik dapat mengaksesnya setelah masuk. Salinan yang telah diunduh pihak lain berada di luar kendali Enveely.'],
+  ['Bukti pembayaran dan AI','Screenshot disimpan privat. Reviewer yang diizinkan dapat membukanya. Workers AI di Cloudflare dapat memproses gambar untuk membaca nominal dan referensi transaksi. Gambar besar diperiksa manual. Bukti dibersihkan 180 hari setelah pesanan terakhir diproses; catatan nominal, status, dan referensi tetap disimpan untuk rekonsiliasi. Potong informasi saldo yang tidak diperlukan. Jangan kirim PIN, OTP, atau kata sandi.'],
+  ['Asisten penulisan','Saat kalian memakai Bantu isi, nama dan detail editorial yang dipilih dikirim ke layanan AI yang dikonfigurasi. Bukti pembayaran, kredensial, dan nomor rekening tidak masuk ke konteks fitur ini. Periksa saran sebelum mempublikasikannya.'],
+  ['Cookie, verifikasi, dan analitik','Browser menyimpan sesi login, draf, serta upload yang belum selesai. Cookie HttpOnly digunakan agar pemilik dapat melihat foto draf. Turnstile memeriksa pengiriman tamu untuk mengurangi spam. Analitik produk hanya aktif jika kalian memilih mengizinkannya di halaman ini; analitik tidak dijalankan pada undangan tamu.'],
+  ['Menghapus dan meminta data','Undangan dapat dihapus dari dashboard. Tautan publik ditutup sebelum foto dan tanggapan tamu dibersihkan. Catatan transaksi dan penanda awal masa gratis disimpan untuk mencegah penyalahgunaan. Untuk permintaan akses, koreksi, penghapusan akun, atau pertanyaan retensi, hubungi enveely@nalaro.digital dari email akun. Penghapusan data lokal dilakukan melalui pengaturan situs browser.'],
+ ]},
+ terms:{title:'Ketentuan layanan',intro:'Berlaku untuk penggunaan editor, undangan, dan pembayaran Enveely.',sections:[
+  ['Paket dan masa aktif','Serena Paper gratis selama 7 hari sejak publikasi pertama. Menghapus dan membuat ulang ID yang sama tidak mengulang masa gratis. Paket berbayar berlaku 92 hari untuk pilihan 3 bulan atau 183 hari untuk 6 bulan. Harga dan tambahan Rp15.000 untuk 6 bulan ditampilkan sebelum pembayaran.'],
+  ['Aktivasi dan perpanjangan','Masa berbayar dimulai saat pembayaran disetujui, meskipun undangan belum dipublikasikan. Perpanjangan menambahkan durasi setelah masa aktif terakhir. Pesanan yang belum selesai digunakan kembali agar tidak terjadi pembayaran ganda. Jangan membayar ulang pesanan yang sedang ditinjau atau diaktifkan.'],
+  ['Pembayaran dan pengembalian dana','Bayar tepat sesuai nominal pesanan, termasuk kode unik. Reviewer mencocokkan catatan merchant; hasil pembacaan AI saja tidak mengaktifkan paket. Untuk pembayaran ganda, nominal keliru, pembatalan, atau permintaan pengembalian dana, hubungi bantuan dengan ID pesanan dan referensi transaksi. Permintaan diperiksa berdasarkan status transaksi dan layanan yang sudah digunakan. Tidak ada jaminan pengembalian dana otomatis.'],
+  ['Konten dan penggunaan','Kalian bertanggung jawab atas izin penggunaan foto, musik, nama, dan lokasi yang dimasukkan. Penipuan, spam, konten ilegal, dan pelanggaran hak pihak lain tidak diperbolehkan. Pemilik perlu memeriksa saran AI serta memoderasi ucapan tamu.'],
+  ['Batas layanan','Jumlah foto mengikuti desain, dengan penyimpanan akun maksimal 256 MB. Batas kirim dan verifikasi dapat diterapkan untuk melindungi layanan. Koneksi, browser, dan layanan pihak ketiga dapat memengaruhi ketersediaan. Enveely tidak memberikan SLA tanpa perjanjian terpisah.'],
+  ['Setelah masa tayang berakhir','Tamu tidak lagi dapat membuka undangan atau mengirim tanggapan. Pemilik masih dapat mengedit draf dan melihat data yang tersimpan. Kalian dapat memperpanjang paket berbayar atau menghapus undangan dari dashboard.'],
+ ]},
 };
-
-export function renderInfoPage(kind) {
-  const page = pages[kind] || pages.help;
-  renderPage(`
-    <section class="info-page">
-      <div class="container info-page__inner">
-        <header><p class="eyebrow">${page.eyebrow}</p><h1>${page.title}</h1><p>${page.intro}</p></header>
-        <div class="info-page__content">
-          ${page.sections.map(([title, body], index) => `<article><span>${String(index + 1).padStart(2, '0')}</span><div><h2>${title}</h2><p>${body}</p></div></article>`).join('')}
-        </div>
-        <aside class="info-page__contact"><div><p class="eyebrow">Masih Ada Pertanyaan?</p><h2>Ceritakan yang kalian butuhkan.</h2></div><a href="mailto:enveely@nalaro.digital" class="btn btn--primary btn--lg">Email Enveely</a></aside>
-      </div>
-    </section>`);
-}
+export function renderInfoPage(kind){const page=pages[kind]||pages.help;renderPage(`<section class="info-page"><div class="container info-page__inner"><header><h1>${page.title}</h1><p>${page.intro}</p></header><div class="info-page__content">${page.sections.map(([title,body],i)=>`<article><span>${String(i+1).padStart(2,'0')}</span><div><h2>${title}</h2><p>${body}</p></div></article>`).join('')}</div>${kind==='privacy'?'<label class="profile-card"><input type="checkbox" data-analytics-consent> Izinkan analitik penggunaan produk di browser ini</label>':''}<aside class="info-page__contact"><h2>Hubungi Enveely.</h2><a href="mailto:enveely@nalaro.digital" class="btn btn--primary btn--lg">Email bantuan</a></aside></div></section>`,root=>{const checkbox=root.querySelector('[data-analytics-consent]');if(checkbox){try{checkbox.checked=localStorage.getItem('env_analytics_consent')==='yes';}catch{}checkbox.addEventListener('change',()=>{try{localStorage.setItem('env_analytics_consent',checkbox.checked?'yes':'no');location.reload();}catch{}});}});}
