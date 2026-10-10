@@ -13,16 +13,16 @@
     "preview": "vite preview",
     "preview:pages": "wrangler pages dev dist",
     "test": "node tests/atelier.test.mjs && node tests/preview-layout.test.mjs && node tests/payment-functions.test.mjs && node tests/guest-functions.test.mjs",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-enveely \"node tests/firestore-rules.test.mjs\"",
+    "test:rules": "node scripts/test-rules.mjs",
     "deploy:pages": "node scripts/deploy-pages.mjs",
     "prebuild": "node scripts/build-policy.mjs && node scripts/build-sitemap.mjs",
-    "test:functions": "wrangler pages functions build functions --outdir=/tmp/enveely-functions-check"
+    "test:functions": "wrangler pages functions build functions --outdir=/tmp/enveely-functions-check",
+    "verify:release": "node scripts/verify-release.mjs"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^5.0.2",
-    "firebase-tools": "^15.28.2",
     "vite": "^8.3.3",
-    "wrangler": "^4.148.0"
+    "wrangler": "^4.149.0"
   },
   "dependencies": {
     "firebase": "^12.19.0",

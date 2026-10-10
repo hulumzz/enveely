@@ -15,8 +15,8 @@
 | Media yatim/penghapusan race | Registry/quota 256 MB, inventory lama, cleanup, deleting jobs, atomic parent verify | Verifikasi lifecycle R2 produksi masih diperlukan |
 | Upload bukti bergantung AI | Bukti/pending dicatat sebelum AI; timeout dan background enrichment | Kegagalan AI tidak menghilangkan antrean manual |
 | XSS judul modal | Judul dan aria label memakai textContent/setAttribute | Raw interpolation dihapus |
-| CI/regression | Node 24, Java 21, emulator, build Functions, audit runtime | Workflow tersimpan di repo |
-| Operasional | Worker cron, lease, reconciliation, runbook backup/restore | Jadwal, IAM backup, alarm tujuan dan latihan restore perlu diverifikasi saat rilis |
+| CI/regression | Node 24, Java 21, emulator resmi dengan checksum, build Functions, audit runtime | Pemeriksaan lokal lolos; Pages menjalankan `verify:release` sebelum deploy. GitHub Actions tidak mulai karena akun terkunci terkait billing |
+| Operasional | Worker cron, lease, reconciliation, runbook backup/restore | Cron 15 menit aktif, policy dan indeks produksi terverifikasi, batch manual berhasil. Backup Firestore ditolak karena billing belum aktif; alarm tujuan dan latihan restore belum diverifikasi |
 | Muatan awal/SEO | Route dan CSS desain dimuat terpisah; font selektif; robots/sitemap nyata | JS entry sekitar 22 KB; CWV lapangan belum diukur |
 | Header Functions | Middleware CSP dan cache/security defaults | Endpoint unit dan smoke produksi |
 | Kebijakan tidak lengkap | Retensi, AI, analitik opt-in, hapus akun via bantuan, refund manual, durasi/SLA dijelaskan | Kemampuan produk disebut sesuai implementasi |
@@ -25,3 +25,7 @@
 Hero memakai Mayura Pearl di depan, Amora Garden/Elysian Ivory/Pusaka Kencana di belakang, foto cincin dengan mat dan keterangan, serta komposisi foto kedua yang berbeda. Landing menghapus eyebrow badge, rotasi otomatis, klaim berlebihan, dan pemisah kalimat dash. Komposisi mengikuti scroll tanpa mengunci atau memanipulasi scrolling, dengan reduced motion dan cleanup listener.
 
 Build dan emulator tidak menggantikan QA visual, pengujian transaksi merchant sungguhan, pengukuran Core Web Vitals lapangan, dan latihan pemulihan cadangan. Item tersebut harus dilaporkan terpisah dari pemeriksaan yang sudah lolos.
+
+Status produksi terverifikasi: migrasi D1 0003 selesai; bookmark sebelum migrasi `00000006-00000000-00005100-832fadd14881a1ce60c75cf3419fc07b`. Hash rules Firestore `a3811494d3f30b4ccb8ecc77df70e254a2f8e25b5aac65bc23e1347f49c18e7c`, tiga indeks READY. Audit npm seluruh dependency, termasuk pengembangan, melaporkan nol kerentanan. Turnstile memakai widget produksi khusus domain aplikasi, bukan key pengujian.
+
+Backup harian belum terpasang: API Firestore mengembalikan `403: This API method requires billing to be enabled`. `verify-backup` mengembalikan daftar kosong. GitHub run 38027054907 tidak menjalankan langkah apa pun karena billing akun; ini berbeda dari kegagalan test. Jadwal alarm, salinan R2 terpisah, dan latihan restore masih memerlukan penyelesaian operasional.

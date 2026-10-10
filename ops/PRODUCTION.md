@@ -4,8 +4,8 @@ Aplikasi: https://enveely.pages.dev. Firebase: ulwed-d729f. Cloudflare account: 
 
 ## Rilis
 
-1. `npm ci --ignore-scripts`, `npm test`, `npm run test:rules` dengan Node 24 dan Java 21.
-2. `npm run build` dan `npm run test:functions`. Build menghasilkan salinan tetap aturan dan indeks, tanpa kredensial.
+1. `npm ci --ignore-scripts`, lalu `npm run verify:release` dengan Node 24. Script menguji aplikasi dan rules, membangun frontend/Functions, lalu mengaudit dependency runtime. Java 21 dan emulator resmi diunduh bila diperlukan dengan versi dan SHA-256 tetap.
+2. Pages memakai `npm run verify:release` sebagai build command, sehingga pemeriksaan tetap berjalan saat GitHub Actions terhalang billing akun. Build menghasilkan salinan tetap aturan dan indeks, tanpa kredensial.
 3. Simpan bookmark D1 Time Travel sebelum migrasi; terapkan migrasi bernomor yang belum pernah dijalankan. Migrasi 0003 mempertahankan seluruh pesanan. Periksa duplikasi pesanan terbuka pada database lama sebelum menerapkan indeks unik.
 4. Pastikan Pages memiliki TURNSTILE_SITE_KEY, TURNSTILE_SECRET_KEY, MAINTENANCE_SECRET dan binding yang tercantum di wrangler.jsonc. Secret tidak boleh masuk Git.
 5. Push main memicu Pages. Setelah deployment sukses, lakukan POST terautentikasi ke `/api/internal/maintenance?action=install-policy`. Sumber yang dipasang selalu berasal dari build, bukan request. Periksa `verify-policy`: hash cocok dan seluruh indeks READY. Jika 403, operator Firebase perlu memasang aturan dan indeks dengan kredensial berizin, bukan melonggarkan aturan.
@@ -31,6 +31,8 @@ Periksa log `maintenance_complete`, `maintenance_schedule`, `activation_failed`,
 D1 Time Travel dapat mengembalikan database dari bookmark yang diverifikasi sebelum migrasi. Jangan melakukan restore produksi untuk menguji: pemulihan dapat menimpa pesanan baru. Untuk latihan, ekspor snapshot dan pulihkan ke database terpisah; bandingkan jumlah/baris transaksi serta referensi order sebelum cutover.
 
 Endpoint `install-backup` memasang jadwal backup Firestore harian dengan retensi 7 hari menggunakan IAM yang sudah ada. `verify-backup` memeriksa konfigurasi; backup pertama dan keberhasilan restore belum dibuktikan hanya dengan adanya jadwal. Firestore backup dipulihkan ke database baru. Konfigurasi TTL perlu diperiksa terpisah karena tidak tercakup backup. Cadangkan inventaris R2 serta objek ke bucket terpisah sesuai kebutuhan pemilik dan kebijakan retensi; kode aplikasi tidak mengklaim salinan R2 sebagai backup mandiri.
+
+Pada 10 Oktober 2026, pemasangan jadwal ditolak karena billing Firebase belum aktif. Daftar backup schedule masih kosong. Setelah pemilik mengaktifkan billing pada proyek yang benar, jalankan installer dan verifikasi kembali, tunggu backup pertama, kemudian lakukan latihan pemulihan pada database terpisah.
 
 Sebelum cutover pemulihan, hentikan approval dan publikasi, rekonsiliasi semua order, simpan snapshot kedua, lalu cocokkan D1 dan entitlements. Pages rollback mengembalikan kode saja; tidak mengembalikan data/migrasi. Rilis sebelum 0003 tidak memahami status baru dan tidak aman dipakai untuk rollback tanpa pemeriksaan kompatibilitas.
 

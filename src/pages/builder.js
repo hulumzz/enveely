@@ -41,7 +41,7 @@ async function renderBuilderWorkspace(invitationId) {
   await loadDesignAssets(draft.design.templateId);
   if(location.pathname!==`/builder/${invitationId}`)return;
   const pending=await listPendingMedia(draft.id).catch(()=>[]);
-  for(const upload of pending){const url=URL.createObjectURL(upload.file);if(upload.path.startsWith('gallery.')){const i=Number(upload.path.split('.')[1]);if(draft.content.gallery[i]?._local)draft.content.gallery[i].url=url;}else setByPath(draft.content,upload.path,url);}
+  for(const upload of pending){const url=URL.createObjectURL(upload.file);if(upload.path.startsWith('gallery.')){const slot=upload.path.slice(8);const photo=draft.content.gallery.find(photo=>photo._uploadId===slot) || draft.content.gallery[Number(slot)];if(photo?._local)photo.url=url;else {URL.revokeObjectURL(url);await deletePendingMedia(draft.id,upload.path);delete draft.content._pendingUploads?.[upload.path];}}else if(draft.content._pendingUploads?.[upload.path])setByPath(draft.content,upload.path,url);else {URL.revokeObjectURL(url);await deletePendingMedia(draft.id,upload.path);}}
   if(pending.length) toast(`${pending.length} foto belum terunggah. Gunakan tombol Coba unggah lagi.`);
   if (!draft.sections.some(s=>s.id==='music'))draft.sections.push({id:'music',enabled:false});
 
@@ -87,10 +87,15 @@ async function renderBuilderWorkspace(invitationId) {
         const button=event.currentTarget;button.disabled=true;
         for(const upload of await listPendingMedia(draft.id)) {
           try {
+            const version=upload.version || draft.content._pendingUploads?.[upload.path];
+            if(!version || draft.content._pendingUploads?.[upload.path]!==version)continue;
             await saveInvitation(draft);
             const hosted=await uploadImage(upload.file,{preset:upload.preset,invitationId:draft.id});
-            if(upload.path.startsWith('gallery.'))setByPath(draft.content,upload.path,hosted);else setByPath(draft.content,upload.path,hosted.url);
-            await deletePendingMedia(draft.id,upload.path);delete draft.content._pendingUploads?.[upload.path];
+            if(draft.content._pendingUploads?.[upload.path]===version){
+              if(upload.path.startsWith('gallery.')){const slot=upload.path.slice(8);const i=draft.content.gallery.findIndex(photo=>photo._uploadId===slot);const index=i>=0?i:Number(slot);if(Number.isInteger(index) && draft.content.gallery[index]?._local)draft.content.gallery[index]=hosted;}else setByPath(draft.content,upload.path,hosted.url);
+              delete draft.content._pendingUploads?.[upload.path];
+            }
+            if(upload.version || !draft.content._pendingUploads?.[upload.path])await deletePendingMedia(draft.id,upload.path,upload.version);
           }catch(error){toast(error.message,{type:'error'});}
         }
         persist();paintCanvas();paintProps();button.disabled=false;
@@ -728,7 +733,7 @@ function wireProps(root, state, { persist, paintCanvas, repaintProps }) {
     btn.addEventListener('click', () => {
       const idx = Number(btn.dataset.delPhoto);
       const photo = draft.content.gallery[idx];
-      if (photo?._local) URL.revokeObjectURL(photo.url);
+      if (photo?._local) {URL.revokeObjectURL(photo.url);const path=`gallery.${photo._uploadId || idx}`;deletePendingMedia(draft.id,path).catch(()=>{});delete draft.content._pendingUploads?.[path];}
       draft.content.gallery.splice(idx, 1);
       persist(); paintCanvas(); repaintProps();
     });
@@ -756,6 +761,7 @@ function wireProps(root, state, { persist, paintCanvas, repaintProps }) {
       if (!path) return;
       const current = getByPath(draft.content, path);
       if (current && /^blob:/.test(current)) URL.revokeObjectURL(current);
+      deletePendingMedia(draft.id,path,draft.content._pendingUploads?.[path]).catch(()=>{});delete draft.content._pendingUploads?.[path];
       setByPath(draft.content, path, '');
       persist(); paintCanvas(); repaintProps();
     });
@@ -764,7 +770,7 @@ function wireProps(root, state, { persist, paintCanvas, repaintProps }) {
 
 /**
  * Optimistic image upload: show local blob URL immediately, then swap to the
- * hosted URL once ImgBB responds. If the upload fails, keep the local URL
+ * hosted URL once storage responds. If the upload fails, keep the local URL
  * (with a `_local: true` marker) so the user still sees the photo.
  *
  * @param {File} file
@@ -773,11 +779,12 @@ function wireProps(root, state, { persist, paintCanvas, repaintProps }) {
  * @param {{path?: string, setPath?: boolean}} [opts] when setPath=true, treat as a single-path slot
  */
 async function uploadWithLocalPreview(file, draft, preset, opts = {}) {
+  const uploadId=crypto.randomUUID();
   const localUrl = URL.createObjectURL(file);
   const placeholder = {
     url: localUrl,
     _local: true,
-    _file: file, // keep handle for potential retry
+    _uploadId: uploadId,
     thumbUrl: localUrl,
     provider: 'local',
     width: null,
@@ -787,33 +794,31 @@ async function uploadWithLocalPreview(file, draft, preset, opts = {}) {
   if (opts.setPath && opts.path) {
     setByPath(draft.content, opts.path, localUrl);
     if (!draft.content._pendingUploads) draft.content._pendingUploads = {};
-    draft.content._pendingUploads[opts.path] = true;
+    draft.content._pendingUploads[opts.path] = uploadId;
   } else {
-    const idx = draft.content.gallery.length;
     draft.content.gallery.push({ ...placeholder });
     if (!draft.content._pendingUploads) draft.content._pendingUploads = {};
-    draft.content._pendingUploads[`gallery.${idx}`] = true;
+    draft.content._pendingUploads[`gallery.${uploadId}`] = uploadId;
   }
 
-  const pendingPath=opts.setPath ? opts.path : `gallery.${draft.content.gallery.length-1}`;
-  try {await savePendingMedia(draft.id,pendingPath,file,preset);}catch{toast('Penyimpanan foto lokal penuh. Biarkan halaman terbuka sampai upload selesai.',{type:'error'});}
+  const pendingPath=opts.setPath ? opts.path : `gallery.${uploadId}`;
+  try {await savePendingMedia(draft.id,pendingPath,file,preset,uploadId);}catch{toast('Penyimpanan foto lokal penuh. Biarkan halaman terbuka sampai upload selesai.',{type:'error'});}
   saveDraft(draft);
 
   try {
     await saveInvitation(draft);
     const hosted = await uploadImage(file, { preset, invitationId:draft.id, name: `${draft.id}-${preset}-${Date.now()}` });
     if (opts.setPath && opts.path) {
-      setByPath(draft.content, opts.path, hosted.url);
-      delete draft.content._pendingUploads?.[opts.path];
+      if(draft.content._pendingUploads?.[opts.path]===uploadId){setByPath(draft.content, opts.path, hosted.url);delete draft.content._pendingUploads?.[opts.path];}
     } else {
       // find by local URL and replace
       const i = draft.content.gallery.findIndex((p) => p.url === localUrl);
       if (i >= 0) {
         draft.content.gallery[i] = { ...hosted, _local: false };
-        delete draft.content._pendingUploads?.[`gallery.${i}`];
+        delete draft.content._pendingUploads?.[`gallery.${uploadId}`];
       }
     }
-    await deletePendingMedia(draft.id,pendingPath).catch(()=>{});
+    await deletePendingMedia(draft.id,pendingPath,uploadId).catch(()=>{});
     URL.revokeObjectURL(localUrl);
   } catch (err) {
     console.warn('[upload] gagal, foto tetap tersimpan lokal', err);

@@ -2,7 +2,9 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "enveely",
   "compatibility_date": "2026-10-07",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "pages_build_output_dir": "./dist",
   "d1_databases": [
     {
@@ -22,15 +24,20 @@
       "bucket_name": "enveely-invitation-media"
     }
   ],
-  "ai": { "binding": "AI" },
+  "ai": {
+    "binding": "AI"
+  },
   "vars": {
-    "FIREBASE_PROJECT_ID": "ulwed-d729f"
+    "FIREBASE_PROJECT_ID": "ulwed-d729f",
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAFS3HShRp2B8kxOl"
   },
   "env": {
     "preview": {
       "d1_databases": [],
       "r2_buckets": [],
-      "vars": { "FIREBASE_PROJECT_ID": "ulwed-d729f" }
+      "vars": {
+        "FIREBASE_PROJECT_ID": "ulwed-d729f"
+      }
     }
   }
 }

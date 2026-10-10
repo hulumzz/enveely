@@ -4,7 +4,7 @@ export async function onRequestGet(context) {
   if(!/^[A-Za-z0-9_-]{8,80}$/.test(id))return notFound();
   try {
     const response=await fetch(`https://firestore.googleapis.com/v1/projects/${encodeURIComponent(context.env.FIREBASE_PROJECT_ID)}/databases/(default)/documents/invitations/${encodeURIComponent(id)}`,{signal:AbortSignal.timeout(10_000)});
-    if(!response.ok)return notFound();
+    if(!response.ok){if([403,404].includes(response.status))return notFound();throw new Error('Firestore unavailable');}
     const {fields={}}=await response.json();
     if(fields.status?.stringValue!=='published')return notFound();
     const content=fields.content?.mapValue?.fields || {};

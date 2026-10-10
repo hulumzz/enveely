@@ -109,6 +109,12 @@ export async function getPublishedInvitation(id) {
   if (!snap.exists()) return null;
   const data = snap.data();
   if (data.status !== 'published') return null;
+  const {validDesign}=await import('../data/plans.js');if(!validDesign(data.design))return null;
+  const user=await getCurrentUser();
+  if(user?.uid===data.ownerUid) {
+    if(data.design.variantId==='serena-paper') {const activated=data.freeActivatedAt?.toMillis?.() || data.freeActivatedAt?.seconds*1000;if(!activated || activated+7*86400000<=Date.now())return null;}
+    else {const entitlement=(await getDoc(doc(db,'entitlements',id))).data();if(!entitlement?.active || entitlement.variantId!==data.design.variantId || entitlement.expiresAt?.toMillis?.()<=Date.now())return null;}
+  }
   return { id: snap.id, ...data };
 }
 
